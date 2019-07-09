@@ -1,0 +1,12 @@
+d:\Piotr\Libraries\Documents\My Games\Terraria\ModLoader\Mod Sources\custom_npc_names\bin\Debug\custom_npc_names.dll
+d:\Piotr\Libraries\Documents\My Games\Terraria\ModLoader\Mod Sources\custom_npc_names\bin\Debug\custom_npc_names.pdb
+d:\Piotr\Libraries\Documents\My Games\Terraria\ModLoader\Mod Sources\custom_npc_names\bin\Debug\Microsoft.Xna.Framework.dll
+d:\Piotr\Libraries\Documents\My Games\Terraria\ModLoader\Mod Sources\custom_npc_names\bin\Debug\Microsoft.Xna.Framework.Game.dll
+d:\Piotr\Libraries\Documents\My Games\Terraria\ModLoader\Mod Sources\custom_npc_names\bin\Debug\Microsoft.Xna.Framework.Graphics.dll
+d:\Piotr\Libraries\Documents\My Games\Terraria\ModLoader\Mod Sources\custom_npc_names\bin\Debug\Microsoft.Xna.Framework.Xact.dll
+d:\Piotr\Libraries\Documents\My Games\Terraria\ModLoader\Mod Sources\custom_npc_names\bin\Debug\tModLoader.exe
+d:\Piotr\Libraries\Documents\My Games\Terraria\ModLoader\Mod Sources\custom_npc_names\obj\Debug\custom_npc_names.csprojAssemblyReference.cache
+d:\Piotr\Libraries\Documents\My Games\Terraria\ModLoader\Mod Sources\custom_npc_names\obj\Debug\custom_npc_names.csproj.CoreCompileInputs.cache
+D:\Piotr\Libraries\Documents\My Games\Terraria\ModLoader\Mod Sources\custom_npc_names\obj\Debug\custom_npc_names.csproj.CopyComplete
+d:\Piotr\Libraries\Documents\My Games\Terraria\ModLoader\Mod Sources\custom_npc_names\obj\Debug\custom_npc_names.dll
+d:\Piotr\Libraries\Documents\My Games\Terraria\ModLoader\Mod Sources\custom_npc_names\obj\Debug\custom_npc_names.pdb

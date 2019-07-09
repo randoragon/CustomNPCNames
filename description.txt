@@ -1,0 +1,12 @@
+Ever get bored of the default names Vanilla Terraria gives to its Town NPCs?
+
+Well, this mod allows you to make your own list of names for Vanilla NPCs,
+which the game will then assign at random, like usual.
+
+You can make an individual list for each NPC, or just make two lists of masculine and feminine names. You can switch back to Vanilla ones at anytime too. You can have some NPCs have default names, and manually pick names for only the remaining ones... The possibilities are broad.
+
+***
+
+This mod is dedicated to tvgBadger, go pay him a visit at twitch.tv/tvgbadger!
+
+#BadgerClan

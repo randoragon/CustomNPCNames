@@ -1,0 +1,3 @@
+author = Randoragon
+version = 0.1
+displayName = Custom NPC Names
