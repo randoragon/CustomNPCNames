@@ -26,9 +26,9 @@ namespace CustomNPCNames.UI
             // This means that this class, ExampleUI, will be our Parent. Since ExampleUI is a UIState, the Left and Top are relative to the top left of the screen.
             menuPanel.Left.Set(400f, 0f);
             menuPanel.Top.Set(100f, 0f);
-            menuPanel.Width.Set(170f, 0f);
-            menuPanel.Height.Set(70f, 0f);
-            menuPanel.BackgroundColor = new Color(73, 94, 171);
+            menuPanel.Width.Set(320f, 0f);
+            menuPanel.Height.Set(480f, 0f);
+            
 
             Texture2D closeButtonTexture = ModContent.GetTexture("Terraria/UI/ButtonDelete");
             closeButton = new UIHoverImageButton(closeButtonTexture, "Close");

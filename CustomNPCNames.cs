@@ -28,13 +28,12 @@ namespace CustomNPCNames
 
         public CustomNPCNames()
         {
-            //string path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            
+            CustomNames.Clear();
             foreach (int i in TownNPCs) {
                 CustomNames.Add(i, "CustomName");
             }
         }
-
+        
         public override void Load()
         {
             RenameMenuHotkey = RegisterHotKey("Toggle Menu", "K");
@@ -49,7 +48,7 @@ namespace CustomNPCNames
                 renameInterface.SetState(renameUI);
             }
         }
-
+        
         public override void UpdateUI(GameTime gameTime)
         {
             // it will only draw if the player is not on the main menu
@@ -58,7 +57,7 @@ namespace CustomNPCNames
                 renameInterface.Update(gameTime);
             }
         }
-
+        
         public override void ModifyInterfaceLayers(List<GameInterfaceLayer> layers)
         {
             int mouseTextIndex = layers.FindIndex(layer => layer.Name.Equals("Vanilla: Mouse Text"));
@@ -77,7 +76,7 @@ namespace CustomNPCNames
                 );
             }
         }
-
+        
         private bool DrawRenameMenuUI()
         {
             // it will only draw if the player is not on the main menu
