@@ -23,8 +23,8 @@ namespace CustomNPCNames
             NPCID.OldMan,        NPCID.SkeletonMerchant
         };
         public static ModHotKey RenameMenuHotkey;
-        private RenameUI renameUI;
-        private UserInterface renameInterface;
+        public static RenameUI renameUI;
+        private static UserInterface renameInterface;
 
         public CustomNPCNames()
         {

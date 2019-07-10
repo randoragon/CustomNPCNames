@@ -11,7 +11,7 @@ namespace CustomNPCNames.UI
     internal class RenameUI : UIState
     {
         private DragableUIPanel menuPanel;
-        private UIHoverImageButton closeButton;
+        public UIHoverImageButton closeButton;
         public static bool Visible = false;
 
         // In OnInitialize, we place various UIElements onto our UIState (this class).
@@ -24,16 +24,19 @@ namespace CustomNPCNames.UI
             menuPanel.SetPadding(0);
             // We need to place this UIElement in relation to its Parent. Later we will be calling `base.Append(MenuPanel);`. 
             // This means that this class, ExampleUI, will be our Parent. Since ExampleUI is a UIState, the Left and Top are relative to the top left of the screen.
-            menuPanel.Left.Set(400f, 0f);
-            menuPanel.Top.Set(100f, 0f);
-            menuPanel.Width.Set(320f, 0f);
-            menuPanel.Height.Set(480f, 0f);
-            
+            Rectangle menuCoords = new Rectangle(400, 100, 320, 480);
 
-            Texture2D closeButtonTexture = ModContent.GetTexture("Terraria/UI/ButtonDelete");
+            menuPanel.Left.Set(menuCoords.X, 0f);
+            menuPanel.Top.Set(menuCoords.Y, 0f);
+            menuPanel.Width.Set(menuCoords.Width, 0f);
+            menuPanel.Height.Set(menuCoords.Height, 0f);
+
+            const int closeButtonPadding = 8;
+
+            Texture2D closeButtonTexture = ModContent.GetTexture("CustomNPCNames/UI/close_button");
             closeButton = new UIHoverImageButton(closeButtonTexture, "Close");
-            closeButton.Left.Set(140, 0f);
-            closeButton.Top.Set(10, 0f);
+            closeButton.Left.Set(menuCoords.Width - 22 - closeButtonPadding, 0f);
+            closeButton.Top.Set(closeButtonPadding, 0f);
             closeButton.Width.Set(22, 0f);
             closeButton.Height.Set(22, 0f);
             closeButton.OnClick += new MouseEvent(CloseButtonClicked);
