@@ -1,3 +1,5 @@
 author = Randoragon
 version = 0.1
 displayName = Custom NPC Names
+includeSource = true
+buildIgnore = *.csproj, *.user, obj\*, bin\*, .vs\*, .git\*, .gitignore

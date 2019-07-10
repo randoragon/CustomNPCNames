@@ -11,9 +11,11 @@ namespace CustomNPCNames.UI
     internal class UIHoverImageButton : UIImageButton
     {
         internal string HoverText;
+        public Texture2D texture;
 
         public UIHoverImageButton(Texture2D texture, string hoverText) : base(texture)
         {
+            this.texture = texture;
             HoverText = hoverText;
         }
 

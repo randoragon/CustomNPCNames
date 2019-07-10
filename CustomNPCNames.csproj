@@ -33,12 +33,13 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Player.cs" />
     <Compile Include="ModContent.cs" />
     <Compile Include="CustomNPCNames.cs" />
     <Compile Include="NPCs\ModdedNames.cs" />
     <Compile Include="UI\UIHoverImageButton.cs" />
     <Compile Include="UI\DragableUIPanel.cs" />
-    <Compile Include="UI\RenameMenu.cs" />
+    <Compile Include="UI\RenameUI.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Microsoft.Xna.Framework, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86">
