@@ -36,7 +36,7 @@ namespace CustomNPCNames
             return mod.GetTexture(subName);
         }
 
-        public static void PrintTextureInfo(ref Texture2D texture)
+        public static void PrintTextureRectangle(ref Texture2D texture)
         {
             Main.NewText("recX: " + System.Convert.ToString(texture.Bounds.X) + "; recY: " + System.Convert.ToString(texture.Bounds.Y) + "; recW: " + System.Convert.ToString(texture.Bounds.Width) + "; recH: " + System.Convert.ToString(texture.Bounds.Height) + ';', new Color(0, 255, 0));
         }

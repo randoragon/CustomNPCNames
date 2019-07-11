@@ -1,8 +1,5 @@
-﻿using Terraria;
-using Terraria.ID;
-using Terraria.ModLoader;
+﻿using Terraria.ModLoader;
 using Terraria.GameInput;
-using Microsoft.Xna.Framework;
 
 namespace CustomNPCNames
 {
@@ -18,7 +15,6 @@ namespace CustomNPCNames
             if (CustomNPCNames.RenameMenuHotkey.JustPressed)
             {
                 UI.RenameUI.Visible = !UI.RenameUI.Visible;
-                Main.NewText(UI.RenameUI.Visible ? "Menu: ON" : "Menu: OFF", new Color(255, 255, 255));
             }
         }
     }
