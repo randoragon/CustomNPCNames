@@ -1,5 +1,7 @@
 ﻿using Terraria.ModLoader;
 using Terraria.GameInput;
+using CustomNPCNames.UI;
+using Terraria;
 
 namespace CustomNPCNames
 {
@@ -7,14 +9,21 @@ namespace CustomNPCNames
     {
         public override void ProcessTriggers(TriggersSet triggersSet)
         {
-            if (CustomNPCNames.RenameMenuHotkey.ToString() != "")
+            if (!Main.gameMenu)
             {
-                CustomNPCNames.renameUI.closeButton.HoverText = "Close (" + CustomNPCNames.RenameMenuHotkey.GetAssignedKeys()[0] + ')';
-            }
+                if (CustomNPCNames.RenameMenuHotkey.ToString() != "")
+                {
+                    CustomNPCNames.renameUI.closeButton.HoverText = "Close (" + CustomNPCNames.RenameMenuHotkey.GetAssignedKeys()[0] + ')';
+                }
 
-            if (CustomNPCNames.RenameMenuHotkey.JustPressed)
-            {
-                UI.RenameUI.Visible = !UI.RenameUI.Visible;
+                if (CustomNPCNames.RenameMenuHotkey.JustPressed)
+                {
+                    RenameUI.Visible = !RenameUI.Visible;
+                    if (RenameUI.Visible)
+                    {
+                        CustomNPCNames.renameUI.renameBox.UpdateStatus();
+                    }
+                }
             }
         }
     }

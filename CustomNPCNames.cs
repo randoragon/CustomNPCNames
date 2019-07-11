@@ -10,9 +10,9 @@ namespace CustomNPCNames
 {
     class CustomNPCNames : Mod
     {
-        public static Dictionary<int, string> CustomNames = new Dictionary<int, string>();
+        public static Dictionary<short, string> CustomNames = new Dictionary<short, string>();
 
-        public static readonly int[] TownNPCs = {
+        public static readonly short[] TownNPCs = {
             NPCID.Guide,         NPCID.Merchant,        NPCID.Nurse,
             NPCID.Demolitionist, NPCID.DyeTrader,       NPCID.Dryad,
             NPCID.DD2Bartender,  NPCID.ArmsDealer,      NPCID.Stylist,
@@ -29,7 +29,7 @@ namespace CustomNPCNames
         public CustomNPCNames()
         {
             CustomNames.Clear();
-            foreach (int i in TownNPCs) {
+            foreach (short i in TownNPCs) {
                 CustomNames.Add(i, "CustomName");
             }
         }

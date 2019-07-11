@@ -1,9 +1,6 @@
-﻿using Terraria;
-using Terraria.UI;
+﻿using Terraria.UI;
 using Microsoft.Xna.Framework.Graphics;
 using Terraria.GameContent.UI.Elements;
-using System.Collections.Generic;
-using System;
 using Microsoft.Xna.Framework;
 
 namespace CustomNPCNames.UI
@@ -13,10 +10,12 @@ namespace CustomNPCNames.UI
         public UIImage npcHead { get; private set; }
         protected string hoverText;
         public static UINPCButton Selection { get; private set; }
-        private bool amISelected;
+        public readonly short npcId;
 
-        public UINPCButton(Texture2D texture, string hoverText) : base(ModContent.GetTexture("CustomNPCNames/UI/UINPCButton"), hoverText)
+        public UINPCButton(Texture2D texture, string hoverText, short id) : base(ModContent.GetTexture("CustomNPCNames/UI/UINPCButton"), hoverText)
         {
+            this.npcId = id;
+
             OverflowHidden = true;
             SetPadding(1f);
 
@@ -35,11 +34,12 @@ namespace CustomNPCNames.UI
             Selection = this;
             SetImage(ModContent.GetTexture("CustomNPCNames/UI/UINPCButton_Selected"));
             SetVisibility(1f, 1f);
+            CustomNPCNames.renameUI.renameBox.UpdateStatus();
         }
 
         public override void Update(GameTime gameTime)
         {
-            if (this != Selection)
+            if (!ReferenceEquals(this, Selection))
             {
                 SetImage(ModContent.GetTexture("CustomNPCNames/UI/UINPCButton"));
                 SetVisibility(1f, 0.5f);

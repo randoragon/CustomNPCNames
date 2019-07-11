@@ -13,6 +13,7 @@ namespace CustomNPCNames.UI
         private DragableUIPanel menuPanel;      // main window, parent for all the other UI objects
         private List<UINPCButton> menuNPCList;  // the left scrollable panel with NPC heads
         public UIHoverImageButton closeButton;
+        public UINPCRenameBox renameBox;            // the name bar on top of the entire menu, next to the close button
         public static bool Visible = false;
 
         public override void OnInitialize()
@@ -36,15 +37,23 @@ namespace CustomNPCNames.UI
                 menuPanel.Append(menuNPCList[i]);
             }
 
-            const int closeButtonPadding = 8;
+            const int CLOSE_BUTTON_PADDING = 8;
             Texture2D closeButtonTexture = ModContent.GetTexture("CustomNPCNames/UI/close_button");
             closeButton = new UIHoverImageButton(closeButtonTexture, "Close");
-            closeButton.Left.Set(menuCoords.Width - 22 - closeButtonPadding, 0f);
-            closeButton.Top.Set(closeButtonPadding, 0f);
+            closeButton.Left.Set(menuCoords.Width - 22 - CLOSE_BUTTON_PADDING, 0f);
+            closeButton.Top.Set(CLOSE_BUTTON_PADDING, 0f);
             closeButton.Width.Set(22, 0f);
             closeButton.Height.Set(22, 0f);
             closeButton.OnClick += new MouseEvent(CloseButtonClicked);
-            menuPanel.Append(closeButton); 
+            menuPanel.Append(closeButton);
+
+            renameBox = new UINPCRenameBox();
+            renameBox.Top.Set(0, 0);
+            renameBox.HAlign = 0.5f;
+            renameBox.Left.Set(0, 0);
+            renameBox.Height.Set(40, 0);
+            renameBox.Width.Set(200, 0);
+            menuPanel.Append(renameBox);
 
             Append(menuPanel);
         }
@@ -55,7 +64,7 @@ namespace CustomNPCNames.UI
             Visible = false;
         }
 
-        private UINPCButton GetNPCBossHeadButton(int id)
+        private UINPCButton GetNPCBossHeadButton(short id)
         {
             int textureId = 0;
             string npcName = "An Error Occurred";
@@ -135,7 +144,7 @@ namespace CustomNPCNames.UI
                     textureId = 24; npcName = "Tavernkeep";
                     break;
             }
-            return new UINPCButton(ModContent.GetTexture("Terraria/NPC_Head_" + System.Convert.ToString(textureId)), npcName);
+            return new UINPCButton(ModContent.GetTexture("Terraria/NPC_Head_" + System.Convert.ToString(textureId)), npcName, id);
         }
     }
 }
