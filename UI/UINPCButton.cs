@@ -7,25 +7,24 @@ namespace CustomNPCNames.UI
 {
     class UINPCButton : UIHoverImageButton
     {
-        public UIImage npcHead { get; private set; }
-        protected string hoverText;
+        public UIImage NpcHead { get; private set; }
         public static UINPCButton Selection { get; private set; }
         public readonly short npcId;
 
         public UINPCButton(Texture2D texture, string hoverText, short id) : base(ModContent.GetTexture("CustomNPCNames/UI/UINPCButton"), hoverText)
         {
-            this.npcId = id;
+            npcId = id;
 
             OverflowHidden = true;
             SetPadding(1f);
 
-            npcHead = new UIImage(texture);
-            npcHead.Left.Set((34 - npcHead.Width.GetValue(34)) / 2, 0);
-            npcHead.Top.Set((34 - npcHead.Height.GetValue(34)) / 2, 0);
-            npcHead.Width.Set(32, 0);
-            npcHead.Height.Set(32, 0);
+            NpcHead = new UIImage(texture);
+            NpcHead.Left.Set((34 - NpcHead.Width.GetValue(34)) / 2, 0);
+            NpcHead.Top.Set((34 - NpcHead.Height.GetValue(34)) / 2, 0);
+            NpcHead.Width.Set(32, 0);
+            NpcHead.Height.Set(32, 0);
 
-            Append(npcHead);
+            Append(NpcHead);
         }
 
         public override void Click(UIMouseEvent evt)
@@ -34,7 +33,7 @@ namespace CustomNPCNames.UI
             Selection = this;
             SetImage(ModContent.GetTexture("CustomNPCNames/UI/UINPCButton_Selected"));
             SetVisibility(1f, 1f);
-            CustomNPCNames.renameUI.renameBox.UpdateStatus();
+            CustomNPCNames.renameUI.renameBox.UpdateState();
         }
 
         public override void Update(GameTime gameTime)

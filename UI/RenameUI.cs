@@ -4,7 +4,6 @@ using Terraria;
 using Terraria.ID;
 using Terraria.UI;
 using System.Collections.Generic;
-using Terraria.GameContent.UI.Elements;
 
 namespace CustomNPCNames.UI
 {
@@ -13,14 +12,14 @@ namespace CustomNPCNames.UI
         private DragableUIPanel menuPanel;      // main window, parent for all the other UI objects
         private List<UINPCButton> menuNPCList;  // the left scrollable panel with NPC heads
         public UIHoverImageButton closeButton;
-        public UINPCRenameBox renameBox;            // the name bar on top of the entire menu, next to the close button
+        public UIRenamePanel renameBox;          // the name bar on top of the entire menu, next to the close button
         public static bool Visible = false;
 
         public override void OnInitialize()
         {
             menuPanel = new DragableUIPanel();
             menuPanel.SetPadding(0);
-            Rectangle menuCoords = new Rectangle(400, 100, 420, 520);
+            Rectangle menuCoords = new Rectangle(400, 100, 560, 520);
             menuPanel.Left.Set(menuCoords.X, 0f);
             menuPanel.Top.Set(menuCoords.Y, 0f);
             menuPanel.Width.Set(menuCoords.Width, 0f);
@@ -47,12 +46,14 @@ namespace CustomNPCNames.UI
             closeButton.OnClick += new MouseEvent(CloseButtonClicked);
             menuPanel.Append(closeButton);
 
-            renameBox = new UINPCRenameBox();
-            renameBox.Top.Set(0, 0);
+            renameBox = new UIRenamePanel();
+            renameBox.OverflowHidden = true;
+            renameBox.CaptionMaxLength = 25;
+            renameBox.Top.Set(8, 0);
             renameBox.HAlign = 0.5f;
-            renameBox.Left.Set(0, 0);
+            renameBox.Left.Set(-14, 0);
             renameBox.Height.Set(40, 0);
-            renameBox.Width.Set(200, 0);
+            renameBox.Width.Set(menuCoords.Width - 8 - 22 - 8, 0); // 4px padding from both sides, thus the additional -8
             menuPanel.Append(renameBox);
 
             Append(menuPanel);

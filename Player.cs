@@ -21,7 +21,7 @@ namespace CustomNPCNames
                     RenameUI.Visible = !RenameUI.Visible;
                     if (RenameUI.Visible)
                     {
-                        CustomNPCNames.renameUI.renameBox.UpdateStatus();
+                        CustomNPCNames.renameUI.renameBox.UpdateState();
                     }
                 }
             }
