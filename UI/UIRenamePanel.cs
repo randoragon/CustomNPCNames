@@ -104,7 +104,7 @@ namespace CustomNPCNames.UI
                     HasFocus = false;
                     RemoveChild(focusVariant);
                     idleVariant.SetText("Masculine Names", "This tab contains names\nunique for male NPCs.");
-                    idleVariant.Width.Set(200, 0);
+                    idleVariant.Width.Set(idleVariant.Scale * 200, 0);
                     idleVariant.SetColor(new Color(0, 139, 255), new Color(13, 35, 61));
                     if (!HasChild(idleVariant)) { Append(idleVariant); }
                 } else if (UINPCButton.Selection.npcId == 1001)
@@ -113,7 +113,7 @@ namespace CustomNPCNames.UI
                     HasFocus = false;
                     RemoveChild(focusVariant);
                     idleVariant.SetText("Feminine Names", "This tab contains names\nunique for female NPCs.");
-                    idleVariant.Width.Set(200, 0);
+                    idleVariant.Width.Set(idleVariant.Scale * 200, 0);
                     idleVariant.SetColor(new Color(218, 0, 255), new Color(58, 13, 61));
                     if (!HasChild(idleVariant)) { Append(idleVariant); }
                 } else if (UINPCButton.Selection.npcId == 1002)
@@ -122,7 +122,7 @@ namespace CustomNPCNames.UI
                     HasFocus = false;
                     RemoveChild(focusVariant);
                     idleVariant.SetText("Global Names", "This tab contains\nnames for all NPCs.");
-                    idleVariant.Width.Set(200, 0);
+                    idleVariant.Width.Set(idleVariant.Scale * 200, 0);
                     idleVariant.SetColor(new Color(200, 80, 64), new Color(80, 25, 18));
                     if (!HasChild(idleVariant)) { Append(idleVariant); }
                 } else
@@ -144,7 +144,7 @@ namespace CustomNPCNames.UI
                         HasFocus = false;
                         RemoveChild(focusVariant);
                         idleVariant.SetText("NPC Unavailable", "This NPC is not alive\nand cannot be renamed!");
-                        idleVariant.Width.Set(200, 0);
+                        idleVariant.Width.Set(idleVariant.Scale * 200, 0);
                         idleVariant.SetColor(new Color(80, 80, 80), new Color(20, 20, 20));
                         if (!HasChild(idleVariant)) { Append(idleVariant); }
                     }
@@ -156,7 +156,7 @@ namespace CustomNPCNames.UI
                 RemoveChild(focusVariant);
                 idleVariant.SetText("Select NPC", "");
                 idleVariant.SetColor(new Color(169, 169, 69), new Color(50, 50, 20));
-                idleVariant.Width.Set(200, 0);
+                idleVariant.Width.Set(idleVariant.Scale * 200, 0);
                 if (!HasChild(idleVariant)) { Append(idleVariant); }
             }
         }

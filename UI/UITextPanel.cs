@@ -15,6 +15,7 @@ namespace CustomNPCNames.UI
         public string HoverText { get; set; }
         public bool ContainCaption { get; set; }    // whether to adjust the panel's width to match Caption's
         public float Padding { get; set; }          // the horizontal padding used for containCaption
+        public float Scale { get; protected set; }
 
         public UITextPanel(string text = "", string hoverText = "")
         {
@@ -33,8 +34,16 @@ namespace CustomNPCNames.UI
             HoverText = hoverText ?? HoverText;
             if (ContainCaption)
             {
-                Width.Set(Main.fontMouseText.MeasureString(text).X + (2 * Padding), 0);
+                Width.Set(Scale * (Main.fontMouseText.MeasureString(text).X + (2 * Padding)), 0);
             }
+        }
+
+        public virtual void SetScale(float scale)
+        {
+            Width.Set(Width.Pixels / Scale * scale, 0);
+            Height.Set(Height.Pixels / Scale * scale, 0);
+            Caption.SetText(Text, scale, false);
+            Scale = scale;
         }
 
         public virtual void SetColor(Color bg, Color bd)

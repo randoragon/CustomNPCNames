@@ -30,6 +30,12 @@ namespace CustomNPCNames.UI
         private static bool lastShift;   //
         protected static string clipboard;
 
+        public virtual void SetScale(float scale)
+        {
+            focusVariant.SetScale(scale);
+            idleVariant.SetScale(scale);
+        }
+
         public UIEntryPanel(string caption = "")
         {
             CaptionMaxLength = -1;
@@ -46,7 +52,6 @@ namespace CustomNPCNames.UI
             idleVariant.HAlign = 0.5f;
             idleVariant.Top.Set(0, 0);
             idleVariant.Left.Set(0, 0);
-            idleVariant.Width.Set(200, 0);
 
             SetText(caption);
             Append(idleVariant);
@@ -146,7 +151,7 @@ namespace CustomNPCNames.UI
             {
                 DynamicSpriteFont font = Main.fontMouseText;
                 float drawCursor = font.MeasureString(focusVariant.Text.Substring(0, cursorPosition)).X;
-                spriteBatch.DrawString(font, "|", new Vector2(dim.X + 10 + drawCursor, dim.Y + (focusVariant.Height.Pixels / 3.7f)), focusVariant.Caption.TextColor, 0f, Vector2.Zero, 1f, SpriteEffects.None, 0f);
+                spriteBatch.DrawString(font, "|", new Vector2(dim.X + (focusVariant.Scale * (10 + drawCursor)), dim.Y + (focusVariant.Height.Pixels / 3.7f)), focusVariant.Caption.TextColor, 0f, Vector2.Zero, focusVariant.Scale, SpriteEffects.None, 0f);
             }
         }
 

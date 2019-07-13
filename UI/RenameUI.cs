@@ -26,11 +26,9 @@ namespace CustomNPCNames.UI
             menuPanel.Width.Set(menuCoords.Width, 0f);
             menuPanel.Height.Set(menuCoords.Height, 0f);
 
-            // Add buttons on the left side of the menu
+            // Town NPC buttons
             const int NPC_BUTTON_PADDING = 4;
             menuNPCList = new List<UINPCButton>();
-
-            // Town NPC buttons
             for (int i = 0; i < 24; i++)
             {
                 var newButton = GetNPCBossHeadButton(CustomNPCNames.TownNPCs[i]);
@@ -57,7 +55,7 @@ namespace CustomNPCNames.UI
             menuNPCList.Last().Left.Set(8, 0);
             menuPanel.Append(menuNPCList.Last());
 
-            // Add close button in the top right corner of the menu
+            // Close button in the top right corner of the menu
             const int CLOSE_BUTTON_PADDING = 8;
             Texture2D closeButtonTexture = ModContent.GetTexture("CustomNPCNames/UI/close_button");
             closeButton = new UIHoverImageButton(closeButtonTexture, "Close");
@@ -68,7 +66,7 @@ namespace CustomNPCNames.UI
             closeButton.OnClick += new MouseEvent(CloseButtonClicked);
             menuPanel.Append(closeButton);
 
-            // Add rename panel in the top middle part of the menu
+            // Rename panel in the top middle part of the menu
             renameBox = new UIRenamePanel();
             renameBox.OverflowHidden = true;
             renameBox.CaptionMaxLength = 25;
