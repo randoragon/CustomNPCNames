@@ -71,7 +71,6 @@ namespace CustomNPCNames.UI
 
                     if (!str.Equals(focusVariant.Text))
                     {
-                        CustomNPCNames.CustomNames[UINPCButton.Selection.npcId] = str;
                         focusVariant.SetText(str);
                         cursorPosition = str.Length;
                     }
@@ -80,13 +79,14 @@ namespace CustomNPCNames.UI
                     {
                         if (KeyPressed(Keys.Escape))
                         {
-                            CustomNPCNames.CustomNames[UINPCButton.Selection.npcId] = str;
                             focusVariant.SetText(idleVariant.Text);
                             cursorPosition = idleVariant.Text.Length;
+                        } else {
+                            idleVariant.SetText(focusVariant.Text);
                         }
                         HasFocus = false;
                         RemoveChild(focusVariant);
-                        idleVariant.SetText(focusVariant.Text);
+                        NPCs.ModdedNames.currentNames[UINPCButton.Selection.npcId] = idleVariant.Text;
                         Append(idleVariant);
                     }
                 }

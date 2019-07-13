@@ -26,8 +26,7 @@ namespace CustomNPCNames.UI
         protected int cursorPosition;
         protected int cursorClock;
         private static char lastKey;     //
-        private static int  lastKeyTime; // these four variables are used for printing a character multiple times if its key is being held down long enough
-        private static bool keySpam;     //
+        private static int  lastKeyTime; // these three variables are used for printing a character multiple times if its key is being held down long enough
         private static bool lastShift;   //
         protected static string clipboard;
 

@@ -5,13 +5,13 @@ using CustomNPCNames.UI;
 using Terraria.UI;
 using Terraria;
 using Microsoft.Xna.Framework;
+using System;
 
 namespace CustomNPCNames
 {
     class CustomNPCNames : Mod
     {
-        public static Dictionary<short, string> CustomNames = new Dictionary<short, string>();
-
+        
         public static readonly short[] TownNPCs = {
             NPCID.Guide,         NPCID.Merchant,        NPCID.Nurse,
             NPCID.Demolitionist, NPCID.DyeTrader,       NPCID.Dryad,
@@ -26,18 +26,9 @@ namespace CustomNPCNames
         public static RenameUI renameUI;
         private static UserInterface renameInterface;
 
-        public CustomNPCNames()
-        {
-            CustomNames.Clear();
-            foreach (short i in TownNPCs) {
-                CustomNames.Add(i, "CustomName");
-            }
-        }
-        
         public override void Load()
         {
             RenameMenuHotkey = RegisterHotKey("Toggle Menu", "K");
-
             // this makes sure that the UI doesn't get opened on the server
             // the server can't see UI, can it? it's just a command prompt
             if (!Main.dedServ)
