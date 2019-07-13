@@ -15,7 +15,8 @@ namespace CustomNPCNames.UI
         {
             NO_SELECTION,       // when you first open the UI and no NPC is selected
             UNAVAILABLE,        // when you select an NPC that isn't present in the world
-            ACTIVE              // when a valid, living NPC is selected. Unlocks renaming functionality.
+            ACTIVE,             // when a valid, living NPC is selected. Unlocks renaming functionality.
+            NOT_NPC             // when a non-npc button is selected (male, female, global)
         }
 
         public UIRenamePanel() : base()
@@ -53,12 +54,7 @@ namespace CustomNPCNames.UI
                 // in case the NPC gets killed while we're viewing/editing its name
                 if (NPC.GetFirstNPCNameOrNull(UINPCButton.Selection.npcId) == null)
                 {
-                    state = State.UNAVAILABLE;
-                    RemoveChild(focusVariant);
-                    idleVariant.SetText("NPC Unavailable", "This NPC is not alive\nand cannot be renamed!");
-                    idleVariant.SetColor(new Color(80, 80, 80), new Color(20, 20, 20));
-                    idleVariant.Width.Set(200, 0);
-                    Append(idleVariant);
+                    UpdateState();
                 }
 
                 if (HasFocus)
@@ -101,26 +97,57 @@ namespace CustomNPCNames.UI
         {
             if (UINPCButton.Selection != null)
             {
-                string topNameBoxDisplay = NPC.GetFirstNPCNameOrNull(UINPCButton.Selection.npcId);
-
-                if (topNameBoxDisplay != null)
+                // Check for Male-Female conventional IDs
+                if (UINPCButton.Selection.npcId == 1000)
                 {
-                    state = State.ACTIVE;
+                    state = State.NOT_NPC;
                     HasFocus = false;
                     RemoveChild(focusVariant);
-                    SetText(topNameBoxDisplay);
-                    SetIdleHoverText("Edit");
-                    idleVariant.SetColor(new Color(80, 190, 150), new Color(20, 50, 40));
+                    idleVariant.SetText("Masculine Names", "This tab contains names\nunique for male NPCs.");
+                    idleVariant.Width.Set(200, 0);
+                    idleVariant.SetColor(new Color(0, 139, 255), new Color(13, 35, 61));
+                    if (!HasChild(idleVariant)) { Append(idleVariant); }
+                } else if (UINPCButton.Selection.npcId == 1001)
+                {
+                    state = State.NOT_NPC;
+                    HasFocus = false;
+                    RemoveChild(focusVariant);
+                    idleVariant.SetText("Feminine Names", "This tab contains names\nunique for female NPCs.");
+                    idleVariant.Width.Set(200, 0);
+                    idleVariant.SetColor(new Color(218, 0, 255), new Color(58, 13, 61));
+                    if (!HasChild(idleVariant)) { Append(idleVariant); }
+                } else if (UINPCButton.Selection.npcId == 1002)
+                {
+                    state = State.NOT_NPC;
+                    HasFocus = false;
+                    RemoveChild(focusVariant);
+                    idleVariant.SetText("Global Names", "This tab contains\nnames for all NPCs.");
+                    idleVariant.Width.Set(200, 0);
+                    idleVariant.SetColor(new Color(200, 80, 64), new Color(80, 25, 18));
                     if (!HasChild(idleVariant)) { Append(idleVariant); }
                 } else
                 {
-                    state = State.UNAVAILABLE;
-                    HasFocus = false;
-                    RemoveChild(focusVariant);
-                    idleVariant.SetText("NPC Unavailable", "This NPC is not alive\nand cannot be renamed!");
-                    idleVariant.Width.Set(200, 0);
-                    idleVariant.SetColor(new Color(80, 80, 80), new Color(20, 20, 20));
-                    if (!HasChild(idleVariant)) { Append(idleVariant); }
+                    string topNameBoxDisplay = NPC.GetFirstNPCNameOrNull(UINPCButton.Selection.npcId);
+
+                    if (topNameBoxDisplay != null)
+                    {
+                        state = State.ACTIVE;
+                        HasFocus = false;
+                        RemoveChild(focusVariant);
+                        SetText(topNameBoxDisplay);
+                        SetIdleHoverText("Edit");
+                        idleVariant.SetColor(new Color(80, 190, 150), new Color(20, 50, 40));
+                        if (!HasChild(idleVariant)) { Append(idleVariant); }
+                    } else
+                    {
+                        state = State.UNAVAILABLE;
+                        HasFocus = false;
+                        RemoveChild(focusVariant);
+                        idleVariant.SetText("NPC Unavailable", "This NPC is not alive\nand cannot be renamed!");
+                        idleVariant.Width.Set(200, 0);
+                        idleVariant.SetColor(new Color(80, 80, 80), new Color(20, 20, 20));
+                        if (!HasChild(idleVariant)) { Append(idleVariant); }
+                    }
                 }
             } else
             {

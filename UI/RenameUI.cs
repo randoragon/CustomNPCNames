@@ -4,6 +4,7 @@ using Terraria;
 using Terraria.ID;
 using Terraria.UI;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace CustomNPCNames.UI
 {
@@ -19,23 +20,44 @@ namespace CustomNPCNames.UI
         {
             menuPanel = new DragableUIPanel();
             menuPanel.SetPadding(0);
-            Rectangle menuCoords = new Rectangle(400, 100, 560, 520);
+            Rectangle menuCoords = new Rectangle(400, 100, 560, 596);
             menuPanel.Left.Set(menuCoords.X, 0f);
             menuPanel.Top.Set(menuCoords.Y, 0f);
             menuPanel.Width.Set(menuCoords.Width, 0f);
             menuPanel.Height.Set(menuCoords.Height, 0f);
 
+            // Add buttons on the left side of the menu
+            const int NPC_BUTTON_PADDING = 4;
             menuNPCList = new List<UINPCButton>();
+
+            // Town NPC buttons
             for (int i = 0; i < 24; i++)
             {
                 var newButton = GetNPCBossHeadButton(CustomNPCNames.TownNPCs[i]);
-                newButton.Top.Set(60 + ((i % 12) * 38), 0);
-                newButton.Left.Set(8 + (i > 11 ? 38 : 0), 0);
+                newButton.Top.Set(60 + ((i % 12) * (34 + NPC_BUTTON_PADDING)), 0);
+                newButton.Left.Set(8 + (i > 11 ? (34 + NPC_BUTTON_PADDING) : 0), 0);
 
                 menuNPCList.Add(newButton);
                 menuPanel.Append(menuNPCList[i]);
             }
 
+            // Male-Female buttons
+            menuNPCList.Add(new UINPCButton(ModContent.GetTexture("CustomNPCNames/UI/MaleIcon"),   "Male",   1000)); // NPCID 1000 is conventionally assigned to male
+            menuNPCList.Last().Top.Set(60 + (12 * (34 + NPC_BUTTON_PADDING)), 0);
+            menuNPCList.Last().Left.Set(8, 0);
+            menuPanel.Append(menuNPCList.Last());
+            menuNPCList.Add(new UINPCButton(ModContent.GetTexture("CustomNPCNames/UI/FemaleIcon"), "Female", 1001)); // NPCID 1001 is conventionally assigned to female
+            menuNPCList.Last().Top.Set(60 + (12 * (34 + NPC_BUTTON_PADDING)), 0);
+            menuNPCList.Last().Left.Set(8 + (34 + NPC_BUTTON_PADDING), 0);
+            menuPanel.Append(menuNPCList.Last());
+
+            // Global button
+            menuNPCList.Add(new UINPCButton(ModContent.GetTexture("CustomNPCNames/UI/GlobalIcon"), "Global", 1002, true)); // NPCID 1002 is conventionally assigned to global
+            menuNPCList.Last().Top.Set(60 + (13 * (34 + NPC_BUTTON_PADDING)), 0);
+            menuNPCList.Last().Left.Set(8, 0);
+            menuPanel.Append(menuNPCList.Last());
+
+            // Add close button in the top right corner of the menu
             const int CLOSE_BUTTON_PADDING = 8;
             Texture2D closeButtonTexture = ModContent.GetTexture("CustomNPCNames/UI/close_button");
             closeButton = new UIHoverImageButton(closeButtonTexture, "Close");
@@ -46,6 +68,7 @@ namespace CustomNPCNames.UI
             closeButton.OnClick += new MouseEvent(CloseButtonClicked);
             menuPanel.Append(closeButton);
 
+            // Add rename panel in the top middle part of the menu
             renameBox = new UIRenamePanel();
             renameBox.OverflowHidden = true;
             renameBox.CaptionMaxLength = 25;
