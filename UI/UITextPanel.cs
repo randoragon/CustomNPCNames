@@ -19,12 +19,16 @@ namespace CustomNPCNames.UI
 
         public UITextPanel(string text = "", string hoverText = "")
         {
+            OverflowHidden = true;
+            Scale = 1f;
             Height.Set(40, 0);
             Caption = new UIText(text);
+            AdjustWidth();
             Caption.HAlign = 0.5f;
             Caption.VAlign = 0.5f;
             Append(Caption);
             HoverText = hoverText;
+            SetPadding(3f);
             Padding = 12;
         }
 
@@ -34,8 +38,13 @@ namespace CustomNPCNames.UI
             HoverText = hoverText ?? HoverText;
             if (ContainCaption)
             {
-                Width.Set(Scale * (Main.fontMouseText.MeasureString(text).X + (2 * Padding)), 0);
+                AdjustWidth();
             }
+        }
+
+        protected virtual void AdjustWidth()
+        {
+            Width.Set(Scale * (Main.fontMouseText.MeasureString(Text).X + (2 * Padding)), 0);
         }
 
         public virtual void SetScale(float scale)

@@ -34,15 +34,17 @@ namespace CustomNPCNames.UI
             Rectangle dim = InterfaceHelper.GetFullRectangle(idleVariant);
             bool hover = curMouse.X > dim.X && curMouse.X < dim.X + dim.Width && curMouse.Y > dim.Y && curMouse.Y < dim.Y + dim.Height;
 
-            if (hover && MouseButtonPressed() && state == State.ACTIVE && !HasFocus)
+            if (hover && MouseButtonPressed(this) && state == State.ACTIVE && !HasFocus)
             {
                 HasFocus = true;
                 RemoveChild(idleVariant);
                 Append(focusVariant);
                 cursorClock = 0;
-            } else if (!hover && MouseButtonPressed() && HasFocus)
+            } else if (!hover && MouseButtonPressed(this) && HasFocus)
             {
                 HasFocus = false;
+                idleVariant.SetText(focusVariant.Text);
+                NPCs.ModdedNames.currentNames[UINPCButton.Selection.npcId] = idleVariant.Text;
                 RemoveChild(focusVariant);
                 Append(idleVariant);
             }

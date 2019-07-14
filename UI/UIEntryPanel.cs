@@ -21,25 +21,31 @@ namespace CustomNPCNames.UI
         }
         public bool HasFocus { get; set; }
         public int CaptionMaxLength { get; set; }  // trims exceeding characters, default -1 for infinity
-        protected static MouseState curMouse;
-        protected static MouseState oldMouse;
+        protected MouseState curMouse;
+        protected MouseState oldMouse;
         protected int cursorPosition;
         protected int cursorClock;
         private static char lastKey;     //
         private static int  lastKeyTime; // these three variables are used for printing a character multiple times if its key is being held down long enough
         private static bool lastShift;   //
         protected static string clipboard;
+        public float Scale { get; protected set; }
 
         public virtual void SetScale(float scale)
         {
+            Width.Set(Width.Pixels / Scale * scale, 0);
+            Height.Set(Height.Pixels / Scale * scale, 0);
+            Scale = scale;
             focusVariant.SetScale(scale);
             idleVariant.SetScale(scale);
         }
 
         public UIEntryPanel(string caption = "")
         {
+            Scale = 1f;
+            Height.Set(40, 0);
             CaptionMaxLength = -1;
-
+            
             focusVariant = new UITextPanel();
             focusVariant.ContainCaption = true;
             focusVariant.HAlign = 0.5f;
@@ -63,6 +69,12 @@ namespace CustomNPCNames.UI
             if (!HasFocus) { idleVariant.SetText(text); }
             focusVariant.SetText(text);
             cursorPosition = text.Length;
+            AdjustWidth();
+        }
+
+        protected virtual void AdjustWidth()
+        {
+            Width.Set((HasFocus ? focusVariant.Width.Pixels : idleVariant.Width.Pixels), 0);
         }
 
         public virtual void SetFocusHoverText(string hoverText)
@@ -95,15 +107,16 @@ namespace CustomNPCNames.UI
             Rectangle dim = InterfaceHelper.GetFullRectangle(idleVariant);
             bool hover = curMouse.X > dim.X && curMouse.X < dim.X + dim.Width && curMouse.Y > dim.Y && curMouse.Y < dim.Y + dim.Height;
 
-            if (MouseButtonPressed() && hover  && !HasFocus)
+            if (MouseButtonPressed(this) && hover && !HasFocus)
             {
                 HasFocus = true;
                 RemoveChild(idleVariant);
                 Append(focusVariant);
                 cursorClock = 0;
-            } else if (MouseButtonPressed() && !hover && HasFocus)
+            } else if (MouseButtonPressed(this) && !hover && HasFocus)
             {
                 HasFocus = false;
+                idleVariant.SetText(focusVariant.Text);
                 RemoveChild(focusVariant);
                 Append(idleVariant);
             }
@@ -138,6 +151,7 @@ namespace CustomNPCNames.UI
                     idleVariant.SetText(focusVariant.Text);
                     Append(idleVariant);
                 }
+                AdjustWidth();
             }
         }
 
@@ -151,7 +165,7 @@ namespace CustomNPCNames.UI
             {
                 DynamicSpriteFont font = Main.fontMouseText;
                 float drawCursor = font.MeasureString(focusVariant.Text.Substring(0, cursorPosition)).X;
-                spriteBatch.DrawString(font, "|", new Vector2(dim.X + (focusVariant.Scale * (10 + drawCursor)), dim.Y + (focusVariant.Height.Pixels / 3.7f)), focusVariant.Caption.TextColor, 0f, Vector2.Zero, focusVariant.Scale, SpriteEffects.None, 0f);
+                spriteBatch.DrawString(font, "|", new Vector2(dim.X + (Scale * (10 + drawCursor)), dim.Y + (focusVariant.Height.Pixels / 3.7f)), focusVariant.Caption.TextColor, 0f, Vector2.Zero, focusVariant.Scale, SpriteEffects.None, 0f);
             }
         }
 
@@ -341,9 +355,9 @@ namespace CustomNPCNames.UI
             return Main.keyState.IsKeyDown(key);
         }
 
-        protected static bool MouseButtonPressed()
+        protected static bool MouseButtonPressed(UIEntryPanel self)
         {
-            return curMouse.LeftButton == ButtonState.Pressed && oldMouse.LeftButton == ButtonState.Released;
+            return self.curMouse.LeftButton == ButtonState.Pressed && self.oldMouse.LeftButton == ButtonState.Released;
         }
 
         public static Keys CharToKeys(char chr)

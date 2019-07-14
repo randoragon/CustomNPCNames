@@ -35,7 +35,18 @@ namespace CustomNPCNames.UI
             Selection = this;
             SetImage(wide ? ModContent.GetTexture("CustomNPCNames/UI/UINPCButtonWide_Selected") : ModContent.GetTexture("CustomNPCNames/UI/UINPCButton_Selected"));
             SetVisibility(1f, 1f);
-            CustomNPCNames.renameUI.renameBox.UpdateState();
+            CustomNPCNames.renameUI.renamePanel.UpdateState();
+            CustomNPCNames.renameUI.panelList.Clear();
+            if (CustomWorld.CustomNames[Selection.npcId] != null)
+            {
+                foreach (var i in CustomWorld.CustomNames[Selection.npcId])
+                {
+                    var entry = new UIEntryPanel(i);
+                    entry.SetScale(0.85f);
+                    entry.HAlign = 0f;
+                    CustomNPCNames.renameUI.panelList.Add(entry);
+                }
+            }
         }
 
         public override void Update(GameTime gameTime)

@@ -5,6 +5,7 @@ using Terraria.ID;
 using Terraria.UI;
 using System.Collections.Generic;
 using System.Linq;
+using Terraria.GameContent.UI.Elements;
 
 namespace CustomNPCNames.UI
 {
@@ -13,7 +14,8 @@ namespace CustomNPCNames.UI
         private DragableUIPanel menuPanel;      // main window, parent for all the other UI objects
         private List<UINPCButton> menuNPCList;  // the left scrollable panel with NPC heads
         public UIHoverImageButton closeButton;
-        public UIRenamePanel renameBox;          // the name bar on top of the entire menu, next to the close button
+        public UIRenamePanel renamePanel;       // the name bar on top of the entire menu, next to the close button
+        public UIList panelList;                // the big list of names for each category
         public static bool Visible = false;
 
         public override void OnInitialize()
@@ -67,15 +69,24 @@ namespace CustomNPCNames.UI
             menuPanel.Append(closeButton);
 
             // Rename panel in the top middle part of the menu
-            renameBox = new UIRenamePanel();
-            renameBox.OverflowHidden = true;
-            renameBox.CaptionMaxLength = 25;
-            renameBox.Top.Set(8, 0);
-            renameBox.HAlign = 0.5f;
-            renameBox.Left.Set(-14, 0);
-            renameBox.Height.Set(40, 0);
-            renameBox.Width.Set(menuCoords.Width - 8 - 22 - 8, 0); // 4px padding from both sides, thus the additional -8
-            menuPanel.Append(renameBox);
+            renamePanel = new UIRenamePanel();
+            renamePanel.OverflowHidden = true;
+            renamePanel.CaptionMaxLength = 25;
+            renamePanel.Top.Set(8, 0);
+            renamePanel.HAlign = 0.5f;
+            renamePanel.Left.Set(-14, 0);
+            renamePanel.Height.Set(40, 0);
+            renamePanel.Width.Set(menuCoords.Width - 8 - 22 - 8, 0); // 4px padding from both sides, thus the additional -8
+            menuPanel.Append(renamePanel);
+
+            // Custom names list
+            panelList = new UIList();
+            panelList.ListPadding = 2f;
+            panelList.Top.Set(99, 0);
+            panelList.Left.Set(88, 0);
+            panelList.Height.Set(500, 0);
+            panelList.Width.Set(400, 0);
+            menuPanel.Append(panelList);
 
             Append(menuPanel);
         }
