@@ -30,14 +30,16 @@ namespace CustomNPCNames.UI
         private static bool lastShift;   //
         protected static string clipboard;
         public float Scale { get; protected set; }
-
-        public virtual void SetScale(float scale)
+        protected bool containCaption;
+        public bool ContainCaption
         {
-            Width.Set(Width.Pixels / Scale * scale, 0);
-            Height.Set(Height.Pixels / Scale * scale, 0);
-            Scale = scale;
-            focusVariant.SetScale(scale);
-            idleVariant.SetScale(scale);
+            get { return containCaption; }
+            set
+            {
+                containCaption = value;
+                idleVariant.ContainCaption = value;
+                focusVariant.ContainCaption = value;
+            }
         }
 
         public UIEntryPanel(string caption = "")
@@ -47,18 +49,17 @@ namespace CustomNPCNames.UI
             CaptionMaxLength = -1;
             
             focusVariant = new UITextPanel();
-            focusVariant.ContainCaption = true;
             focusVariant.HAlign = 0.5f;
             focusVariant.Top.Set(0, 0);
             focusVariant.Left.Set(0, 0);
             focusVariant.SetColor(new Color(170, 90, 80), new Color(30, 15, 10));
 
             idleVariant = new UITextPanel();
-            idleVariant.ContainCaption = true;
             idleVariant.HAlign = 0.5f;
             idleVariant.Top.Set(0, 0);
             idleVariant.Left.Set(0, 0);
 
+            ContainCaption = true;
             SetText(caption);
             Append(idleVariant);
         }
@@ -72,9 +73,28 @@ namespace CustomNPCNames.UI
             AdjustWidth();
         }
 
+        public virtual void SetScale(float scale)
+        {
+            Width.Set(Width.Pixels / Scale * scale, 0);
+            Height.Set(Height.Pixels / Scale * scale, 0);
+            Scale = scale;
+            focusVariant.SetScale(scale);
+            idleVariant.SetScale(scale);
+        }
+
+        /// <summary>
+        /// Use this method instead of Width.Set()
+        /// </summary>
+        public virtual void SetWidth(float pixels, float percent)
+        {
+            Width.Set(pixels, percent);
+            focusVariant.Width.Set(pixels, percent);
+            idleVariant.Width.Set(pixels, percent);
+        }
+
         protected virtual void AdjustWidth()
         {
-            Width.Set((HasFocus ? focusVariant.Width.Pixels : idleVariant.Width.Pixels), 0);
+            SetWidth((HasFocus ? focusVariant.Width.Pixels : idleVariant.Width.Pixels), 0);
         }
 
         public virtual void SetFocusHoverText(string hoverText)
@@ -116,7 +136,7 @@ namespace CustomNPCNames.UI
             } else if (MouseButtonPressed(this) && !hover && HasFocus)
             {
                 HasFocus = false;
-                idleVariant.SetText(focusVariant.Text);
+                SetText(focusVariant.Text);
                 RemoveChild(focusVariant);
                 Append(idleVariant);
             }
@@ -136,19 +156,22 @@ namespace CustomNPCNames.UI
 
                 if (!str.Equals(focusVariant.Text))
                 {
-                    focusVariant.SetText(str);
+                    SetText(str);
                     cursorPosition = str.Length;
                 }
 
                 if (KeyPressed(Keys.Enter) || KeyPressed(Keys.Escape))
                 {
                     if (KeyPressed(Keys.Escape)) {
-                        focusVariant.SetText(idleVariant.Text);
+                        SetText(idleVariant.Text);
+                        HasFocus = false;
                         cursorPosition = idleVariant.Text.Length;
+                    } else
+                    {
+                        HasFocus = false;
+                        SetText(focusVariant.Text);
                     }
-                    HasFocus = false;
                     RemoveChild(focusVariant);
-                    idleVariant.SetText(focusVariant.Text);
                     Append(idleVariant);
                 }
                 AdjustWidth();
@@ -165,7 +188,7 @@ namespace CustomNPCNames.UI
             {
                 DynamicSpriteFont font = Main.fontMouseText;
                 float drawCursor = font.MeasureString(focusVariant.Text.Substring(0, cursorPosition)).X;
-                spriteBatch.DrawString(font, "|", new Vector2(dim.X + (Scale * (10 + drawCursor)), dim.Y + (focusVariant.Height.Pixels / 3.7f)), focusVariant.Caption.TextColor, 0f, Vector2.Zero, focusVariant.Scale, SpriteEffects.None, 0f);
+                spriteBatch.DrawString(font, "|", new Vector2(dim.X + (Scale * (10 +drawCursor)), dim.Y + (focusVariant.Height.Pixels / 3.7f)), focusVariant.Caption.TextColor, 0f, Vector2.Zero, focusVariant.Scale, SpriteEffects.None, 0f);
             }
         }
 

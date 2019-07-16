@@ -16,6 +16,11 @@ namespace CustomNPCNames.UI
         public bool ContainCaption { get; set; }    // whether to adjust the panel's width to match Caption's
         public float Padding { get; set; }          // the horizontal padding used for containCaption
         public float Scale { get; protected set; }
+        public float TextHAlign
+        {
+            get { return Caption.HAlign; }
+            set { Caption.HAlign = value; }
+        }
 
         public UITextPanel(string text = "", string hoverText = "")
         {
@@ -30,6 +35,7 @@ namespace CustomNPCNames.UI
             HoverText = hoverText;
             SetPadding(3f);
             Padding = 12;
+            ContainCaption = true;
         }
 
         public virtual void SetText(string text, string hoverText = null)

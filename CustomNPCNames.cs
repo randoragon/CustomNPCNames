@@ -85,4 +85,35 @@ namespace CustomNPCNames
             renameInterface = null;
         }
     }
+
+    /// <summary>
+    /// Makes it possible to store a string by mutable object reference
+    /// </summary>
+    public class StringWrapper
+    {
+        public string str;
+
+        public StringWrapper(ref string str)
+        { this.str = str; }
+
+        public static explicit operator string(StringWrapper wr)
+        { return wr.str; }
+
+        public static implicit operator StringWrapper(string str)
+        { return new StringWrapper(ref str); }
+
+        public override string ToString()
+        { return str; }
+
+        public static List<StringWrapper> ConvertList(IList<string> list)
+        {
+            var ret = new List<StringWrapper>();
+            foreach (string s in list)
+            {
+                ret.Add(s);
+            }
+
+            return ret;
+        }
+    }
 }

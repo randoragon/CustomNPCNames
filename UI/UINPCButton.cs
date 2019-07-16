@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using Terraria.GameContent.UI.Elements;
 using Microsoft.Xna.Framework;
+using Terraria;
 
 namespace CustomNPCNames.UI
 {
@@ -37,13 +38,15 @@ namespace CustomNPCNames.UI
             SetVisibility(1f, 1f);
             CustomNPCNames.renameUI.renamePanel.UpdateState();
             CustomNPCNames.renameUI.panelList.Clear();
-            if (CustomWorld.CustomNames[Selection.npcId] != null)
+            if (CustomWorld.CustomNames[Selection.npcId] != null && CustomWorld.CustomNames[Selection.npcId].Count > 0)
             {
                 foreach (var i in CustomWorld.CustomNames[Selection.npcId])
                 {
-                    var entry = new UIEntryPanel(i);
+                    var entry = new UINameField(i);
+                    entry.ContainCaption = false;
                     entry.SetScale(0.85f);
-                    entry.HAlign = 0f;
+                    entry.SetWidth((0.85f * Main.fontMouseText.MeasureString("_________________________").X) + 18, 0);
+                    entry.CaptionMaxLength = 25;
                     CustomNPCNames.renameUI.panelList.Add(entry);
                 }
             }

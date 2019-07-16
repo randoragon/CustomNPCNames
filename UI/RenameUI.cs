@@ -16,6 +16,7 @@ namespace CustomNPCNames.UI
         public UIHoverImageButton closeButton;
         public UIRenamePanel renamePanel;       // the name bar on top of the entire menu, next to the close button
         public UIList panelList;                // the big list of names for each category
+        public UIScrollbar panelListScrollbar;  // panelList's scrollbar
         public static bool Visible = false;
 
         public override void OnInitialize()
@@ -85,7 +86,9 @@ namespace CustomNPCNames.UI
             panelList.Top.Set(99, 0);
             panelList.Left.Set(88, 0);
             panelList.Height.Set(500, 0);
-            panelList.Width.Set(400, 0);
+            panelList.Width.Set(460, 0);
+            panelListScrollbar = new UIScrollbar();
+            panelList.SetScrollbar(panelListScrollbar);
             menuPanel.Append(panelList);
 
             Append(menuPanel);
