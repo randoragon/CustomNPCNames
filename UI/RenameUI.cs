@@ -17,13 +17,14 @@ namespace CustomNPCNames.UI
         public UIRenamePanel renamePanel;       // the name bar on top of the entire menu, next to the close button
         public UIList panelList;                // the big list of names for each category
         public UIScrollbar panelListScrollbar;  // panelList's scrollbar
+        public UIPanel namesPanel;              // container within menuPanel for panelList and its buttons
         public static bool Visible = false;
 
         public override void OnInitialize()
         {
             menuPanel = new DragableUIPanel();
             menuPanel.SetPadding(0);
-            Rectangle menuCoords = new Rectangle(400, 100, 560, 596);
+            Rectangle menuCoords = new Rectangle(400, 100, 570, 596);
             menuPanel.Left.Set(menuCoords.X, 0f);
             menuPanel.Top.Set(menuCoords.Y, 0f);
             menuPanel.Width.Set(menuCoords.Width, 0f);
@@ -80,16 +81,26 @@ namespace CustomNPCNames.UI
             renamePanel.Width.Set(menuCoords.Width - 8 - 22 - 8, 0); // 4px padding from both sides, thus the additional -8
             menuPanel.Append(renamePanel);
 
+            // Custom names panel
+            namesPanel = new UIPanel();
+            namesPanel.OverflowHidden = true;
+            namesPanel.SetPadding(3f);
+            namesPanel.Left.Set(86, 0);
+            namesPanel.Top.Set(60, 0);
+            namesPanel.Width.Set(476, 0);
+            namesPanel.Height.Set(528, 0);
+            menuPanel.Append(namesPanel);
+
             // Custom names list
             panelList = new UIList();
             panelList.ListPadding = 2f;
-            panelList.Top.Set(99, 0);
-            panelList.Left.Set(88, 0);
+            panelList.Top.Set(33, 0);
+            panelList.Left.Set(4, 0);
             panelList.Height.Set(500, 0);
             panelList.Width.Set(460, 0);
             panelListScrollbar = new UIScrollbar();
             panelList.SetScrollbar(panelListScrollbar);
-            menuPanel.Append(panelList);
+            namesPanel.Append(panelList);
 
             Append(menuPanel);
         }
