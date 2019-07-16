@@ -18,6 +18,10 @@ namespace CustomNPCNames.UI
         public UIList panelList;                // the big list of names for each category
         public UIScrollbar panelListScrollbar;  // panelList's scrollbar
         public UIPanel namesPanel;              // container within menuPanel for panelList and its buttons
+        public UIHoverImageButton addButton;
+        public UIHoverImageButton removeButton;
+        public UIHoverImageButton clearButton;
+        public UIHoverImageButton randomizeButton;
         public static bool Visible = false;
 
         public override void OnInitialize()
@@ -89,18 +93,45 @@ namespace CustomNPCNames.UI
             namesPanel.Top.Set(60, 0);
             namesPanel.Width.Set(476, 0);
             namesPanel.Height.Set(528, 0);
-            menuPanel.Append(namesPanel);
 
             // Custom names list
             panelList = new UIList();
             panelList.ListPadding = 2f;
-            panelList.Top.Set(33, 0);
+            panelList.Top.Set(36, 0);
             panelList.Left.Set(4, 0);
             panelList.Height.Set(500, 0);
             panelList.Width.Set(460, 0);
             panelListScrollbar = new UIScrollbar();
             panelList.SetScrollbar(panelListScrollbar);
             namesPanel.Append(panelList);
+
+            // Add, remove, clear, randomize buttons
+            addButton = new UIHoverImageButton(ModContent.GetTexture("CustomNPCNames/UI/add_button"), "Add Name");
+            addButton.Top.Set(2, 0);
+            addButton.Left.Set(4, 0);
+            addButton.Width.Set(120, 0);
+            addButton.Height.Set(30, 0);
+            namesPanel.Append(addButton);
+            removeButton = new UIHoverImageButton(ModContent.GetTexture("CustomNPCNames/UI/remove_button"), "Remove Name");
+            removeButton.Top.Set(2, 0);
+            removeButton.Left.Set(126, 0);
+            removeButton.Width.Set(60, 0);
+            removeButton.Height.Set(30, 0);
+            namesPanel.Append(removeButton);
+            clearButton = new UIHoverImageButton(ModContent.GetTexture("CustomNPCNames/UI/clear_button"), "Clear All");
+            clearButton.Top.Set(2, 0);
+            clearButton.Left.Set(188, 0);
+            clearButton.Width.Set(30, 0);
+            clearButton.Height.Set(30, 0);
+            namesPanel.Append(clearButton);
+            removeButton = new UIHoverImageButton(ModContent.GetTexture("CustomNPCNames/UI/randomize_button"), "Randomize\nCurrent Name");
+            removeButton.Top.Set(2, 0);
+            removeButton.Left.Set(476 - 4 - 60 - 6, 0);
+            removeButton.Width.Set(60, 0);
+            removeButton.Height.Set(30, 0);
+            namesPanel.Append(removeButton);
+
+            menuPanel.Append(namesPanel);
 
             Append(menuPanel);
         }
