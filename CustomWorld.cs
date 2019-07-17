@@ -27,8 +27,6 @@ namespace CustomNPCNames
             CustomNames.Add(1002, new List<StringWrapper>()); // 
         }
 
-        
-
         public override TagCompound Save()
         {
             base.Save();

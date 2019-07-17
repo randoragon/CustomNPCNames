@@ -1,0 +1,63 @@
+﻿using Terraria;
+using Terraria.UI;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
+
+namespace CustomNPCNames.UI
+{
+    /// <summary>
+    /// Customized class for the unique names checkbox at the bottom of the menu.
+    /// </summary>
+    class UIToggleUniqueButton : UITextPanel
+    {
+        protected bool State
+        {
+            set
+            {
+                CustomNPCNames.tryUnique = value;
+                if (value)
+                {
+                    BorderColor = new Color(0, 40, 0);
+                    BackgroundColor = new Color(0, 150, 0);
+                    SetText("UNIQUE NAMES: ON");
+                } else
+                {
+                    BorderColor = new Color(40, 0, 0);
+                    BackgroundColor = new Color(150, 0, 0);
+                    SetText("UNIQUE NAMES: OFF");
+                }
+                
+            }
+        }
+
+        protected MouseState curMouse;
+        protected MouseState oldMouse;
+
+        public UIToggleUniqueButton() : base("")
+        {
+            HoverText = "Toggle";
+            State = true;
+        }
+
+        public override void Update(GameTime gameTime)
+        {
+            base.Update(gameTime);
+
+            oldMouse = curMouse;
+            curMouse = Mouse.GetState();
+
+            Rectangle dim = InterfaceHelper.GetFullRectangle(this);
+            bool hover = curMouse.X > dim.X && curMouse.X < dim.X + dim.Width && curMouse.Y > dim.Y && curMouse.Y < dim.Y + dim.Height;
+
+            if (MouseButtonPressed(this) && hover)
+            {
+                State = !CustomNPCNames.tryUnique;
+            }
+        }
+
+        protected static bool MouseButtonPressed(UIToggleUniqueButton self)
+        {
+            return self.curMouse.LeftButton == ButtonState.Pressed && self.oldMouse.LeftButton == ButtonState.Released;
+        }
+    }
+}

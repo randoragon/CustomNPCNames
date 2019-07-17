@@ -22,17 +22,49 @@ namespace CustomNPCNames
             NPCID.Truffle,       NPCID.Pirate,          NPCID.Steampunker,
             NPCID.Cyborg,        NPCID.SantaClaus,      NPCID.TravellingMerchant
         };
+        public static readonly Dictionary<short, Vector2> npcHeadOffset = new Dictionary<short, Vector2>() {
+            { NPCID.Guide,              new Vector2(0, 0) },
+            { NPCID.Merchant,           new Vector2(3, 3) },
+            { NPCID.Nurse,              new Vector2(0, 0) },
+            { NPCID.Demolitionist,      new Vector2(0, 0) },
+            { NPCID.DyeTrader,          new Vector2(0, 0) },
+            { NPCID.Dryad,              new Vector2(0, 0) },
+            { NPCID.DD2Bartender,       new Vector2(-2, 0)},
+            { NPCID.ArmsDealer,         new Vector2(0, 0) },
+            { NPCID.Stylist,            new Vector2(0, -1)},
+            { NPCID.Painter,            new Vector2(-2, 0)},
+            { NPCID.Angler,             new Vector2(0, 0) },
+            { NPCID.GoblinTinkerer,     new Vector2(-2, 0)},
+            { NPCID.WitchDoctor,        new Vector2(0, 0) },
+            { NPCID.Clothier,           new Vector2(-1, 0)},
+            { NPCID.Mechanic,           new Vector2(0, 0) },
+            { NPCID.PartyGirl,          new Vector2(-1, 0)},
+            { NPCID.Wizard,             new Vector2(0, 0) },
+            { NPCID.TaxCollector,       new Vector2(0, 0) },
+            { NPCID.Truffle,            new Vector2(0, 0) },
+            { NPCID.Pirate,             new Vector2(0, 0) },
+            { NPCID.Steampunker,        new Vector2(0, 0) },
+            { NPCID.Cyborg,             new Vector2(0, 0) },
+            { NPCID.SantaClaus,         new Vector2(0, 0) },
+            { NPCID.TravellingMerchant, new Vector2(2, -3)},
+            { 1000,                     new Vector2(0, 0) }, // male
+            { 1001,                     new Vector2(0, 0) }, // female
+            { 1002,                     new Vector2(0, 0) }  // global
+        };
         public static ModHotKey RenameMenuHotkey;
         public static RenameUI renameUI;
         private static UserInterface renameInterface;
+        public static byte mode;
+        public static bool tryUnique;
 
         public override void Load()
         {
             RenameMenuHotkey = RegisterHotKey("Toggle Menu", "K");
-            // this makes sure that the UI doesn't get opened on the server
-            // the server can't see UI, can it? it's just a command prompt
+            // this makes sure that the UI doesn't get opened on the server console
             if (!Main.dedServ)
             {
+                mode = 0;
+                tryUnique = true;
                 renameUI = new RenameUI();
                 renameUI.Initialize();
                 renameInterface = new UserInterface();
@@ -43,7 +75,7 @@ namespace CustomNPCNames
         public override void UpdateUI(GameTime gameTime)
         {
             // it will only draw if the player is not on the main menu
-            if (!Main.gameMenu && RenameUI.Visible)
+            if (!Main.gameMenu && renameUI.Visible)
             {
                 renameInterface.Update(gameTime);
             }
@@ -57,7 +89,7 @@ namespace CustomNPCNames
                 layers.Insert(mouseTextIndex, new LegacyGameInterfaceLayer(
                     "CustomNPCMod: Menu UI",
                     delegate {
-                        if (RenameUI.Visible)
+                        if (renameUI.Visible)
                         {
                             renameInterface.Draw(Main.spriteBatch, new GameTime());
                         }
@@ -71,7 +103,7 @@ namespace CustomNPCNames
         private bool DrawRenameMenuUI()
         {
             // it will only draw if the player is not on the main menu
-            if (!Main.gameMenu && RenameUI.Visible)
+            if (!Main.gameMenu && renameUI.Visible)
             {
                 renameInterface.Draw(Main.spriteBatch, new GameTime());
             }
@@ -83,6 +115,63 @@ namespace CustomNPCNames
             RenameMenuHotkey = null;
             renameUI = null;
             renameInterface = null;
+        }
+
+        public static string GetNPCName(short id)
+        {
+            switch (id)
+            {
+                case NPCID.Guide:
+                    return "Guide";
+                case NPCID.Merchant:
+                    return "Merchant";
+                case NPCID.Nurse:
+                    return "Nurse";
+                case NPCID.Demolitionist:
+                    return "Demolitionist";
+                case NPCID.Dryad:
+                    return "Dryad";
+                case NPCID.ArmsDealer:
+                    return "Arms Dealer";
+                case NPCID.Clothier:
+                    return "Clothier";
+                case NPCID.Mechanic:
+                    return "Mechanic";
+                case NPCID.GoblinTinkerer:
+                    return "Goblin Tinkerer";
+                case NPCID.Wizard:
+                    return "Wizard";
+                case NPCID.SantaClaus:
+                    return "Santa Claus";
+                case NPCID.Truffle:
+                    return "Truffle";
+                case NPCID.Steampunker:
+                    return "Steampunker";
+                case NPCID.DyeTrader:
+                    return "Dye Trader";
+                case NPCID.PartyGirl:
+                    return "Party Girl";
+                case NPCID.Cyborg:
+                    return "Cyborg";
+                case NPCID.Painter:
+                    return "Painter";
+                case NPCID.WitchDoctor:
+                    return "Witch Doctor";
+                case NPCID.Pirate:
+                    return "Pirate";
+                case NPCID.Stylist:
+                    return "Stylist";
+                case NPCID.TravellingMerchant:
+                    return "Travelling Merchant";
+                case NPCID.Angler:
+                    return "Angler";
+                case NPCID.TaxCollector:
+                    return "Tax Collector";
+                case NPCID.DD2Bartender:
+                    return "Tavernkeep";
+                default:
+                    return null;
+            }
         }
     }
 

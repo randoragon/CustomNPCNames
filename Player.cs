@@ -18,8 +18,8 @@ namespace CustomNPCNames
 
                 if (CustomNPCNames.RenameMenuHotkey.JustPressed)
                 {
-                    RenameUI.Visible = !RenameUI.Visible;
-                    if (RenameUI.Visible)
+                    CustomNPCNames.renameUI.Visible = !CustomNPCNames.renameUI.Visible;
+                    if (CustomNPCNames.renameUI.Visible)
                     {
                         CustomNPCNames.renameUI.renamePanel.UpdateState();
                     }

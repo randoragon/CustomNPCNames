@@ -22,8 +22,8 @@ namespace CustomNPCNames.UI
             SetPadding(1f);
 
             NpcHead = new UIImage(texture);
-            NpcHead.Left.Set((34 - NpcHead.Width.GetValue(34) + (wide ? 34 : 0)) / 2, 0);
-            NpcHead.Top.Set((34 - NpcHead.Height.GetValue(34)) / 2, 0);
+            NpcHead.Left.Set(((34 - NpcHead.Width.Pixels + (wide ? 34 : 0)) / 2) + CustomNPCNames.npcHeadOffset[id].X, 0);
+            NpcHead.Top.Set(((34 - NpcHead.Height.Pixels) / 2) + CustomNPCNames.npcHeadOffset[id].Y, 0);
             NpcHead.Width.Set(32, 0);
             NpcHead.Height.Set(32, 0);
 
@@ -36,6 +36,44 @@ namespace CustomNPCNames.UI
             Selection = this;
             SetImage(wide ? ModContent.GetTexture("CustomNPCNames/UI/UINPCButtonWide_Selected") : ModContent.GetTexture("CustomNPCNames/UI/UINPCButton_Selected"));
             SetVisibility(1f, 1f);
+
+            if (npcId != 1000 && npcId != 1001 && npcId != 1002)
+            {
+                CustomNPCNames.renameUI.namesPanel.RemoveChild(CustomNPCNames.renameUI.switchGenderButtonInactive);
+                CustomNPCNames.renameUI.namesPanel.Append(CustomNPCNames.renameUI.switchGenderButton);
+                CustomNPCNames.renameUI.namesPanel.Append(CustomNPCNames.renameUI.randomizeButton);
+                CustomNPCNames.renameUI.npcPreview.UpdateNPC(npcId);
+                CustomNPCNames.renameUI.namesPanel.Append(CustomNPCNames.renameUI.npcPreview);
+                if (NPC.GetFirstNPCNameOrNull(npcId) != null)
+                {
+                    CustomNPCNames.renameUI.namesPanel.RemoveChild(CustomNPCNames.renameUI.randomizeButtonInactive);
+                    CustomNPCNames.renameUI.namesPanel.Append(CustomNPCNames.renameUI.randomizeButton);
+                } else
+                {
+                    CustomNPCNames.renameUI.namesPanel.RemoveChild(CustomNPCNames.renameUI.randomizeButton);
+                    CustomNPCNames.renameUI.randomizeButtonInactive.HoverText = "This NPC is not alive\nand cannot be renamed!";
+                    CustomNPCNames.renameUI.namesPanel.Append(CustomNPCNames.renameUI.randomizeButtonInactive);
+                }
+            } else
+            {
+                CustomNPCNames.renameUI.namesPanel.RemoveChild(CustomNPCNames.renameUI.switchGenderButton);
+                CustomNPCNames.renameUI.namesPanel.RemoveChild(CustomNPCNames.renameUI.randomizeButton);
+                CustomNPCNames.renameUI.namesPanel.Append(CustomNPCNames.renameUI.switchGenderButtonInactive);
+                CustomNPCNames.renameUI.randomizeButtonInactive.HoverText = "No NPC Selected";
+                CustomNPCNames.renameUI.namesPanel.Append(CustomNPCNames.renameUI.randomizeButtonInactive);
+                CustomNPCNames.renameUI.namesPanel.RemoveChild(CustomNPCNames.renameUI.npcPreview);
+            }
+
+            if (!CustomNPCNames.renameUI.namesPanel.HasChild(CustomNPCNames.renameUI.addButton))
+            {
+                CustomNPCNames.renameUI.namesPanel.RemoveChild(CustomNPCNames.renameUI.addButtonInactive);
+                CustomNPCNames.renameUI.namesPanel.RemoveChild(CustomNPCNames.renameUI.removeButtonInactive);
+                CustomNPCNames.renameUI.namesPanel.RemoveChild(CustomNPCNames.renameUI.clearButtonInactive);
+                CustomNPCNames.renameUI.namesPanel.Append(CustomNPCNames.renameUI.addButton);
+                CustomNPCNames.renameUI.namesPanel.Append(CustomNPCNames.renameUI.removeButton);
+                CustomNPCNames.renameUI.namesPanel.Append(CustomNPCNames.renameUI.clearButton);
+            }
+            
             CustomNPCNames.renameUI.renamePanel.UpdateState();
             CustomNPCNames.renameUI.panelList.Clear();
             if (CustomWorld.CustomNames[Selection.npcId] != null && CustomWorld.CustomNames[Selection.npcId].Count > 0)
