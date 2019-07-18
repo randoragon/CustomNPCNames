@@ -6,19 +6,20 @@ using Terraria.UI;
 using System.Collections.Generic;
 using System.Linq;
 using Terraria.GameContent.UI.Elements;
+using Microsoft.Xna.Framework.Input;
 
 namespace CustomNPCNames.UI
 {
     internal class RenameUI : UIState
     {
         private DragableUIPanel menuPanel;      // main window, parent for all the other UI objects
-        private List<UINPCButton> menuNPCList;  // the left scrollable panel with NPC heads
+        private List<UINPCButton> menuNPCList;  // the left stripe with NPC heads
         public UIHoverImageButton closeButton;
         public UIHoverImageButton helpButton;
         public UIRenamePanel renamePanel;       // the name bar on top of the entire menu, next to the close button
-        public UIList panelList;                // the big list of names for each category
+        public UINameList panelList;            // the big list of names for each category
         public UIScrollbar panelListScrollbar;  // panelList's scrollbar
-        public UIPanel namesPanel;              // container within menuPanel for panelList and its buttons
+        public UIPanelDragableChild namesPanel; // container within menuPanel for panelList and its buttons
         public UIHoverImageButton addButton;
         public UIHoverImage addButtonInactive;
         public UIHoverImageButton removeButton;
@@ -32,7 +33,12 @@ namespace CustomNPCNames.UI
         public UINPCPreview npcPreview;
         public UIModeCycleButton modeCycleButton;
         public UIToggleUniqueButton uniqueNameButton;
+        public bool removeMode = false;
+        public UIImage trashIcon;
         public bool Visible = false;
+        public bool IsNPCSelected { get { return UINPCButton.Selection != null; } }
+        public short SelectedNPC { get { return UINPCButton.Selection.npcId; } }    // always check IsNPCSelected before calling this
+        
 
         public override void OnInitialize()
         {
@@ -105,7 +111,7 @@ namespace CustomNPCNames.UI
             menuPanel.Append(renamePanel);
 
             // Custom names panel
-            namesPanel = new UIPanel();
+            namesPanel = new UIPanelDragableChild();
             namesPanel.OverflowHidden = true;
             namesPanel.SetPadding(3f);
             namesPanel.Left.Set(86, 0);
@@ -114,14 +120,16 @@ namespace CustomNPCNames.UI
             namesPanel.Height.Set(490, 0);
 
             // Custom names list
-            panelList = new UIList();
+            panelList = new UINameList();
             panelList.ListPadding = 2f;
             panelList.Top.Set(36, 0);
             panelList.Left.Set(4, 0);
-            panelList.Height.Set(500, 0);
+            panelList.Height.Set(449, 0);
             panelList.Width.Set(460, 0);
+            panelList.OverflowHidden = true;
             panelListScrollbar = new UIScrollbar();
             panelList.SetScrollbar(panelListScrollbar);
+            panelList.Append(panelListScrollbar);
             namesPanel.Append(panelList);
 
             // Add, remove, clear, switch gender, randomize buttons
@@ -149,7 +157,7 @@ namespace CustomNPCNames.UI
             removeButtonInactive.Width.Set(60, 0);
             removeButtonInactive.Height.Set(30, 0);
             namesPanel.Append(removeButtonInactive);
-            clearButton = new UIHoverImageButton(ModContent.GetTexture("CustomNPCNames/UI/clear_button"), "Clear All");
+            clearButton = new UIHoverImageButton(ModContent.GetTexture("CustomNPCNames/UI/clear_button"), "Clear All (hold Alt)");
             clearButton.Top.Set(2, 0);
             clearButton.Left.Set(188, 0);
             clearButton.Width.Set(30, 0);
@@ -209,9 +217,9 @@ namespace CustomNPCNames.UI
             uniqueNameButton.SetScale(0.85f);
             menuPanel.Append(uniqueNameButton);
 
-            
-
             Append(menuPanel);
+
+            trashIcon = new UIImage(ModContent.GetTexture("CustomNPCNames/UI/trash_icon"));
         }
 
         private void CloseButtonClicked(UIMouseEvent evt, UIElement listeningElement)
@@ -250,19 +258,58 @@ namespace CustomNPCNames.UI
             Main.NewText(" ");
             Main.NewText("  For each method you can toggle the UNIQUE NAMES box. If enabled,");
             Main.NewText("  the mod will attempt to pick names not picked before, HOWEVER names may repeat");
-            Main.NewText("  if there's not enough unique names to pick from. The more, the better.");
+            Main.NewText("  if there's not enough unique entries to pick from. The more, the better.");
             Main.NewText(" ");
             Main.NewText("(open the chat and use arrow keys to read)", new Color(0, 255, 0));
         }
 
         private void AddButtonClicked(UIMouseEvent evt, UIElement listeningElement)
-        { }
+        {
+            SetRemoveMode(false);
+
+            string newName = "";
+            var newWrapper = new StringWrapper(ref newName);
+
+            CustomWorld.CustomNames[UINPCButton.Selection.npcId].Add(newWrapper);
+            var field = new UINameField(newWrapper, (uint)panelList.Count);
+            field.IsNew = true;
+            panelList.Add(field);
+            DeselectAllEntries();
+            field.HasFocus = true;
+            field.Select();
+        }
 
         private void RemoveButtonClicked(UIMouseEvent evt, UIElement listeningElement)
-        { }
+        {
+            SetRemoveMode(!removeMode);
+        }
+
+        public void SetRemoveMode(bool active)
+        {
+            removeMode = active;
+
+            if (!active) {
+                DeselectAllEntries();
+                RemoveChild(trashIcon);
+                removeButton.SetVisibility(1f, 0.5f);
+                removeButton.HoverText = "Remove Name";
+            } else {
+                Append(trashIcon);
+                removeButton.SetVisibility(1f, 1f);
+                removeButton.HoverText = "";
+            }
+        }
 
         private void ClearButtonClicked(UIMouseEvent evt, UIElement listeningElement)
-        { }
+        {
+            KeyboardState key = Keyboard.GetState();
+            if (key.IsKeyDown(Keys.LeftAlt) || key.IsKeyDown(Keys.RightAlt)) {
+                foreach (UINameField i in panelList._items) {
+                    CustomWorld.CustomNames[UINPCButton.Selection.npcId].Remove(i.NameWrapper);
+                    panelList.RemoveName(i);
+                }
+            }
+        }
 
         private void SwitchGenderButtonClicked(UIMouseEvent evt, UIElement listeningElement)
         {
@@ -271,7 +318,91 @@ namespace CustomNPCNames.UI
         }
 
         private void RandomizeButtonClicked(UIMouseEvent evt, UIElement listeningElement)
-        { }
+        {
+            NPCs.CustomNPC.RandomizeName(UINPCButton.Selection.npcId);
+        }
+
+        public void DeselectAllEntries()
+        {
+            CustomNPCNames.renameUI.panelList.DeselectAll();
+            renamePanel.Deselect();
+        }
+
+        public override void Update(GameTime gameTime)
+        {
+            base.Update(gameTime);
+
+            UpdateUIStates();
+
+            if (removeMode) {
+                var mouse = Mouse.GetState();
+                trashIcon.Left.Set(mouse.X + 15, 0);
+                trashIcon.Top.Set(mouse.Y + 15, 0);
+            }
+        }
+
+        public override void Draw(SpriteBatch spriteBatch)
+        {
+            base.Draw(spriteBatch);
+        }
+
+        public void UpdateUIStates()
+        {
+            if (IsNPCSelected) {
+                short id = SelectedNPC;
+                bool noNames = (id != 1000 && id != 1001 && id != 1002)
+                           && ((CustomNPCNames.mode == 1 && CustomWorld.CustomNames[id].Count == 0)
+                            || (CustomNPCNames.mode == 2 && CustomWorld.CustomNames[(short)(NPCs.CustomNPC.isMale[id] ? 1000 : 1001)].Count == 0)
+                            || (CustomNPCNames.mode == 3 && CustomWorld.CustomNames[1002].Count == 0));
+
+                namesPanel.RemoveChild(addButtonInactive);
+                namesPanel.Append(addButton);
+                namesPanel.RemoveChild(removeButtonInactive);
+                namesPanel.Append(removeButton);
+                namesPanel.RemoveChild(clearButtonInactive);
+                namesPanel.Append(clearButton);
+
+                if (id == 1000 || id == 1001 || id == 1002) {
+                    namesPanel.RemoveChild(npcPreview);
+                    namesPanel.RemoveChild(switchGenderButton);
+                    namesPanel.Append(switchGenderButtonInactive);
+                    namesPanel.RemoveChild(randomizeButton);
+                    namesPanel.Append(randomizeButtonInactive);
+                    randomizeButtonInactive.HoverText = "No NPC Selected";
+                } else {
+                    npcPreview.UpdateNPC(id);
+                    namesPanel.Append(npcPreview);
+                    namesPanel.RemoveChild(switchGenderButtonInactive);
+                    namesPanel.Append(switchGenderButton);
+
+                    if (NPC.CountNPCS(id) == 0) {
+                        namesPanel.RemoveChild(randomizeButton);
+                        namesPanel.Append(randomizeButtonInactive);
+                        randomizeButtonInactive.HoverText = "This NPC is not alive\nand cannot be renamed!";
+                    } else {
+                        if (noNames) {
+                            namesPanel.RemoveChild(randomizeButton);
+                            namesPanel.Append(randomizeButtonInactive);
+                            randomizeButtonInactive.HoverText = "There are no names\non the list to choose from!";
+                        } else {
+                            namesPanel.RemoveChild(randomizeButtonInactive);
+                            namesPanel.Append(randomizeButton);
+                        }
+                    }
+                }
+            } else {
+                namesPanel.RemoveChild(addButton);
+                namesPanel.Append(addButtonInactive);
+                namesPanel.RemoveChild(removeButton);
+                namesPanel.Append(removeButtonInactive);
+                namesPanel.RemoveChild(clearButton);
+                namesPanel.Append(clearButtonInactive);
+
+                namesPanel.RemoveChild(randomizeButton);
+                namesPanel.Append(randomizeButtonInactive);
+                randomizeButtonInactive.HoverText = "No NPC Selected";
+            }
+        }
 
         public static Texture2D GetNPCHeadTexture(short id)
         {

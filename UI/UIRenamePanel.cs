@@ -8,7 +8,7 @@ namespace CustomNPCNames.UI
     /// <summary>
     /// This ugly class modifies and extends UIEntryPanel's functionality to specifically be the top rename panel on RenameUI menu.
     /// </summary>
-    class UIRenamePanel : UIEntryPanel
+    class UIRenamePanel : UIEntryPanel, IDragableUIPanelChild
     {
         protected State state { get; set; }
         protected enum State : byte
@@ -17,6 +17,15 @@ namespace CustomNPCNames.UI
             UNAVAILABLE,        // when you select an NPC that isn't present in the world
             ACTIVE,             // when a valid, living NPC is selected. Unlocks renaming functionality.
             NOT_NPC             // when a non-npc button is selected (male, female, global)
+        }
+        bool IDragableUIPanelChild.Hover
+        {
+            get
+            {
+                MouseState mouse = Mouse.GetState();
+                Rectangle pos = InterfaceHelper.GetFullRectangle(this);
+                return (mouse.X >= pos.X && mouse.X <= pos.X + pos.Width && mouse.Y >= pos.Y && mouse.Y <= pos.Y + pos.Height);
+            }
         }
 
         public UIRenamePanel() : base()
@@ -56,11 +65,7 @@ namespace CustomNPCNames.UI
                 cursorClock = 0;
             } else if (!hover && MouseButtonPressed(this) && HasFocus)
             {
-                HasFocus = false;
-                idleVariant.SetText(focusVariant.Text);
-                NPCs.CustomNPC.currentNames[UINPCButton.Selection.npcId] = idleVariant.Text;
-                RemoveChild(focusVariant);
-                Append(idleVariant);
+                Deselect();
             }
 
             if (HasFocus || (state == State.ACTIVE && !HasFocus))
@@ -109,6 +114,18 @@ namespace CustomNPCNames.UI
                     }
                 }
             }
+        }
+
+        public override void Deselect(bool save = true)
+        {
+            HasFocus = false;
+            if (save)
+            {
+                idleVariant.SetText(focusVariant.Text);
+                NPCs.CustomNPC.currentNames[UINPCButton.Selection.npcId] = idleVariant.Text;
+            }
+            RemoveChild(focusVariant);
+            Append(idleVariant);
         }
 
         public void UpdateState()

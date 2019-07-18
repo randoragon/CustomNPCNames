@@ -2,16 +2,27 @@
 using Microsoft.Xna.Framework.Graphics;
 using Terraria.GameContent.UI.Elements;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
 using Terraria;
 
 namespace CustomNPCNames.UI
 {
-    class UINPCButton : UIHoverImageButton
+    class UINPCButton : UIHoverImageButton, IDragableUIPanelChild
     {
         public UIImage NpcHead { get; private set; }
-        public static UINPCButton Selection { get; private set; }
+        public static UINPCButton Selection { get; protected set; }
         public readonly short npcId;
         public readonly bool wide;
+
+        bool IDragableUIPanelChild.Hover
+        {
+            get
+            {
+                MouseState mouse = Mouse.GetState();
+                Rectangle pos = InterfaceHelper.GetFullRectangle(this);
+                return (mouse.X >= pos.X && mouse.X <= pos.X + pos.Width && mouse.Y >= pos.Y && mouse.Y <= pos.Y + pos.Height);
+            }
+        }
 
         public UINPCButton(Texture2D texture, string hoverText, short id, bool wide = false) : base(wide ? ModContent.GetTexture("CustomNPCNames/UI/UINPCButtonWide") : ModContent.GetTexture("CustomNPCNames/UI/UINPCButton"), hoverText)
         {
@@ -30,6 +41,11 @@ namespace CustomNPCNames.UI
             Append(NpcHead);
         }
 
+        public static void Deselect()
+        {
+            Selection = null;
+        }
+
         public override void Click(UIMouseEvent evt)
         {
             base.Click(evt);
@@ -37,55 +53,13 @@ namespace CustomNPCNames.UI
             SetImage(wide ? ModContent.GetTexture("CustomNPCNames/UI/UINPCButtonWide_Selected") : ModContent.GetTexture("CustomNPCNames/UI/UINPCButton_Selected"));
             SetVisibility(1f, 1f);
 
-            if (npcId != 1000 && npcId != 1001 && npcId != 1002)
-            {
-                CustomNPCNames.renameUI.namesPanel.RemoveChild(CustomNPCNames.renameUI.switchGenderButtonInactive);
-                CustomNPCNames.renameUI.namesPanel.Append(CustomNPCNames.renameUI.switchGenderButton);
-                CustomNPCNames.renameUI.namesPanel.Append(CustomNPCNames.renameUI.randomizeButton);
-                CustomNPCNames.renameUI.npcPreview.UpdateNPC(npcId);
-                CustomNPCNames.renameUI.namesPanel.Append(CustomNPCNames.renameUI.npcPreview);
-                if (NPC.GetFirstNPCNameOrNull(npcId) != null)
-                {
-                    CustomNPCNames.renameUI.namesPanel.RemoveChild(CustomNPCNames.renameUI.randomizeButtonInactive);
-                    CustomNPCNames.renameUI.namesPanel.Append(CustomNPCNames.renameUI.randomizeButton);
-                } else
-                {
-                    CustomNPCNames.renameUI.namesPanel.RemoveChild(CustomNPCNames.renameUI.randomizeButton);
-                    CustomNPCNames.renameUI.randomizeButtonInactive.HoverText = "This NPC is not alive\nand cannot be renamed!";
-                    CustomNPCNames.renameUI.namesPanel.Append(CustomNPCNames.renameUI.randomizeButtonInactive);
-                }
-            } else
-            {
-                CustomNPCNames.renameUI.namesPanel.RemoveChild(CustomNPCNames.renameUI.switchGenderButton);
-                CustomNPCNames.renameUI.namesPanel.RemoveChild(CustomNPCNames.renameUI.randomizeButton);
-                CustomNPCNames.renameUI.namesPanel.Append(CustomNPCNames.renameUI.switchGenderButtonInactive);
-                CustomNPCNames.renameUI.randomizeButtonInactive.HoverText = "No NPC Selected";
-                CustomNPCNames.renameUI.namesPanel.Append(CustomNPCNames.renameUI.randomizeButtonInactive);
-                CustomNPCNames.renameUI.namesPanel.RemoveChild(CustomNPCNames.renameUI.npcPreview);
-            }
-
-            if (!CustomNPCNames.renameUI.namesPanel.HasChild(CustomNPCNames.renameUI.addButton))
-            {
-                CustomNPCNames.renameUI.namesPanel.RemoveChild(CustomNPCNames.renameUI.addButtonInactive);
-                CustomNPCNames.renameUI.namesPanel.RemoveChild(CustomNPCNames.renameUI.removeButtonInactive);
-                CustomNPCNames.renameUI.namesPanel.RemoveChild(CustomNPCNames.renameUI.clearButtonInactive);
-                CustomNPCNames.renameUI.namesPanel.Append(CustomNPCNames.renameUI.addButton);
-                CustomNPCNames.renameUI.namesPanel.Append(CustomNPCNames.renameUI.removeButton);
-                CustomNPCNames.renameUI.namesPanel.Append(CustomNPCNames.renameUI.clearButton);
-            }
-            
             CustomNPCNames.renameUI.renamePanel.UpdateState();
             CustomNPCNames.renameUI.panelList.Clear();
             if (CustomWorld.CustomNames[Selection.npcId] != null && CustomWorld.CustomNames[Selection.npcId].Count > 0)
             {
-                foreach (var i in CustomWorld.CustomNames[Selection.npcId])
+                for (uint i = (uint)CustomWorld.CustomNames[Selection.npcId].Count; i-- > 0;)
                 {
-                    var entry = new UINameField(i);
-                    entry.ContainCaption = false;
-                    entry.SetScale(0.85f);
-                    entry.SetWidth((0.85f * Main.fontMouseText.MeasureString("_________________________").X) + 18, 0);
-                    entry.CaptionMaxLength = 25;
-                    CustomNPCNames.renameUI.panelList.Add(entry);
+                    CustomNPCNames.renameUI.panelList.Add(new UINameField(CustomWorld.CustomNames[Selection.npcId][(int)i], i));
                 }
             }
         }

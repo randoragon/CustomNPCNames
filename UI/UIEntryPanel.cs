@@ -129,16 +129,10 @@ namespace CustomNPCNames.UI
 
             if (MouseButtonPressed(this) && hover && !HasFocus)
             {
-                HasFocus = true;
-                RemoveChild(idleVariant);
-                Append(focusVariant);
-                cursorClock = 0;
+                Select();
             } else if (MouseButtonPressed(this) && !hover && HasFocus)
             {
-                HasFocus = false;
-                SetText(focusVariant.Text);
-                RemoveChild(focusVariant);
-                Append(idleVariant);
+                Deselect();
             }
 
             Main.blockInput = false;
@@ -176,6 +170,22 @@ namespace CustomNPCNames.UI
                 }
                 AdjustWidth();
             }
+        }
+
+        public virtual void Select()
+        {
+            HasFocus = true;
+            RemoveChild(idleVariant);
+            Append(focusVariant);
+            cursorClock = 0;
+        }
+
+        public virtual void Deselect(bool save = true)
+        {
+            HasFocus = false;
+            if (save) { idleVariant.SetText(focusVariant.Text); }
+            RemoveChild(focusVariant);
+            Append(idleVariant);
         }
 
         protected override void DrawChildren(SpriteBatch spriteBatch)

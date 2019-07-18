@@ -8,7 +8,7 @@ namespace CustomNPCNames.UI
     /// <summary>
     /// Customized class for the cycle text button at the bottom of the menu.
     /// </summary>
-    class UIModeCycleButton : UITextPanel
+    class UIModeCycleButton : UITextPanel, IDragableUIPanelChild
     {
         protected byte State
         {
@@ -22,6 +22,15 @@ namespace CustomNPCNames.UI
                     case 2: SetText("USING: GENDER NAMES"); break;
                     case 3: SetText("USING: GLOBAL NAMES"); break;
                 }
+            }
+        }
+        bool IDragableUIPanelChild.Hover
+        {
+            get
+            {
+                MouseState mouse = Mouse.GetState();
+                Rectangle pos = InterfaceHelper.GetFullRectangle(this);
+                return (mouse.X >= pos.X && mouse.X <= pos.X + pos.Width && mouse.Y >= pos.Y && mouse.Y <= pos.Y + pos.Height);
             }
         }
 
@@ -46,15 +55,23 @@ namespace CustomNPCNames.UI
             Rectangle dim = InterfaceHelper.GetFullRectangle(this);
             bool hover = curMouse.X > dim.X && curMouse.X < dim.X + dim.Width && curMouse.Y > dim.Y && curMouse.Y < dim.Y + dim.Height;
 
-            if (MouseButtonPressed(this) && hover)
-            {
-                State = (byte)(++CustomNPCNames.mode % 4);
+            if (hover) {
+                if (MouseButtonPressed(this)) {
+                    State = (byte)(++CustomNPCNames.mode % 4);
+                } else if (MouseRButtonPressed(this)) {
+                    State = (byte)(--CustomNPCNames.mode % 4);
+                }
             }
         }
 
         protected static bool MouseButtonPressed(UIModeCycleButton self)
         {
             return self.curMouse.LeftButton == ButtonState.Pressed && self.oldMouse.LeftButton == ButtonState.Released;
+        }
+
+        protected static bool MouseRButtonPressed(UIModeCycleButton self)
+        {
+            return self.curMouse.RightButton == ButtonState.Pressed && self.oldMouse.RightButton == ButtonState.Released;
         }
     }
 }

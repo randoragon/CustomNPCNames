@@ -8,28 +8,33 @@ namespace CustomNPCNames.UI
     /// <summary>
     /// Customized class for the unique names checkbox at the bottom of the menu.
     /// </summary>
-    class UIToggleUniqueButton : UITextPanel
+    class UIToggleUniqueButton : UITextPanel, IDragableUIPanelChild
     {
         protected bool State
         {
             set
             {
                 CustomNPCNames.tryUnique = value;
-                if (value)
-                {
+                if (value) {
                     BorderColor = new Color(0, 40, 0);
                     BackgroundColor = new Color(0, 150, 0);
                     SetText("UNIQUE NAMES: ON");
-                } else
-                {
+                } else {
                     BorderColor = new Color(40, 0, 0);
                     BackgroundColor = new Color(150, 0, 0);
                     SetText("UNIQUE NAMES: OFF");
                 }
-                
             }
         }
-
+        bool IDragableUIPanelChild.Hover
+        {
+            get
+            {
+                MouseState mouse = Mouse.GetState();
+                Rectangle pos = InterfaceHelper.GetFullRectangle(this);
+                return (mouse.X >= pos.X && mouse.X <= pos.X + pos.Width && mouse.Y >= pos.Y && mouse.Y <= pos.Y + pos.Height);
+            }
+        }
         protected MouseState curMouse;
         protected MouseState oldMouse;
 
