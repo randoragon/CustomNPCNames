@@ -124,10 +124,13 @@ namespace CustomNPCNames.UI
             panelList.ListPadding = 2f;
             panelList.Top.Set(36, 0);
             panelList.Left.Set(4, 0);
+            panelList.Width.Set(476, 0);
             panelList.Height.Set(449, 0);
-            panelList.Width.Set(460, 0);
             panelList.OverflowHidden = true;
             panelListScrollbar = new UIScrollbar();
+            panelListScrollbar.Top.Set(6, 0);
+            panelListScrollbar.Left.Set(445, 0);
+            panelListScrollbar.Height.Set(433, 0);
             panelList.SetScrollbar(panelListScrollbar);
             panelList.Append(panelListScrollbar);
             namesPanel.Append(panelList);
