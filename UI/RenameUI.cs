@@ -36,8 +36,8 @@ namespace CustomNPCNames.UI
         public bool removeMode = false;
         public UIImage trashIcon;
         public bool Visible = false;
-        public bool IsNPCSelected { get { return UINPCButton.Selection != null; } }
-        public short SelectedNPC { get { return UINPCButton.Selection.npcId; } }    // always check IsNPCSelected before calling this
+        public static bool IsNPCSelected { get { return UINPCButton.Selection != null; } }
+        public static short SelectedNPC { get { return UINPCButton.Selection.npcId; } }    // always check IsNPCSelected before calling this
         
 
         public override void OnInitialize()
@@ -244,16 +244,16 @@ namespace CustomNPCNames.UI
             Main.NewText("3. NPC name randomization methods", new Color(50, 125, 190));
             Main.NewText("  On the middle bottom of the menu you'll find a text box where you can pick");
             Main.NewText("  from 4 methods of randomizing names of newly spawned NPCs:");
-            Main.NewText("  A) USE VANILLA NAMES", new Color(255, 255, 120));
+            Main.NewText("  A) USING: VANILLA NAMES", new Color(255, 255, 120));
             Main.NewText("    This method will ignore the modded name lists and use default vanilla names.");
             Main.NewText("    You will still be able to change individual names manually.");
-            Main.NewText("  B) USE CUSTOM NAMES", new Color(255, 255, 120));
+            Main.NewText("  B) USING: CUSTOM NAMES", new Color(255, 255, 120));
             Main.NewText("    This method will use each of the NPC lists' names adequately to the NPC");
             Main.NewText("    that's being spawned. Male, Female and Global lists will be ignored.");
-            Main.NewText("  C) USE GENDER NAMES", new Color(255, 255, 120));
+            Main.NewText("  C) USING: GENDER NAMES", new Color(255, 255, 120));
             Main.NewText("    This method will use Male and Female lists in choosing the name of an NPC.");
             Main.NewText("    An NPC's gender can be changed by selecting them and pressing Switch Gender.");
-            Main.NewText("  D) USE GLOBAL NAMES", new Color(255, 255, 120));
+            Main.NewText("  D) USING: GLOBAL NAMES", new Color(255, 255, 120));
             Main.NewText("    This method will use the Global list only. ");
             Main.NewText(" ");
             Main.NewText("  For each method you can toggle the UNIQUE NAMES box. If enabled,");
@@ -270,7 +270,7 @@ namespace CustomNPCNames.UI
             string newName = "";
             var newWrapper = new StringWrapper(ref newName);
 
-            CustomWorld.CustomNames[UINPCButton.Selection.npcId].Add(newWrapper);
+            CustomWorld.CustomNames[SelectedNPC].Add(newWrapper);
             var field = new UINameField(newWrapper, (uint)panelList.Count);
             field.IsNew = true;
             panelList.Add(field);
@@ -305,7 +305,7 @@ namespace CustomNPCNames.UI
             KeyboardState key = Keyboard.GetState();
             if (key.IsKeyDown(Keys.LeftAlt) || key.IsKeyDown(Keys.RightAlt)) {
                 foreach (UINameField i in panelList._items) {
-                    CustomWorld.CustomNames[UINPCButton.Selection.npcId].Remove(i.NameWrapper);
+                    CustomWorld.CustomNames[SelectedNPC].Remove(i.NameWrapper);
                     panelList.RemoveName(i);
                 }
             }
@@ -313,13 +313,13 @@ namespace CustomNPCNames.UI
 
         private void SwitchGenderButtonClicked(UIMouseEvent evt, UIElement listeningElement)
         {
-            NPCs.CustomNPC.isMale[UINPCButton.Selection.npcId] = !NPCs.CustomNPC.isMale[UINPCButton.Selection.npcId];
-            npcPreview.UpdateNPC(UINPCButton.Selection.npcId);
+            NPCs.CustomNPC.isMale[SelectedNPC] = !NPCs.CustomNPC.isMale[SelectedNPC];
+            npcPreview.UpdateNPC(SelectedNPC);
         }
 
         private void RandomizeButtonClicked(UIMouseEvent evt, UIElement listeningElement)
         {
-            NPCs.CustomNPC.RandomizeName(UINPCButton.Selection.npcId);
+            NPCs.CustomNPC.RandomizeName(SelectedNPC);
         }
 
         public void DeselectAllEntries()
@@ -351,9 +351,9 @@ namespace CustomNPCNames.UI
             if (IsNPCSelected) {
                 short id = SelectedNPC;
                 bool noNames = (id != 1000 && id != 1001 && id != 1002)
-                           && ((CustomNPCNames.mode == 1 && CustomWorld.CustomNames[id].Count == 0)
-                            || (CustomNPCNames.mode == 2 && CustomWorld.CustomNames[(short)(NPCs.CustomNPC.isMale[id] ? 1000 : 1001)].Count == 0)
-                            || (CustomNPCNames.mode == 3 && CustomWorld.CustomNames[1002].Count == 0));
+                           && ((CustomWorld.mode == 1 && CustomWorld.CustomNames[id].Count == 0)
+                            || (CustomWorld.mode == 2 && CustomWorld.CustomNames[(short)(NPCs.CustomNPC.isMale[id] ? 1000 : 1001)].Count == 0)
+                            || (CustomWorld.mode == 3 && CustomWorld.CustomNames[1002].Count == 0));
 
                 namesPanel.RemoveChild(addButtonInactive);
                 namesPanel.Append(addButton);
@@ -366,9 +366,70 @@ namespace CustomNPCNames.UI
                     namesPanel.RemoveChild(npcPreview);
                     namesPanel.RemoveChild(switchGenderButton);
                     namesPanel.Append(switchGenderButtonInactive);
-                    namesPanel.RemoveChild(randomizeButton);
-                    namesPanel.Append(randomizeButtonInactive);
-                    randomizeButtonInactive.HoverText = "No NPC Selected";
+                    if (id == 1000) {
+                        if ((CustomWorld.CustomNames[1000].Count == 0)) {
+                            namesPanel.RemoveChild(randomizeButton);
+                            namesPanel.Append(randomizeButtonInactive);
+                            randomizeButtonInactive.HoverText = "There are no names\non the list to choose from!";
+                        } else {
+                            bool noMaleNPCs = true;
+                            foreach (short i in CustomNPCNames.TownNPCs) {
+                                if (NPCs.CustomNPC.isMale[i] && NPC.CountNPCS(i) != 0) { noMaleNPCs = false; break; }
+                            }
+
+                            if (noMaleNPCs) {
+                                namesPanel.RemoveChild(randomizeButton);
+                                namesPanel.Append(randomizeButtonInactive);
+                                randomizeButtonInactive.HoverText = "No male NPCs\nare alive right now!";
+                            } else {
+                                namesPanel.RemoveChild(randomizeButtonInactive);
+                                namesPanel.Append(randomizeButton);
+                                randomizeButton.HoverText = "Randomize Male Names";
+                            }
+                        }
+                    } else if (id == 1001) {
+                        if ((CustomWorld.CustomNames[1001].Count == 0)) {
+                            namesPanel.RemoveChild(randomizeButton);
+                            namesPanel.Append(randomizeButtonInactive);
+                            randomizeButtonInactive.HoverText = "There are no names\non the list to choose from!";
+                        } else {
+                            bool noFemaleNPCs = true;
+                            foreach (short i in CustomNPCNames.TownNPCs) {
+                                if (!NPCs.CustomNPC.isMale[i] && NPC.CountNPCS(i) != 0) { noFemaleNPCs = false; break; }
+                            }
+
+                            if (noFemaleNPCs) {
+                                namesPanel.RemoveChild(randomizeButton);
+                                namesPanel.Append(randomizeButtonInactive);
+                                randomizeButtonInactive.HoverText = "No female NPCs\nare alive right now!";
+                            } else {
+                                namesPanel.RemoveChild(randomizeButtonInactive);
+                                namesPanel.Append(randomizeButton);
+                                randomizeButton.HoverText = "Randomize Female Names";
+                            }
+                        }
+                    } else if (id == 1002) {
+                        if ((CustomWorld.CustomNames[1002].Count == 0)) {
+                            namesPanel.RemoveChild(randomizeButton);
+                            namesPanel.Append(randomizeButtonInactive);
+                            randomizeButtonInactive.HoverText = "There are no names\non the list to choose from!";
+                        } else {
+                            bool noNPCs = true;
+                            foreach (short i in CustomNPCNames.TownNPCs) {
+                                if (NPC.CountNPCS(i) != 0) { noNPCs = false; break; }
+                            }
+
+                            if (noNPCs) {
+                                namesPanel.RemoveChild(randomizeButton);
+                                namesPanel.Append(randomizeButtonInactive);
+                                randomizeButtonInactive.HoverText = "No NPCs are\nalive right now!";
+                            } else {
+                                namesPanel.RemoveChild(randomizeButtonInactive);
+                                namesPanel.Append(randomizeButton);
+                                randomizeButton.HoverText = "Randomize All";
+                            }
+                        }
+                    }
                 } else {
                     npcPreview.UpdateNPC(id);
                     namesPanel.Append(npcPreview);
@@ -387,6 +448,7 @@ namespace CustomNPCNames.UI
                         } else {
                             namesPanel.RemoveChild(randomizeButtonInactive);
                             namesPanel.Append(randomizeButton);
+                            randomizeButton.HoverText = "Randomize Name";
                         }
                     }
                 }

@@ -10,7 +10,7 @@ namespace CustomNPCNames.UI
     /// </summary>
     class UIToggleUniqueButton : UITextPanel, IDragableUIPanelChild
     {
-        protected bool State
+        public bool State
         {
             set
             {

@@ -10,11 +10,11 @@ namespace CustomNPCNames.UI
     /// </summary>
     class UIModeCycleButton : UITextPanel, IDragableUIPanelChild
     {
-        protected byte State
+        public byte State
         {
             set
             {
-                CustomNPCNames.mode = value;
+                CustomWorld.mode = value;
                 switch (value)
                 {
                     case 0: SetText("USING: VANILLA NAMES"); break;
@@ -57,9 +57,9 @@ namespace CustomNPCNames.UI
 
             if (hover) {
                 if (MouseButtonPressed(this)) {
-                    State = (byte)(++CustomNPCNames.mode % 4);
+                    State = (byte)(++CustomWorld.mode % 4);
                 } else if (MouseRButtonPressed(this)) {
-                    State = (byte)(--CustomNPCNames.mode % 4);
+                    State = (byte)(--CustomWorld.mode % 4);
                 }
             }
         }

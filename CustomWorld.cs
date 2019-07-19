@@ -8,6 +8,7 @@ namespace CustomNPCNames
     public class CustomWorld : ModWorld
     {
         public static Dictionary<short, List<StringWrapper>> CustomNames;
+        public static byte mode;
 
         public override void Initialize()
         {
@@ -70,7 +71,56 @@ namespace CustomNPCNames
             tag.Add("male",               nameStrings[1000]);
             tag.Add("female",             nameStrings[1001]);
             tag.Add("global",             nameStrings[1002]);
-
+            tag.Add("guide-current",              NPCs.CustomNPC.currentNames[NPCID.Guide]);
+            tag.Add("merchant-current",           NPCs.CustomNPC.currentNames[NPCID.Merchant]);
+            tag.Add("nurse-current",              NPCs.CustomNPC.currentNames[NPCID.Nurse]);
+            tag.Add("demolitionist-current",      NPCs.CustomNPC.currentNames[NPCID.Demolitionist]);
+            tag.Add("dyetrader-current",          NPCs.CustomNPC.currentNames[NPCID.DyeTrader]);
+            tag.Add("dryad-current",              NPCs.CustomNPC.currentNames[NPCID.Dryad]);
+            tag.Add("tavernkeep-current",         NPCs.CustomNPC.currentNames[NPCID.DD2Bartender]);
+            tag.Add("armsdealer-current",         NPCs.CustomNPC.currentNames[NPCID.ArmsDealer]);
+            tag.Add("stylist-current",            NPCs.CustomNPC.currentNames[NPCID.Stylist]);
+            tag.Add("painter-current",            NPCs.CustomNPC.currentNames[NPCID.Painter]);
+            tag.Add("angler-current",             NPCs.CustomNPC.currentNames[NPCID.Angler]);
+            tag.Add("goblintinkerer-current",     NPCs.CustomNPC.currentNames[NPCID.GoblinTinkerer]);
+            tag.Add("witchdoctor-current",        NPCs.CustomNPC.currentNames[NPCID.WitchDoctor]);
+            tag.Add("clothier-current",           NPCs.CustomNPC.currentNames[NPCID.Clothier]);
+            tag.Add("mechanic-current",           NPCs.CustomNPC.currentNames[NPCID.Mechanic]);
+            tag.Add("partygirl-current",          NPCs.CustomNPC.currentNames[NPCID.PartyGirl]);
+            tag.Add("wizard-current",             NPCs.CustomNPC.currentNames[NPCID.Wizard]);
+            tag.Add("taxcollector-current",       NPCs.CustomNPC.currentNames[NPCID.TaxCollector]);
+            tag.Add("truffle-current",            NPCs.CustomNPC.currentNames[NPCID.Truffle]);
+            tag.Add("pirate-current",             NPCs.CustomNPC.currentNames[NPCID.Pirate]);
+            tag.Add("steampunker-current",        NPCs.CustomNPC.currentNames[NPCID.Steampunker]);
+            tag.Add("cyborg-current",             NPCs.CustomNPC.currentNames[NPCID.Cyborg]);
+            tag.Add("santaclaus-current",         NPCs.CustomNPC.currentNames[NPCID.SantaClaus]);
+            tag.Add("travellingmerchant-current", NPCs.CustomNPC.currentNames[NPCID.TravellingMerchant]);
+            tag.Add("guide-gender",              NPCs.CustomNPC.isMale[NPCID.Guide]);
+            tag.Add("merchant-gender",           NPCs.CustomNPC.isMale[NPCID.Merchant]);
+            tag.Add("nurse-gender",              NPCs.CustomNPC.isMale[NPCID.Nurse]);
+            tag.Add("demolitionist-gender",      NPCs.CustomNPC.isMale[NPCID.Demolitionist]);
+            tag.Add("dyetrader-gender",          NPCs.CustomNPC.isMale[NPCID.DyeTrader]);
+            tag.Add("dryad-gender",              NPCs.CustomNPC.isMale[NPCID.Dryad]);
+            tag.Add("tavernkeep-gender",         NPCs.CustomNPC.isMale[NPCID.DD2Bartender]);
+            tag.Add("armsdealer-gender",         NPCs.CustomNPC.isMale[NPCID.ArmsDealer]);
+            tag.Add("stylist-gender",            NPCs.CustomNPC.isMale[NPCID.Stylist]);
+            tag.Add("painter-gender",            NPCs.CustomNPC.isMale[NPCID.Painter]);
+            tag.Add("angler-gender",             NPCs.CustomNPC.isMale[NPCID.Angler]);
+            tag.Add("goblintinkerer-gender",     NPCs.CustomNPC.isMale[NPCID.GoblinTinkerer]);
+            tag.Add("witchdoctor-gender",        NPCs.CustomNPC.isMale[NPCID.WitchDoctor]);
+            tag.Add("clothier-gender",           NPCs.CustomNPC.isMale[NPCID.Clothier]);
+            tag.Add("mechanic-gender",           NPCs.CustomNPC.isMale[NPCID.Mechanic]);
+            tag.Add("partygirl-gender",          NPCs.CustomNPC.isMale[NPCID.PartyGirl]);
+            tag.Add("wizard-gender",             NPCs.CustomNPC.isMale[NPCID.Wizard]);
+            tag.Add("taxcollector-gender",       NPCs.CustomNPC.isMale[NPCID.TaxCollector]);
+            tag.Add("truffle-gender",            NPCs.CustomNPC.isMale[NPCID.Truffle]);
+            tag.Add("pirate-gender",             NPCs.CustomNPC.isMale[NPCID.Pirate]);
+            tag.Add("steampunker-gender",        NPCs.CustomNPC.isMale[NPCID.Steampunker]);
+            tag.Add("cyborg-gender",             NPCs.CustomNPC.isMale[NPCID.Cyborg]);
+            tag.Add("santaclaus-gender",         NPCs.CustomNPC.isMale[NPCID.SantaClaus]);
+            tag.Add("travellingmerchant-gender", NPCs.CustomNPC.isMale[NPCID.TravellingMerchant]);
+            tag.Add("mode",      mode);
+            tag.Add("tryunique", CustomNPCNames.tryUnique);
             return tag;
         }
 
@@ -105,9 +155,74 @@ namespace CustomNPCNames
                 CustomNames[1000]                     = StringWrapper.ConvertList(tag.GetList<string>("male"));
                 CustomNames[1001]                     = StringWrapper.ConvertList(tag.GetList<string>("female"));
                 CustomNames[1002]                     = StringWrapper.ConvertList(tag.GetList<string>("global"));
-            } else
-            {
+            } else {
                 ResetCustomNames();
+            }
+
+            if (tag.ContainsKey("guide-current")) {
+                NPCs.CustomNPC.currentNames[NPCID.Guide] = tag.GetString("guide-current");
+                NPCs.CustomNPC.currentNames[NPCID.Merchant] = tag.GetString("merchant-current");
+                NPCs.CustomNPC.currentNames[NPCID.Nurse] = tag.GetString("nurse-current");
+                NPCs.CustomNPC.currentNames[NPCID.Demolitionist] = tag.GetString("demolitionist-current");
+                NPCs.CustomNPC.currentNames[NPCID.DyeTrader] = tag.GetString("dyetrader-current");
+                NPCs.CustomNPC.currentNames[NPCID.Dryad] = tag.GetString("dryad-current");
+                NPCs.CustomNPC.currentNames[NPCID.DD2Bartender] = tag.GetString("tavernkeep-current");
+                NPCs.CustomNPC.currentNames[NPCID.ArmsDealer] = tag.GetString("armsdealer-current");
+                NPCs.CustomNPC.currentNames[NPCID.Stylist] = tag.GetString("stylist-current");
+                NPCs.CustomNPC.currentNames[NPCID.Painter] = tag.GetString("painter-current");
+                NPCs.CustomNPC.currentNames[NPCID.Angler] = tag.GetString("angler-current");
+                NPCs.CustomNPC.currentNames[NPCID.GoblinTinkerer] = tag.GetString("goblintinkerer-current");
+                NPCs.CustomNPC.currentNames[NPCID.WitchDoctor] = tag.GetString("witchdoctor-current");
+                NPCs.CustomNPC.currentNames[NPCID.Clothier] = tag.GetString("clothier-current");
+                NPCs.CustomNPC.currentNames[NPCID.Mechanic] = tag.GetString("mechanic-current");
+                NPCs.CustomNPC.currentNames[NPCID.PartyGirl] = tag.GetString("partygirl-current");
+                NPCs.CustomNPC.currentNames[NPCID.Wizard] = tag.GetString("wizard-current");
+                NPCs.CustomNPC.currentNames[NPCID.TaxCollector] = tag.GetString("taxcollector-current");
+                NPCs.CustomNPC.currentNames[NPCID.Truffle] = tag.GetString("truffle-current");
+                NPCs.CustomNPC.currentNames[NPCID.Pirate] = tag.GetString("pirate-current");
+                NPCs.CustomNPC.currentNames[NPCID.Steampunker] = tag.GetString("steampunker-current");
+                NPCs.CustomNPC.currentNames[NPCID.Cyborg] = tag.GetString("cyborg-current");
+                NPCs.CustomNPC.currentNames[NPCID.SantaClaus] = tag.GetString("santaclaus-current");
+                NPCs.CustomNPC.currentNames[NPCID.TravellingMerchant] = tag.GetString("travellingmerchant-current");
+            } else {
+                NPCs.CustomNPC.ResetCurrentNames();
+            }
+            
+            if (tag.ContainsKey("guide-gender")) {
+                NPCs.CustomNPC.isMale[NPCID.Guide] = tag.GetBool("guide-gender");
+                NPCs.CustomNPC.isMale[NPCID.Merchant] = tag.GetBool("merchant-gender");
+                NPCs.CustomNPC.isMale[NPCID.Nurse] = tag.GetBool("nurse-gender");
+                NPCs.CustomNPC.isMale[NPCID.Demolitionist] = tag.GetBool("demolitionist-gender");
+                NPCs.CustomNPC.isMale[NPCID.DyeTrader] = tag.GetBool("dyetrader-gender");
+                NPCs.CustomNPC.isMale[NPCID.Dryad] = tag.GetBool("dryad-gender");
+                NPCs.CustomNPC.isMale[NPCID.DD2Bartender] = tag.GetBool("tavernkeep-gender");
+                NPCs.CustomNPC.isMale[NPCID.ArmsDealer] = tag.GetBool("armsdealer-gender");
+                NPCs.CustomNPC.isMale[NPCID.Stylist] = tag.GetBool("stylist-gender");
+                NPCs.CustomNPC.isMale[NPCID.Painter] = tag.GetBool("painter-gender");
+                NPCs.CustomNPC.isMale[NPCID.Angler] = tag.GetBool("angler-gender");
+                NPCs.CustomNPC.isMale[NPCID.GoblinTinkerer] = tag.GetBool("goblintinkerer-gender");
+                NPCs.CustomNPC.isMale[NPCID.WitchDoctor] = tag.GetBool("witchdoctor-gender");
+                NPCs.CustomNPC.isMale[NPCID.Clothier] = tag.GetBool("clothier-gender");
+                NPCs.CustomNPC.isMale[NPCID.Mechanic] = tag.GetBool("mechanic-gender");
+                NPCs.CustomNPC.isMale[NPCID.PartyGirl] = tag.GetBool("partygirl-gender");
+                NPCs.CustomNPC.isMale[NPCID.Wizard] = tag.GetBool("wizard-gender");
+                NPCs.CustomNPC.isMale[NPCID.TaxCollector] = tag.GetBool("taxcollector-gender");
+                NPCs.CustomNPC.isMale[NPCID.Truffle] = tag.GetBool("truffle-gender");
+                NPCs.CustomNPC.isMale[NPCID.Pirate] = tag.GetBool("pirate-gender");
+                NPCs.CustomNPC.isMale[NPCID.Steampunker] = tag.GetBool("steampunker-gender");
+                NPCs.CustomNPC.isMale[NPCID.Cyborg] = tag.GetBool("cyborg-gender");
+                NPCs.CustomNPC.isMale[NPCID.SantaClaus] = tag.GetBool("santaclaus-gender");
+                NPCs.CustomNPC.isMale[NPCID.TravellingMerchant] = tag.GetBool("travellingmerchant-gender");
+            } else {
+                NPCs.CustomNPC.ResetCurrentGender();
+            }
+            
+            if (tag.ContainsKey("mode")) {
+                CustomNPCNames.renameUI.modeCycleButton.State = tag.GetByte("mode");
+                CustomNPCNames.renameUI.uniqueNameButton.State = tag.GetBool("tryunique");
+            } else {
+                CustomNPCNames.renameUI.modeCycleButton.State = 0;
+                CustomNPCNames.renameUI.uniqueNameButton.State = true;
             }
         }
 

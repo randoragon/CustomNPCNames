@@ -9,6 +9,7 @@ namespace CustomNPCNames.NPCs
     {
         public  static Dictionary<short, string> currentNames;
         public  static Dictionary<short, bool>   isMale;
+        public  static Dictionary<short, List<StringWrapper>> vanillaNames;
         private static Dictionary<short, ushort> npcCount;
         private static Dictionary<short, ushort> npcCountPrev;
 
@@ -46,6 +47,33 @@ namespace CustomNPCNames.NPCs
                 npcCount.Add(i, (ushort)NPC.CountNPCS(i));
                 npcCountPrev.Add(i, npcCount[i]);
             }
+
+            // vanilla names need to be added manually for randomization, because it's otherwise impossible to "force" a name change via Randomize Button
+            vanillaNames = new Dictionary<short, List<StringWrapper>>();
+            vanillaNames.Add(NPCID.Guide,              new List<StringWrapper>() { "Andrew", "Asher", "Bradley", "Brandon", "Brett", "Brian", "Cody", "Cole", "Colin", "Connor", "Daniel", "Dylan", "Garrett", "Harley", "Jack", "Jacob", "Jake", "Jeff", "Jeffrey", "Joe", "Kevin", "Kyle", "Levi", "Logan", "Luke", "Marty", "Maxwell", "Ryan", "Scott", "Seth", "Steve", "Tanner", "Trent", "Wyatt", "Zach" });
+            vanillaNames.Add(NPCID.Merchant,           new List<StringWrapper>() { "Alfred", "Barney", "Calvin", "Edmund", "Edwin", "Eugene", "Finn", "Frank", "Frederick", "Gilbert", "Gus", "Harold", "Howard", "Humphrey", "Isaac", "Joseph", "Louis", "Milton", "Mortimer", "Ralph", "Seymour" });
+            vanillaNames.Add(NPCID.Nurse,              new List<StringWrapper>() { "Abigail", "Allison", "Amy", "Caitlin", "Carly", "Claire", "Emily", "Emma", "Hannah", "Heather", "Helen", "Holly", "Jenna", "Kaitlin", "Kaitlyn", "Katelyn", "Katherine", "Kathryn", "Katie", "Kayla", "Lisa", "Lorraine", "Madeline", "Molly" });
+            vanillaNames.Add(NPCID.Demolitionist,      new List<StringWrapper>() { "Bazdin", "Beldin", "Boften", "Darur", "Dias", "Dolbere", "Dolgen", "Dolgrim", "Duerthen", "Durim", "Fikod", "Garval", "Gimli", "Gimut", "Jarut", "Morthal", "Norkas", "Norsun", "Oten", "Ovbere", "Tordak", "Urist" });
+            vanillaNames.Add(NPCID.DyeTrader,          new List<StringWrapper>() { "Abdosir", "Ahinadab", "Ahirom", "Akbar", "Batnoam", "Bodashtart", "Danel", "Hannibal", "Hanno", "Hiram", "Kanmi", "Philosir", "Sikarbaal", "Tabnit", "Yehomilk", "Yutpan" });
+            vanillaNames.Add(NPCID.Dryad,              new List<StringWrapper>() { "Alalia", "Alura", "Ariella", "Caelia", "Calista", "Celestia", "Chryseis", "Elysia", "Emerenta", "Evvie", "Faye", "Felicitae", "Isis", "Lunette", "Nata", "Nissa", "Rosalva", "Shea", "Tania", "Tatiana", "Xylia" });
+            vanillaNames.Add(NPCID.DD2Bartender,       new List<StringWrapper>() { "Barkeep", "Bill", "Blacksmith", "Bruce", "Dale", "Dani Moo", "Driscan", "Elandrian", "Ernest", "Iamison", "Javahawk", "Jerry", "Moe", "Paddy", "Ted", "William" });
+            vanillaNames.Add(NPCID.ArmsDealer,         new List<StringWrapper>() { "Andre", "Brimst", "Bronson", "Dante", "Darius", "Darnell", "Darryl", "DeAndre", "Demetrius", "DeShawn", "Dominique", "Jalen", "Jamal", "Malik", "Marquis", "Maurice", "Reginald", "Terrance", "Terrell", "Tony", "Trevon", "Tyrone", "Willie", "Xavier" });
+            vanillaNames.Add(NPCID.Stylist,            new List<StringWrapper>() { "Annabel", "Biah", "Bri", "Brianne", "Esmeralda", "Flora", "Hazel", "Iris", "Kati", "Kylie", "Lola", "Meliyah", "Pearl", "Petra", "Rox", "Roxanne", "Ruby", "Scarlett", "Stella", "Tallulah" });
+            vanillaNames.Add(NPCID.Painter,            new List<StringWrapper>() { "Bruno", "Carlo", "Darren", "Enzo", "Esreadel", "Guido", "Leonardo", "Lorenzo", "Luca", "Luciano", "Ludo", "Luigi", "Marco", "Mario", "Martino", "Mauro", "Raphael", "Stefano" });
+            vanillaNames.Add(NPCID.Angler,             new List<StringWrapper>() { "Adam", "Bart", "Billy", "Bobby", "Bryce", "Charles", "Danny", "Grayson", "Ivan", "Izzy", "Jey", "Jimmy", "Johnny", "Matty", "Miles", "Nathan", "Phillip", "Sammy", "Simon", "Spencer", "Timmy", "Tyler" });
+            vanillaNames.Add(NPCID.GoblinTinkerer,     new List<StringWrapper>() { "Arback", "Dalek", "Darz", "Durnok", "Fahd", "Fjell", "Gnudar", "Grodax", "Knogs", "Knub", "Mobart", "Mrunok", "Negurk", "Nort", "Nuxatk", "Ragz", "Sarx", "Smador", "Stazen", "Stezom", "Tgerd", "Tkanus", "Trogem", "Xanos", "Xon" });
+            vanillaNames.Add(NPCID.WitchDoctor,        new List<StringWrapper>() { "Abibe", "Gboto", "Jamundi", "Kogi-ghi", "Konah", "Opuni", "Tairona", "U'wa", "Xirigua", "Zop'a" });
+            vanillaNames.Add(NPCID.Clothier,           new List<StringWrapper>() { "Alfred", "Arthur", "Benjamin", "Cedric", "Clive", "Cyril", "Edgar", "Edmund", "Edward", "Eustace", "Fitz", "Graham", "Henry", "Herald", "James Desktop Version", "Lincoln", "Lloyd", "Mervyn", "Nigel", "Pip", "Rodney", "Rodrick", "Roland", "Rupert", "Sebastian" });
+            vanillaNames.Add(NPCID.Mechanic,           new List<StringWrapper>() { "Amy", "Autumn", "Brooke", "Dawn", "Ella", "Ellen", "Ginger", "Jenny", "Kayla", "Korrie", "Lauren", "Marshanna", "Meredith", "Nancy", "Sally", "Selah", "Selene", "Shayna", "Sheena", "Shirlena", "Sophia", "Susana", "Terra", "Trisha" });
+            vanillaNames.Add(NPCID.PartyGirl,          new List<StringWrapper>() { "Bailey", "Bambi", "Bunny", "Candy", "Cherry", "Dazzle", "Destiny", "Fantasia", "Fantasy", "Glitter", "Isis", "Lexus", "Paris", "Sparkle", "Star", "Sugar", "Trixy" });
+            vanillaNames.Add(NPCID.Wizard,             new List<StringWrapper>() { "Abram", "Alasdair", "Arddun", "Arwyn", "Berwyn", "Dalamar", "Dulais", "Elric", "Fizban", "Gearroid", "Greum", "Gwentor", "Hirael", "Leomund", "Maelor", "Magius", "Merlyn", "Ningauble", "Sargon", "Seonag", "Tagar", "Xanadu" });
+            vanillaNames.Add(NPCID.TaxCollector,       new List<StringWrapper>() { "McKinley", "Millard", "Fillmore", "Rutherford", "Chester", "Grover", "Cleveland", "Theodore", "Herbert", "Warren", "Lyndon", "Ronald", "Harrison", "Woodrow", "Tweed", "Blanton", "Dwyer", "Carroll", "Agnew" });
+            vanillaNames.Add(NPCID.Truffle,            new List<StringWrapper>() { "Agaric", "Amanita", "Chanterelle", "Cremini", "Enoki", "Maitake", "Morel", "Muscaria", "Porcini", "Reishi", "Shiitake", "Shimeji" });
+            vanillaNames.Add(NPCID.Pirate,             new List<StringWrapper>() { "Black Beard", "Captain Bullywort", "Captain Morgan", "Captain Stoney Dirt", "David", "Gunpowder Garry", "Jack", "Jake", "James T. Beard", "Red Beard", "Wet Beard" });
+            vanillaNames.Add(NPCID.Steampunker,        new List<StringWrapper>() { "Ada", "Cornelia", "Cynthia", "Emeline", "Fidelia", "Hope", "Isabella", "Judith", "Leila", "Lilly", "Lydia", "Minerva", "Phoebe", "Savannah", "Selina", "Verity", "Vivian", "Whitney", "Zelda", "Zylphia" });
+            vanillaNames.Add(NPCID.Cyborg,             new List<StringWrapper>() { "Alpha", "Beta", "Gamma", "Delta", "Zeta", "Theta", "Kappa", "Lambda", "Mu", "Nu", "Omicron", "Rho", "Sigma", "Upsilon", "Phi", "Ci", "Omega", "Fender", "T-3E0", "Niner-7", "A.N.D.Y", "Syn-X" });
+            vanillaNames.Add(NPCID.SantaClaus,         new List<StringWrapper>() { "Santa Claus" });
+            vanillaNames.Add(NPCID.TravellingMerchant, new List<StringWrapper>() { "Abraham", "Aedan", "Aphraim", "Bohemas", "Eladon", "Gallius", "Llewellyn", "Mercer", "Rawleigh", "Riley", "Romeo", "Shipton", "Willy" });
         }
 
         public static void ResetCurrentNames()
@@ -88,51 +116,84 @@ namespace CustomNPCNames.NPCs
 
         public static void RandomizeName(short type)
         {
-            var list = new List<StringWrapper>();
+            if (type == 1000) {
+                foreach (short i in CustomNPCNames.TownNPCs) {
+                    if (isMale[i] && NPC.CountNPCS(i) != 0) { RandomizeName(i); }
+                }
+                return;
+            } else if (type == 1001) {
+                foreach (short i in CustomNPCNames.TownNPCs) {
+                    if (!isMale[i] && NPC.CountNPCS(i) != 0) { RandomizeName(i); }
+                }
+                return;
+            } else if (type == 1002) {
+                foreach (short i in CustomNPCNames.TownNPCs) {
+                    if (NPC.CountNPCS(i) != 0) { RandomizeName(i); }
+                }
+                return;
+            } else {
+                var list = new List<StringWrapper>();
 
-            switch (CustomNPCNames.mode) {
-                case 1: // Custom Names mode
-                    if (CustomWorld.CustomNames[type].Count != 0) {
+                switch (CustomWorld.mode) {
+                    case 0: // Vanilla names mode
+                        list = vanillaNames[type];
+                        break;
+                    case 1: // Custom Names mode
+                        if (CustomWorld.CustomNames[type].Count != 0) {
+                            list = CustomWorld.CustomNames[type];
+                        } else {
+                            list = new List<StringWrapper>() { NPC.GetFirstNPCNameOrNull(type) };
+                        }
+                        break;
+                    case 2: // Gender Names mode
+                        if (CustomWorld.CustomNames[(short)(isMale[type] ? 1000 : 1001)].Count != 0) {
+                            list = CustomWorld.CustomNames[(short)(isMale[type] ? 1000 : 1001)];
+                        } else {
+                            list = new List<StringWrapper>() { NPC.GetFirstNPCNameOrNull(type) };
+                        }
+                        break;
+                    case 3: // Global Names mode
+                        if (CustomWorld.CustomNames[1002].Count != 0) {
+                            list = CustomWorld.CustomNames[1002];
+                        } else {
+                            list = new List<StringWrapper>() { NPC.GetFirstNPCNameOrNull(type) };
+                        }
+                        break;
+                }
 
-                        list = CustomWorld.CustomNames[type];
-                    }
-                    break;
-                case 2: // Gender Names mode
-                    if (CustomWorld.CustomNames[(short)(isMale[type] ? 1000 : 1001)].Count != 0) {
-                        list = CustomWorld.CustomNames[(short)(isMale[type] ? 1000 : 1001)];
-                    }
-                    break;
-                case 3: // Global Names mode
-                    if (CustomWorld.CustomNames[1002].Count != 0) {
-                        list = CustomWorld.CustomNames[1002];
-                    }
-                    break;
-            }
-
-            if (CustomNPCNames.mode != 0) {
                 currentNames[type] = (string)list[Main.rand.Next(list.Count)];
             }
         }
 
         public override void SetDefaults(NPC npc)
         {
-            if (CustomWorld.CustomNames != null) {
-                UpdateNPCCount();
-                foreach (short i in CustomNPCNames.TownNPCs) {
-                    if (npc.type == i && HasNewSpawned(i)) {
-                        RandomizeName(i);
+            if (currentNames.ContainsKey((short)npc.type)) {
+                bool noNames = (CustomWorld.CustomNames != null
+                && ((CustomWorld.mode == 1 && CustomWorld.CustomNames[(short)npc.type].Count == 0)
+                 || (CustomWorld.mode == 2 && CustomWorld.CustomNames[(short)(isMale[(short)npc.type] ? 1000 : 1001)].Count == 0)
+                 || (CustomWorld.mode == 3 && CustomWorld.CustomNames[1002].Count == 0)));
+
+                if (!noNames) {
+                    UpdateNPCCount();
+                    foreach (short i in CustomNPCNames.TownNPCs) {
+                        if (npc.type == i && HasNewSpawned(i)) {
+                            RandomizeName(i);
+                        }
                     }
+                } else {
+                    currentNames[(short)npc.type] = null;
                 }
             }
         }
 
         public override bool PreAI(NPC npc)
         {
-            if (currentNames.ContainsKey((short)npc.type))
+            if (currentNames.ContainsKey((short)npc.type) && currentNames[(short)npc.type] != null)
             {
-                if (currentNames[(short)npc.type] != null && npc.GivenName != currentNames[(short)npc.type])
+                if (npc.GivenName != currentNames[(short)npc.type])
                 {
                     npc.GivenName = currentNames[(short)npc.type];
+                    Main.NewText(string.Format("Changing name to \"{0}\"", currentNames[(short)npc.type]));
                 }
             }
             return true;

@@ -54,7 +54,6 @@ namespace CustomNPCNames
         public static ModHotKey RenameMenuHotkey;
         public static RenameUI renameUI;
         private static UserInterface renameInterface;
-        public static byte mode;
         public static bool tryUnique;
 
         public override void Load()
@@ -63,7 +62,6 @@ namespace CustomNPCNames
             if (!Main.dedServ)
             {
                 RenameMenuHotkey = RegisterHotKey("Toggle Menu", "K");
-                mode = 0;
                 tryUnique = true;
                 renameUI = new RenameUI();
                 renameUI.Initialize();
