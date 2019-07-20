@@ -3,6 +3,7 @@ using Terraria.GameContent.UI.Elements;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace CustomNPCNames.UI
 {
@@ -30,12 +31,17 @@ namespace CustomNPCNames.UI
 
         public override void Update(GameTime gameTime)
         {
-            
+
             foreach (UIElement i in _removeList) {
                 Remove(i);
             }
 
             base.Update(gameTime);
+        }
+
+        public void UpdateNamePadding(UINameField field)
+        {
+            
         }
 
         public void RemoveName(UINameField field)

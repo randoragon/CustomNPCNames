@@ -73,6 +73,12 @@ namespace CustomNPCNames.UI
             AdjustWidth();
         }
 
+        public virtual void SetTextColor(Color focus, Color idle)
+        {
+            focusVariant.Caption.TextColor = focus;
+            idleVariant.Caption.TextColor = idle;
+        }
+
         public virtual void SetScale(float scale)
         {
             Width.Set(Width.Pixels / Scale * scale, 0);
@@ -194,11 +200,18 @@ namespace CustomNPCNames.UI
 
             CalculatedStyle dim = focusVariant.GetDimensions();
             cursorClock = (++cursorClock) % 60;
-            if (HasFocus && cursorClock < 30)
-            {
+            if (HasFocus && cursorClock < 30) {
                 DynamicSpriteFont font = Main.fontMouseText;
                 float drawCursor = font.MeasureString(focusVariant.Text.Substring(0, cursorPosition)).X;
-                spriteBatch.DrawString(font, "|", new Vector2(dim.X + (Scale * (10 +drawCursor)), dim.Y + (focusVariant.Height.Pixels / 3.7f)), focusVariant.Caption.TextColor, 0f, Vector2.Zero, focusVariant.Scale, SpriteEffects.None, 0f);
+                if (idleVariant.HAlign == focusVariant.HAlign) {
+                    if (idleVariant.HAlign == 0) {
+                        spriteBatch.DrawString(font, "|", new Vector2(dim.X + (Scale * (10 + drawCursor)), dim.Y + (focusVariant.Height.Pixels / 3.7f)), focusVariant.Caption.TextColor, 0f, Vector2.Zero, focusVariant.Scale, SpriteEffects.None, 0f);
+                    } else if(idleVariant.HAlign == 0.5) {
+                        spriteBatch.DrawString(font, "|", new Vector2(dim.X + (0.5f * dim.Width) + (0.5f * Scale * drawCursor), dim.Y + (focusVariant.Height.Pixels / 3.7f)), focusVariant.Caption.TextColor, 0f, Vector2.Zero, focusVariant.Scale, SpriteEffects.None, 0f);
+                    } else if (idleVariant.HAlign == 1) {
+                        spriteBatch.DrawString(font, "|", new Vector2(dim.X + dim.Width - (Scale * 10), dim.Y + (focusVariant.Height.Pixels / 3.7f)), focusVariant.Caption.TextColor, 0f, Vector2.Zero, focusVariant.Scale, SpriteEffects.None, 0f);
+                    }
+                }
             }
         }
 

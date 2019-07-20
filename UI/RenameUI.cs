@@ -124,15 +124,15 @@ namespace CustomNPCNames.UI
             panelList.ListPadding = 2f;
             panelList.Top.Set(36, 0);
             panelList.Left.Set(4, 0);
-            panelList.Width.Set(476, 0);
+            panelList.Width.Set(470, 0);
             panelList.Height.Set(449, 0);
             panelList.OverflowHidden = true;
             panelListScrollbar = new UIScrollbar();
-            panelListScrollbar.Top.Set(6, 0);
-            panelListScrollbar.Left.Set(445, 0);
+            panelListScrollbar.Top.Set(42, 0);
+            panelListScrollbar.Left.Set(449, 0);
             panelListScrollbar.Height.Set(433, 0);
             panelList.SetScrollbar(panelListScrollbar);
-            panelList.Append(panelListScrollbar);
+            namesPanel.Append(panelListScrollbar);
             namesPanel.Append(panelList);
 
             // Add, remove, clear, switch gender, randomize buttons
@@ -278,6 +278,7 @@ namespace CustomNPCNames.UI
             field.IsNew = true;
             panelList.Add(field);
             DeselectAllEntries();
+            panelListScrollbar.ViewPosition = 0;
             field.HasFocus = true;
             field.Select();
         }

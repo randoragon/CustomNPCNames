@@ -1,6 +1,8 @@
 ﻿using Terraria;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Terraria.UI;
+using ReLogic.Graphics;
 
 namespace CustomNPCNames.UI
 {
@@ -28,6 +30,7 @@ namespace CustomNPCNames.UI
                 isNew = value;
             }
         }
+        public float Presence { get; private set; } // represents how much the panel is on screen, e.g. if it goes out of bounds of the UINameList then this value is 0f, and if it's all on the screen it's 1f.
 
         public UINameField(StringWrapper name, uint nth) : base(name.str)
         {
@@ -39,11 +42,25 @@ namespace CustomNPCNames.UI
             SetWidth((0.85f * Main.fontMouseText.MeasureString("_________________________").X) + 18, 0);
             CaptionMaxLength = 25;
 
-            focusVariant.Caption.HAlign = 0f;
-            focusVariant.Caption.Left.Set(6, 0);
-            idleVariant.Caption.HAlign = 0f;
-            idleVariant.Caption.Left.Set(6, 0);
+            focusVariant.Caption.VAlign = 0f;
+            focusVariant.Caption.Top.Pixels = 9;
+            idleVariant.Caption.VAlign = 0f;
+            idleVariant.Caption.Top.Pixels = 9;
             SetText(name.str);
+        }
+
+        public void TextCropTop(float padding)
+        {
+            idleVariant.Caption.Top.Pixels = 10 - padding;
+            focusVariant.Caption.Top.Pixels = 10 - padding;
+            idleVariant.PaddingTop = padding;
+            focusVariant.PaddingTop = padding;
+        }
+
+        public void TextCropBottom(float padding)
+        {
+            idleVariant.PaddingBottom = padding;
+            focusVariant.PaddingBottom = padding;
         }
 
         public override int CompareTo(object obj)
@@ -81,6 +98,19 @@ namespace CustomNPCNames.UI
 
         public override void Recalculate()
         {
+            // update padding of list elements' text, because it is not affected by  UINameList's OverflowHidden, so it has to be cropped manually
+            Rectangle dim = InterfaceHelper.GetFullRectangle(this);
+            Rectangle listDim = InterfaceHelper.GetFullRectangle(CustomNPCNames.renameUI.panelList);
+            if (dim.Y > listDim.Y) {
+                Presence = 1f - (MathHelper.Clamp(dim.Y + dim.Height - listDim.Y - listDim.Height, 0, dim.Height) / dim.Height);
+                TextCropTop(0f);
+                TextCropBottom((1 - Presence) * dim.Height);
+            } else {
+                Presence = 1f - (MathHelper.Clamp(listDim.Y - dim.Y, 0, dim.Height) / dim.Height);
+                TextCropTop((1 - Presence) * dim.Height);
+                TextCropBottom(0f);
+            }
+
             base.Recalculate();
         }
     }
