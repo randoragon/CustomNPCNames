@@ -118,47 +118,82 @@ namespace CustomNPCNames.NPCs
         {
             if (type == 1000) {
                 foreach (short i in CustomNPCNames.TownNPCs) {
+                    if (isMale[i] && NPC.CountNPCS(i) != 0) { currentNames[i] = null; }
+                }
+                foreach (short i in CustomNPCNames.TownNPCs) {
                     if (isMale[i] && NPC.CountNPCS(i) != 0) { RandomizeName(i); }
                 }
                 return;
             } else if (type == 1001) {
+                foreach (short i in CustomNPCNames.TownNPCs) {
+                    if (!isMale[i] && NPC.CountNPCS(i) != 0) { currentNames[i] = null; }
+                }
                 foreach (short i in CustomNPCNames.TownNPCs) {
                     if (!isMale[i] && NPC.CountNPCS(i) != 0) { RandomizeName(i); }
                 }
                 return;
             } else if (type == 1002) {
                 foreach (short i in CustomNPCNames.TownNPCs) {
+                    if (NPC.CountNPCS(i) != 0) { currentNames[i] = null; }
+                }
+                foreach (short i in CustomNPCNames.TownNPCs) {
                     if (NPC.CountNPCS(i) != 0) { RandomizeName(i); }
                 }
                 return;
             } else {
                 var list = new List<StringWrapper>();
+                currentNames[type] = null;
 
                 switch (CustomWorld.mode) {
                     case 0: // Vanilla names mode
-                        list = vanillaNames[type];
+                        list = new List<StringWrapper>(vanillaNames[type]);
                         break;
                     case 1: // Custom Names mode
                         if (CustomWorld.CustomNames[type].Count != 0) {
-                            list = CustomWorld.CustomNames[type];
+                            list = new List<StringWrapper>(CustomWorld.CustomNames[type]);
                         } else {
                             list = new List<StringWrapper>() { NPC.GetFirstNPCNameOrNull(type) };
                         }
                         break;
                     case 2: // Gender Names mode
                         if (CustomWorld.CustomNames[(short)(isMale[type] ? 1000 : 1001)].Count != 0) {
-                            list = CustomWorld.CustomNames[(short)(isMale[type] ? 1000 : 1001)];
+                            list = new List<StringWrapper>(CustomWorld.CustomNames[(short)(isMale[type] ? 1000 : 1001)]);
                         } else {
                             list = new List<StringWrapper>() { NPC.GetFirstNPCNameOrNull(type) };
                         }
                         break;
                     case 3: // Global Names mode
                         if (CustomWorld.CustomNames[1002].Count != 0) {
-                            list = CustomWorld.CustomNames[1002];
+                            list = new List<StringWrapper>(CustomWorld.CustomNames[1002]);
                         } else {
                             list = new List<StringWrapper>() { NPC.GetFirstNPCNameOrNull(type) };
                         }
                         break;
+                }
+
+                if (CustomNPCNames.tryUnique) {
+                    var listsIntersection = new List<StringWrapper>();
+                    var excludedNames = new List<StringWrapper>();
+                    Main.NewText(CustomNPCNames.GetNPCName(type));
+                    foreach (KeyValuePair<short, string> i in currentNames) {
+                        if (StringWrapper.ListContains(list, i.Value)) { listsIntersection.Add(i.Value); Main.NewText("Intersection: " + i.Value); }
+                    }
+
+                    if (listsIntersection.Count < list.Count) {
+                        foreach (StringWrapper i in listsIntersection) {
+                            foreach (StringWrapper j in list) {
+                                if (i.str == j.str) { excludedNames.Add(j); Main.NewText("Excluded: " + j); }
+                            }
+                        }
+
+                        foreach (StringWrapper i in excludedNames) {
+                            list.Remove(i);
+                        }
+
+                        foreach (StringWrapper i in list) {
+                            Main.NewText("List: " + i);
+                        }
+                    }
                 }
 
                 currentNames[type] = (string)list[Main.rand.Next(list.Count)];

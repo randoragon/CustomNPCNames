@@ -192,6 +192,15 @@ namespace CustomNPCNames
         public override string ToString()
         { return str; }
 
+        public override bool Equals(object obj)
+        {
+            if (obj != null && GetType().Equals(obj.GetType())) {
+                return str == ((StringWrapper)obj).str;
+            } else {
+                return false;
+            }
+        }
+
         public static List<StringWrapper> ConvertList(IList<string> list)
         {
             var ret = new List<StringWrapper>();
@@ -201,6 +210,17 @@ namespace CustomNPCNames
             }
 
             return ret;
+        }
+
+        public static bool ListContains(IList<StringWrapper> list, string value)
+        {
+            foreach (var i in list) {
+                if ((string)i == value) {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }
