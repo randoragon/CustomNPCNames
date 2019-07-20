@@ -54,14 +54,7 @@ namespace CustomNPCNames.UI
             SetVisibility(1f, 1f);
 
             CustomNPCNames.renameUI.renamePanel.UpdateState();
-            CustomNPCNames.renameUI.panelList.Clear();
-            if (CustomWorld.CustomNames[Selection.npcId] != null && CustomWorld.CustomNames[Selection.npcId].Count > 0)
-            {
-                for (uint i = (uint)CustomWorld.CustomNames[Selection.npcId].Count; i-- > 0;)
-                {
-                    CustomNPCNames.renameUI.panelList.Add(new UINameField(CustomWorld.CustomNames[Selection.npcId][(int)i], i));
-                }
-            }
+            CustomNPCNames.renameUI.panelList.PrintContent();
         }
 
         public override void Update(GameTime gameTime)

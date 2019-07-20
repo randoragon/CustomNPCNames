@@ -36,12 +36,28 @@ namespace CustomNPCNames.UI
                 Remove(i);
             }
 
+            if (RenameUI.IsNPCSelected && Count == 0) {
+                CustomNPCNames.renameUI.listMessage.SetText("      The list is empty.\nClick the 'Add Name' button\n     to add a new entry.");
+                CustomNPCNames.renameUI.listMessage.Activate();
+            } else if (!RenameUI.IsNPCSelected) {
+                CustomNPCNames.renameUI.listMessage.SetText("   Name list not available,\nbecause no NPC is selected.");
+                CustomNPCNames.renameUI.listMessage.Activate();
+            } else {
+                CustomNPCNames.renameUI.listMessage.Deactivate();
+            }
+
             base.Update(gameTime);
         }
 
-        public void UpdateNamePadding(UINameField field)
+        public void PrintContent()
         {
-            
+            CustomNPCNames.renameUI.panelList.Clear();
+            short id = RenameUI.SelectedNPC;
+            if (CustomWorld.CustomNames[id] != null && CustomWorld.CustomNames[id].Count > 0) {
+                for (uint i = (uint)CustomWorld.CustomNames[id].Count; i-- > 0;) {
+                    CustomNPCNames.renameUI.panelList.Add(new UINameField(CustomWorld.CustomNames[id][(int)i], i));
+                }
+            }
         }
 
         public void RemoveName(UINameField field)

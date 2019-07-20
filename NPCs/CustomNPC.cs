@@ -193,7 +193,6 @@ namespace CustomNPCNames.NPCs
                 if (npc.GivenName != currentNames[(short)npc.type])
                 {
                     npc.GivenName = currentNames[(short)npc.type];
-                    Main.NewText(string.Format("Changing name to \"{0}\"", currentNames[(short)npc.type]));
                 }
             }
             return true;

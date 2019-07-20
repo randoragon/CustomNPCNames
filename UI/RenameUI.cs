@@ -33,6 +33,7 @@ namespace CustomNPCNames.UI
         public UINPCPreview npcPreview;
         public UIModeCycleButton modeCycleButton;
         public UIToggleUniqueButton uniqueNameButton;
+        public UIToggleText listMessage;
         public bool removeMode = false;
         public UIImage trashIcon;
         public bool Visible = false;
@@ -135,6 +136,15 @@ namespace CustomNPCNames.UI
             namesPanel.Append(panelListScrollbar);
             namesPanel.Append(panelList);
 
+            // List message
+            listMessage = new UIToggleText("", 0.9f);
+            listMessage.Top.Pixels = -15;
+            listMessage.Left.Pixels = -10;
+            listMessage.HAlign = 0.5f;
+            listMessage.VAlign = 0.5f;
+            listMessage.Deactivate();
+            namesPanel.Append(listMessage);
+
             // Add, remove, clear, switch gender, randomize buttons
             addButton = new UIHoverImageButton(ModContent.GetTexture("CustomNPCNames/UI/add_button"), "Add Name");
             addButton.Top.Set(2, 0);
@@ -235,18 +245,18 @@ namespace CustomNPCNames.UI
         {
             Main.NewText(" ");
             Main.NewText("CUSTOM NPC NAMES HELP", new Color(255, 190, 40));
-            Main.NewText("1. Changing an NPC's name manually", new Color(50, 125, 190));
+            Main.NewText("1. Changing an NPC's Name Manually", new Color(50, 125, 190));
             Main.NewText("  Click an NPC's button. If the NPC exists, their current name will appear");
             Main.NewText("  on the name plate in the top middle of the pop-up menu. To edit the name,");
             Main.NewText("  simply click on the plate and start typing. When you're finished, either");
             Main.NewText("  click Enter or anywhere out of the plate. To cancel your changes press Escape.");
-            Main.NewText("2. Making lists of names", new Color(50, 125, 190));
+            Main.NewText("2. Making Lists of Names", new Color(50, 125, 190));
             Main.NewText("  To add/remove entries use the Add and Remove buttons respectively.");
-            Main.NewText("  You may edit already added entries the same way you do the name plate.");
-            Main.NewText("  Each of the NPC, Male, Female and Global buttons has a separate list of names.");
-            Main.NewText("3. NPC name randomization methods", new Color(50, 125, 190));
+            Main.NewText("  You may edit already added entries the same way you would the name plate.");
+            Main.NewText("  Each of the NPC, Male, Female and Global buttons holds a separate name list.");
+            Main.NewText("3. NPC Name Randomization Methods", new Color(50, 125, 190));
             Main.NewText("  On the middle bottom of the menu you'll find a text box where you can pick");
-            Main.NewText("  from 4 methods of randomizing names of newly spawned NPCs:");
+            Main.NewText("  from 4 modes of randomizing names of newly spawned NPCs:");
             Main.NewText("  A) USING: VANILLA NAMES", new Color(255, 255, 120));
             Main.NewText("    This method will ignore the modded name lists and use default vanilla names.");
             Main.NewText("    You will still be able to change individual names manually.");
@@ -262,6 +272,10 @@ namespace CustomNPCNames.UI
             Main.NewText("  For each method you can toggle the UNIQUE NAMES box. If enabled,");
             Main.NewText("  the mod will attempt to pick names not picked before, HOWEVER names may repeat");
             Main.NewText("  if there's not enough unique entries to pick from. The more, the better.");
+            Main.NewText(" ");
+            Main.NewText("  If a target list is empty, e.g. the mode is set to CUSTOM NAMES but some NPCs'");
+            Main.NewText("  lists are empty, vanilla names will be used for those NPCs and those only.");
+            Main.NewText("  Such NPCs will be skipped completely when randomizing names manually though.");
             Main.NewText(" ");
             Main.NewText("(open the chat and use arrow keys to read)", new Color(0, 255, 0));
         }
