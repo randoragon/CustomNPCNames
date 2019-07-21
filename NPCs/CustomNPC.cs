@@ -2,6 +2,7 @@
 using Terraria.ModLoader;
 using System.Collections.Generic;
 using Terraria.ID;
+using System.Linq;
 
 namespace CustomNPCNames.NPCs
 {
@@ -120,24 +121,27 @@ namespace CustomNPCNames.NPCs
                 foreach (short i in CustomNPCNames.TownNPCs) {
                     if (isMale[i] && NPC.CountNPCS(i) != 0) { currentNames[i] = null; }
                 }
-                foreach (short i in CustomNPCNames.TownNPCs) {
-                    if (isMale[i] && NPC.CountNPCS(i) != 0) { RandomizeName(i); }
+                foreach (int i in Enumerable.Range(0, CustomNPCNames.TownNPCs.Length).OrderBy(x => Main.rand.Next())) {
+                    short id = CustomNPCNames.TownNPCs[i];
+                    if (isMale[id] && NPC.CountNPCS(id) != 0) { RandomizeName(id); }
                 }
                 return;
             } else if (type == 1001) {
                 foreach (short i in CustomNPCNames.TownNPCs) {
                     if (!isMale[i] && NPC.CountNPCS(i) != 0) { currentNames[i] = null; }
                 }
-                foreach (short i in CustomNPCNames.TownNPCs) {
-                    if (!isMale[i] && NPC.CountNPCS(i) != 0) { RandomizeName(i); }
+                foreach (int i in Enumerable.Range(0, CustomNPCNames.TownNPCs.Length).OrderBy(x => Main.rand.Next())) {
+                    short id = CustomNPCNames.TownNPCs[i];
+                    if (!isMale[id] && NPC.CountNPCS(id) != 0) { RandomizeName(id); }
                 }
                 return;
             } else if (type == 1002) {
                 foreach (short i in CustomNPCNames.TownNPCs) {
                     if (NPC.CountNPCS(i) != 0) { currentNames[i] = null; }
                 }
-                foreach (short i in CustomNPCNames.TownNPCs) {
-                    if (NPC.CountNPCS(i) != 0) { RandomizeName(i); }
+                foreach (int i in Enumerable.Range(0, CustomNPCNames.TownNPCs.Length).OrderBy(x => Main.rand.Next())) {
+                    short id = CustomNPCNames.TownNPCs[i];
+                    if (NPC.CountNPCS(id) != 0) { RandomizeName(id); }
                 }
                 return;
             } else {
@@ -174,24 +178,27 @@ namespace CustomNPCNames.NPCs
                 if (CustomNPCNames.tryUnique) {
                     var listsIntersection = new List<StringWrapper>();
                     var excludedNames = new List<StringWrapper>();
-                    Main.NewText(CustomNPCNames.GetNPCName(type));
                     foreach (KeyValuePair<short, string> i in currentNames) {
-                        if (StringWrapper.ListContains(list, i.Value)) { listsIntersection.Add(i.Value); Main.NewText("Intersection: " + i.Value); }
+                        if (NPC.CountNPCS(i.Key) != 0 && StringWrapper.ListContains(list, i.Value)) {
+                            bool contains = false;
+                            foreach (StringWrapper j in listsIntersection) {
+                                if (j.str == i.Value) { contains = true; break; }
+                            }
+                            if (!contains) {
+                                listsIntersection.Add(i.Value);
+                            }
+                        }
                     }
 
                     if (listsIntersection.Count < list.Count) {
                         foreach (StringWrapper i in listsIntersection) {
                             foreach (StringWrapper j in list) {
-                                if (i.str == j.str) { excludedNames.Add(j); Main.NewText("Excluded: " + j); }
+                                if (i.str == j.str) { excludedNames.Add(j); }
                             }
                         }
 
                         foreach (StringWrapper i in excludedNames) {
                             list.Remove(i);
-                        }
-
-                        foreach (StringWrapper i in list) {
-                            Main.NewText("List: " + i);
                         }
                     }
                 }

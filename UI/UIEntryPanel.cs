@@ -28,7 +28,7 @@ namespace CustomNPCNames.UI
         private static char lastKey;     //
         private static int  lastKeyTime; // these three variables are used for printing a character multiple times if its key is being held down long enough
         private static bool lastShift;   //
-        protected static string clipboard;
+        protected static string clipboard = "";
         public float Scale { get; protected set; }
         protected bool containCaption;
         public bool ContainCaption
@@ -305,10 +305,24 @@ namespace CustomNPCNames.UI
         {
             if (KeyHeld(Keys.LeftControl) || KeyHeld(Keys.RightControl))
             {
-                if (KeyPressed(Keys.Back))
-                {
+                if (KeyPressed(Keys.Back)) {
                     str = "";
                     self.cursorPosition = 0;
+                    self.cursorClock = 0;
+                    return '\0';
+                } else if (KeyPressed(Keys.C)) {
+                    clipboard = str;
+                    return '\0';
+                } else if (KeyPressed(Keys.X)) {
+                    clipboard = str;
+                    str = "";
+                    self.cursorPosition = 0;
+                    self.cursorClock = 0;
+                    return '\0';
+                } else if (KeyPressed(Keys.V) && clipboard != "") {
+                    str += clipboard;
+                    str = str.Substring(0, System.Math.Min(str.Length, 25));
+                    self.cursorPosition = str.Length;
                     self.cursorClock = 0;
                     return '\0';
                 }
