@@ -21,6 +21,11 @@ namespace CustomNPCNames.UI
                 return (mouse.X >= pos.X && mouse.X <= pos.X + pos.Width && mouse.Y >= pos.Y && mouse.Y <= pos.Y + pos.Height);
             }
         }
+        public int SelectedIndex { get; protected set; }
+        private KeyboardState oldKey;
+        private KeyboardState curKey;
+        protected bool lastKey = false; // false for Keys.Down, true for Keys.Up
+        protected int keyClock = 0;
 
         private List<UIElement> _removeList;
 
@@ -31,11 +36,47 @@ namespace CustomNPCNames.UI
 
         public override void Update(GameTime gameTime)
         {
-
+            // Remove items from list marked to be removed
             foreach (UIElement i in _removeList) {
                 Remove(i);
             }
 
+            // Calculate the currently selected Name Field of the list (or -1 for none)
+            SelectedIndex = -1;
+            for (int i = 0; i < Count; i++) {
+                if ((_items[i] as UINameField).HasFocus) { SelectedIndex = i; break; }
+            }
+
+            // Up-Down arrow scrolling functionality
+            oldKey = curKey;
+            curKey = Keyboard.GetState();
+
+            if (SelectedIndex != -1) {
+                bool upPressed   = curKey.IsKeyDown(Keys.Up)   && !oldKey.IsKeyDown(Keys.Up);
+                bool downPressed = curKey.IsKeyDown(Keys.Down) && !oldKey.IsKeyDown(Keys.Down);
+                
+                if ((downPressed || lastKey == false && keyClock == 30) && SelectedIndex < Count - 1) {
+                    (_items[SelectedIndex] as UINameField).Deselect();
+                    (_items[++SelectedIndex] as UINameField).Select();
+                    _scrollbar.ViewPosition = System.Math.Max(_scrollbar.ViewPosition, ((SelectedIndex + 1) * 36f) - Height.Pixels);
+                    keyClock = (keyClock == 30 && lastKey == false ? 28 : 0);
+                    lastKey = false;
+                } else if ((upPressed || lastKey == true && keyClock == 30) && SelectedIndex > 0) {
+                    (_items[SelectedIndex] as UINameField).Deselect();
+                    (_items[--SelectedIndex] as UINameField).Select();
+                    _scrollbar.ViewPosition = System.Math.Min(_scrollbar.ViewPosition, SelectedIndex * 36f);
+                    keyClock = (keyClock == 30 && lastKey == true ? 28 : 0);
+                    lastKey = true;
+                }
+
+                if (SelectedIndex != 0 && SelectedIndex != Count - 1 && ((lastKey == true && curKey.IsKeyDown(Keys.Up)) || (lastKey == false && curKey.IsKeyDown(Keys.Down)))) {
+                    keyClock += (keyClock < 30 ? 1 : 0);
+                } else {
+                    keyClock = 0;
+                }
+            }
+
+            // Update List Message text and visibility
             if (RenameUI.IsNPCSelected && Count == 0) {
                 CustomNPCNames.renameUI.listMessage.SetText("      The list is empty.\nClick the 'Add Name' button\n     to add a new entry.");
                 CustomNPCNames.renameUI.listMessage.Activate();
@@ -45,6 +86,9 @@ namespace CustomNPCNames.UI
             } else {
                 CustomNPCNames.renameUI.listMessage.Deactivate();
             }
+
+            // Update List Count
+            CustomNPCNames.renameUI.listCount.SetText((SelectedIndex + 1) + "/" + Count);
 
             base.Update(gameTime);
         }

@@ -34,6 +34,7 @@ namespace CustomNPCNames.UI
         public UIModeCycleButton modeCycleButton;
         public UIToggleUniqueButton uniqueNameButton;
         public UIToggleText listMessage;
+        public UIToggleText listCount;
         public bool removeMode = false;
         public UIImage trashIcon;
         public bool Visible = false;
@@ -144,6 +145,13 @@ namespace CustomNPCNames.UI
             listMessage.VAlign = 0.5f;
             listMessage.Deactivate();
             namesPanel.Append(listMessage);
+
+            // List count
+            listCount = new UIToggleText("00/00");
+            listCount.TextColor = Color.LightGoldenrodYellow;
+            listCount.Top.Pixels = 10;
+            listCount.Left.Pixels = 188 + 30 + 6;
+            namesPanel.Append(listCount);
 
             // Add, remove, clear, switch gender, randomize buttons
             addButton = new UIHoverImageButton(ModContent.GetTexture("CustomNPCNames/UI/add_button"), "Add Name");
