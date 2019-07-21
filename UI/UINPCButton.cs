@@ -13,7 +13,6 @@ namespace CustomNPCNames.UI
         public static UINPCButton Selection { get; protected set; }
         public readonly short npcId;
         public readonly bool wide;
-
         bool IDragableUIPanelChild.Hover
         {
             get

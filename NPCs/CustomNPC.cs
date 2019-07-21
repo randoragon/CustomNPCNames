@@ -3,6 +3,7 @@ using Terraria.ModLoader;
 using System.Collections.Generic;
 using Terraria.ID;
 using System.Linq;
+using Microsoft.Xna.Framework;
 
 namespace CustomNPCNames.NPCs
 {
@@ -13,6 +14,7 @@ namespace CustomNPCNames.NPCs
         public  static Dictionary<short, List<StringWrapper>> vanillaNames;
         private static Dictionary<short, ushort> npcCount;
         private static Dictionary<short, ushort> npcCountPrev;
+        private static Dictionary<short, bool>   npcJustJoined;
 
         /// <summary>
         /// Determines whether or not an NPC of the given type has spawned since last time UpdateNPCCount() was called for that NPC.
@@ -36,10 +38,12 @@ namespace CustomNPCNames.NPCs
 
         public CustomNPC()
         {
-            currentNames = new Dictionary<short, string>();
+            currentNames  = new Dictionary<short, string>();
+            isMale        = new Dictionary<short, bool>();
+            npcJustJoined = new Dictionary<short, bool>();
             ResetCurrentNames();
-            isMale = new Dictionary<short, bool>();
             ResetCurrentGender();
+            ResetJustJoined();
 
             npcCount = new Dictionary<short, ushort>();
             npcCountPrev = new Dictionary<short, ushort>();
@@ -113,6 +117,14 @@ namespace CustomNPCNames.NPCs
             isMale.Add(NPCID.Cyborg,             true);
             isMale.Add(NPCID.SantaClaus,         true);
             isMale.Add(NPCID.TravellingMerchant, true);
+        }
+
+        public static void ResetJustJoined()
+        {
+            npcJustJoined.Clear();
+            foreach (short i in CustomNPCNames.TownNPCs) {
+                npcJustJoined.Add(i, false);
+            }
         }
 
         public static void RandomizeName(short type)
@@ -210,6 +222,7 @@ namespace CustomNPCNames.NPCs
         public override void SetDefaults(NPC npc)
         {
             if (currentNames.ContainsKey((short)npc.type)) {
+                npcJustJoined[(short)npc.type] = true;
                 bool noNames = (CustomWorld.CustomNames != null
                 && ((CustomWorld.mode == 1 && CustomWorld.CustomNames[(short)npc.type].Count == 0)
                  || (CustomWorld.mode == 2 && CustomWorld.CustomNames[(short)(isMale[(short)npc.type] ? 1000 : 1001)].Count == 0)
@@ -220,6 +233,7 @@ namespace CustomNPCNames.NPCs
                     foreach (short i in CustomNPCNames.TownNPCs) {
                         if (npc.type == i && HasNewSpawned(i)) {
                             RandomizeName(i);
+                            npc.GivenName = currentNames[i];
                         }
                     }
                 } else {
@@ -234,6 +248,17 @@ namespace CustomNPCNames.NPCs
             {
                 if (npc.GivenName != currentNames[(short)npc.type])
                 {
+                    if (npcJustJoined[(short)npc.type]) {
+                        // Replace the default chat message with one with the custom name
+                        var line = new Terraria.UI.Chat.ChatLine();
+                        line.text = string.Format("{0} the {1} has arrived!", currentNames[(short)npc.type], CustomNPCNames.GetNPCName((short)npc.type));
+                        line.showTime = Main.chatLength;
+                        line.color = new Color(50, 125, 255); // this is the vanilla color for Town NPC arrival messages
+                        line.parsedText = Terraria.UI.Chat.ChatManager.ParseMessage(line.text, line.color).ToArray();
+                        Main.chatLine[0] = line;
+                        npcJustJoined[(short)npc.type] = false;
+                    }
+
                     npc.GivenName = currentNames[(short)npc.type];
                 }
             }

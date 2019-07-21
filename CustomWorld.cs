@@ -13,6 +13,7 @@ namespace CustomNPCNames
         public override void Initialize()
         {
             ResetCustomNames();
+            mode = 0;
         }
 
         public void ResetCustomNames()
