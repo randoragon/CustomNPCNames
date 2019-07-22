@@ -54,7 +54,6 @@ namespace CustomNPCNames
         public static ModHotKey RenameMenuHotkey;
         public static RenameUI renameUI;
         private static UserInterface renameInterface;
-        public static bool tryUnique;
 
         public override void Load()
         {
@@ -62,7 +61,6 @@ namespace CustomNPCNames
             if (!Main.dedServ)
             {
                 RenameMenuHotkey = RegisterHotKey("Toggle Menu", "K");
-                tryUnique = true;
                 renameUI = new RenameUI();
                 renameUI.Initialize();
                 renameInterface = new UserInterface();
@@ -73,7 +71,7 @@ namespace CustomNPCNames
         public override void UpdateUI(GameTime gameTime)
         {
             // it will only draw if the player is not on the main menu
-            if (!Main.gameMenu && renameUI.Visible)
+            if (!Main.gameMenu && RenameUI.Visible)
             {
                 renameInterface.Update(gameTime);
             }
@@ -87,7 +85,7 @@ namespace CustomNPCNames
                 layers.Insert(mouseTextIndex, new LegacyGameInterfaceLayer(
                     "CustomNPCMod: Menu UI",
                     delegate {
-                        if (renameUI.Visible)
+                        if (RenameUI.Visible)
                         {
                             renameInterface.Draw(Main.spriteBatch, new GameTime());
                         }
@@ -101,18 +99,11 @@ namespace CustomNPCNames
         private bool DrawRenameMenuUI()
         {
             // it will only draw if the player is not on the main menu
-            if (!Main.gameMenu && renameUI.Visible)
+            if (!Main.gameMenu && RenameUI.Visible)
             {
                 renameInterface.Draw(Main.spriteBatch, new GameTime());
             }
             return true;
-        }
-
-        public override void Unload()
-        {
-            RenameMenuHotkey = null;
-            renameUI = null;
-            renameInterface = null;
         }
 
         public static string GetNPCName(short id)

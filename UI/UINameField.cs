@@ -85,9 +85,9 @@ namespace CustomNPCNames.UI
                 IsNew = false;
             }
 
-            if (CustomNPCNames.renameUI.removeMode && HasFocus) {
+            if (RenameUI.removeMode && HasFocus) {
                 CustomWorld.CustomNames[UINPCButton.Selection.npcId].Remove(name);
-                CustomNPCNames.renameUI.panelList.RemoveName(this);
+                RenameUI.panelList.RemoveName(this);
                 Deselect();
                 return;
             }
@@ -100,7 +100,7 @@ namespace CustomNPCNames.UI
         {
             // update padding of list elements' text, because it is not affected by  UINameList's OverflowHidden, so it has to be cropped manually
             Rectangle dim = InterfaceHelper.GetFullRectangle(this);
-            Rectangle listDim = InterfaceHelper.GetFullRectangle(CustomNPCNames.renameUI.panelList);
+            Rectangle listDim = InterfaceHelper.GetFullRectangle(RenameUI.panelList);
             if (dim.Y > listDim.Y) {
                 Presence = 1f - (MathHelper.Clamp(dim.Y + dim.Height - listDim.Y - listDim.Height, 0, dim.Height) / dim.Height);
                 TextCropTop(0f);

@@ -49,21 +49,23 @@ namespace CustomNPCNames.UI
         {
             base.Click(evt);
             Selection = this;
-            SetImage(wide ? ModContent.GetTexture("CustomNPCNames/UI/UINPCButtonWide_Selected") : ModContent.GetTexture("CustomNPCNames/UI/UINPCButton_Selected"));
-            SetVisibility(1f, 1f);
 
-            CustomNPCNames.renameUI.renamePanel.UpdateState();
-            CustomNPCNames.renameUI.panelList.PrintContent();
+            RenameUI.renamePanel.UpdateState();
+            RenameUI.panelList.PrintContent();
         }
 
         public override void Update(GameTime gameTime)
         {
-            if (!ReferenceEquals(this, Selection))
+            base.Update(gameTime);
+
+            if (!ReferenceEquals(this, Selection) || Selection == null)
             {
                 SetImage(wide ? ModContent.GetTexture("CustomNPCNames/UI/UINPCButtonWide") : ModContent.GetTexture("CustomNPCNames/UI/UINPCButton"));
                 SetVisibility(1f, 0.5f);
+            } else {
+                SetImage(wide ? ModContent.GetTexture("CustomNPCNames/UI/UINPCButtonWide_Selected") : ModContent.GetTexture("CustomNPCNames/UI/UINPCButton_Selected"));
+                SetVisibility(1f, 1f);
             }
-            base.Update(gameTime);
         }
     }
 }

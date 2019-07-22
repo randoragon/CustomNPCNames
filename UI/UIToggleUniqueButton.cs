@@ -14,7 +14,7 @@ namespace CustomNPCNames.UI
         {
             set
             {
-                CustomNPCNames.tryUnique = value;
+                CustomWorld.tryUnique = value;
                 if (value) {
                     BorderColor = new Color(0, 40, 0);
                     BackgroundColor = new Color(0, 150, 0);
@@ -56,7 +56,7 @@ namespace CustomNPCNames.UI
 
             if (MouseButtonPressed(this) && hover)
             {
-                State = !CustomNPCNames.tryUnique;
+                State = !CustomWorld.tryUnique;
             }
         }
 

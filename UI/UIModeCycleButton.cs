@@ -18,9 +18,9 @@ namespace CustomNPCNames.UI
                 switch (value)
                 {
                     case 0: SetText("USING: VANILLA NAMES"); break;
-                    case 1: SetText("USING: CUSTOM NAMES"); break;
-                    case 2: SetText("USING: GENDER NAMES"); break;
-                    case 3: SetText("USING: GLOBAL NAMES"); break;
+                    case 1: SetText("USING: CUSTOM NAMES");  break;
+                    case 2: SetText("USING: GENDER NAMES");  break;
+                    case 3: SetText("USING: GLOBAL NAMES");  break;
                 }
             }
         }

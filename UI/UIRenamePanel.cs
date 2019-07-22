@@ -122,7 +122,9 @@ namespace CustomNPCNames.UI
             if (save)
             {
                 idleVariant.SetText(focusVariant.Text);
-                NPCs.CustomNPC.currentNames[UINPCButton.Selection.npcId] = idleVariant.Text;
+                if (RenameUI.IsNPCSelected) {
+                    NPCs.CustomNPC.currentNames[RenameUI.SelectedNPC] = idleVariant.Text;
+                }
             }
             RemoveChild(focusVariant);
             Append(idleVariant);

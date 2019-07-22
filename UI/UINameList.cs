@@ -78,28 +78,28 @@ namespace CustomNPCNames.UI
 
             // Update List Message text and visibility
             if (RenameUI.IsNPCSelected && Count == 0) {
-                CustomNPCNames.renameUI.listMessage.SetText("      The list is empty.\nClick the 'Add Name' button\n     to add a new entry.");
-                CustomNPCNames.renameUI.listMessage.Activate();
+                RenameUI.listMessage.SetText("      The list is empty.\nClick the 'Add Name' button\n     to add a new entry.");
+                RenameUI.listMessage.Activate();
             } else if (!RenameUI.IsNPCSelected) {
-                CustomNPCNames.renameUI.listMessage.SetText("   Name list not available,\nbecause no NPC is selected.");
-                CustomNPCNames.renameUI.listMessage.Activate();
+                RenameUI.listMessage.SetText("   Name list not available,\nbecause no NPC is selected.");
+                RenameUI.listMessage.Activate();
             } else {
-                CustomNPCNames.renameUI.listMessage.Deactivate();
+                RenameUI.listMessage.Deactivate();
             }
 
             // Update List Count
-            CustomNPCNames.renameUI.listCount.SetText((SelectedIndex + 1) + "/" + Count);
+            RenameUI.listCount.SetText((SelectedIndex + 1) + "/" + Count);
 
             base.Update(gameTime);
         }
 
         public void PrintContent()
         {
-            CustomNPCNames.renameUI.panelList.Clear();
+            RenameUI.panelList.Clear();
             short id = RenameUI.SelectedNPC;
             if (CustomWorld.CustomNames[id] != null && CustomWorld.CustomNames[id].Count > 0) {
                 for (uint i = (uint)CustomWorld.CustomNames[id].Count; i-- > 0;) {
-                    CustomNPCNames.renameUI.panelList.Add(new UINameField(CustomWorld.CustomNames[id][(int)i], i));
+                    RenameUI.panelList.Add(new UINameField(CustomWorld.CustomNames[id][(int)i], i));
                 }
             }
         }

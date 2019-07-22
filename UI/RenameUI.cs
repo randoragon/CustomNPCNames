@@ -12,36 +12,36 @@ namespace CustomNPCNames.UI
 {
     internal class RenameUI : UIState
     {
-        private DragableUIPanel menuPanel;      // main window, parent for all the other UI objects
-        private List<UINPCButton> menuNPCList;  // the left stripe with NPC heads
-        public UIHoverImageButton closeButton;
-        public UIHoverImageButton helpButton;
-        public UIRenamePanel renamePanel;       // the name bar on top of the entire menu, next to the close button
-        public UINameList panelList;            // the big list of names for each category
-        public UIScrollbar panelListScrollbar;  // panelList's scrollbar
-        public UIPanelDragableChild namesPanel; // container within menuPanel for panelList and its buttons
-        public UIHoverImageButton addButton;
-        public UIHoverImage addButtonInactive;
-        public UIHoverImageButton removeButton;
-        public UIHoverImage removeButtonInactive;
-        public UIHoverImageButton clearButton;
-        public UIHoverImage clearButtonInactive;
-        public UIHoverImageButton switchGenderButton;
-        public UIHoverImage switchGenderButtonInactive;
-        public UIHoverImageButton randomizeButton;
-        public UIHoverImage randomizeButtonInactive;
-        public UINPCPreview npcPreview;
-        public UIModeCycleButton modeCycleButton;
-        public UIToggleUniqueButton uniqueNameButton;
-        public UIToggleText listMessage;
-        public UIToggleText listCount;
-        public bool removeMode = false;
-        public UIImage trashIcon;
-        public bool Visible = false;
+        public static DragableUIPanel menuPanel;      // main window, parent for all the other UI objects
+        public static List<UINPCButton> menuNPCList;  // the left stripe with NPC heads
+        public static UIHoverImageButton closeButton;
+        public static UIHoverImageButton helpButton;
+        public static UIRenamePanel renamePanel;       // the name bar on top of the entire menu, next to the close button
+        public static UINameList panelList;            // the big list of names for each category
+        public static UIScrollbar panelListScrollbar;  // panelList's scrollbar
+        public static UIPanelDragableChild namesPanel; // container within menuPanel for panelList and its buttons
+        public static UIHoverImageButton addButton;
+        public static UIHoverImage addButtonInactive;
+        public static UIHoverImageButton removeButton;
+        public static UIHoverImage removeButtonInactive;
+        public static UIHoverImageButton clearButton;
+        public static UIHoverImage clearButtonInactive;
+        public static UIHoverImageButton switchGenderButton;
+        public static UIHoverImage switchGenderButtonInactive;
+        public static UIHoverImageButton randomizeButton;
+        public static UIHoverImage randomizeButtonInactive;
+        public static UINPCPreview npcPreview;
+        public static UIModeCycleButton modeCycleButton;
+        public static UIToggleUniqueButton uniqueNameButton;
+        public static UIToggleText listMessage;
+        public static UIToggleText listCount;
+        public static bool removeMode = false;
+        public static UIImage trashIcon;
+        public static bool Visible = false;
         public static bool IsNPCSelected { get { return UINPCButton.Selection != null; } }
         public static short SelectedNPC { get { return UINPCButton.Selection.npcId; } }    // always check IsNPCSelected before calling this
+        public static short savedSelectedNPC = -1; // this variable gets assigned a value when loading a world file
         
-
         public override void OnInitialize()
         {
             menuPanel = new DragableUIPanel();
@@ -279,7 +279,7 @@ namespace CustomNPCNames.UI
             Main.NewText(" ");
             Main.NewText("  For each method you can toggle the UNIQUE NAMES box. If enabled,");
             Main.NewText("  the mod will attempt to pick names not picked before, HOWEVER names may repeat");
-            Main.NewText("  if there's not enough unique entries to pick from. The more, the better.");
+            Main.NewText("  if there's not enough unique entries. This has no effect in Vanilla Mode.");
             Main.NewText(" ");
             Main.NewText("  If a target list is empty, e.g. the mode is set to CUSTOM NAMES but some NPCs'");
             Main.NewText("  lists are empty, vanilla names will be used for those NPCs and those only.");
@@ -350,13 +350,45 @@ namespace CustomNPCNames.UI
 
         public void DeselectAllEntries()
         {
-            CustomNPCNames.renameUI.panelList.DeselectAll();
+            panelList.DeselectAll();
             renamePanel.Deselect();
         }
 
         public override void Update(GameTime gameTime)
         {
             base.Update(gameTime);
+
+            // Select the last world-saved NPC selection, if exists
+            if (savedSelectedNPC != -2) {
+                if (savedSelectedNPC != -1) {
+                    if (savedSelectedNPC == 0) {
+                        UINPCButton.Deselect();
+                        panelList.Clear();
+                    } else {
+                        foreach (UINPCButton i in menuNPCList) {
+                            if (i.npcId == savedSelectedNPC) {
+                                var evt = new UIMouseEvent(i, new Vector2(Mouse.GetState().X, Mouse.GetState().Y));
+                                i.Click(evt);
+                                savedSelectedNPC = 0;
+                                break;
+                            }
+                        }
+                    }
+                } else {
+                    UINPCButton.Deselect();
+                    panelList.Clear();
+                    NPCs.CustomNPC.ResetCurrentNames();
+                    NPCs.CustomNPC.ResetCurrentGender();
+                    NPCs.CustomNPC.ResetJustJoined();
+                    CustomWorld.ResetCustomNames();
+                    CustomWorld.mode = 0;
+                    CustomWorld.tryUnique = true;
+                }
+                modeCycleButton.State = CustomWorld.mode;
+                uniqueNameButton.State = CustomWorld.tryUnique;
+                DeselectAllEntries();   // almost certainly redundant, but just in case
+                savedSelectedNPC = -2;
+            }
 
             UpdateUIStates();
 
@@ -485,6 +517,10 @@ namespace CustomNPCNames.UI
                 namesPanel.Append(removeButtonInactive);
                 namesPanel.RemoveChild(clearButton);
                 namesPanel.Append(clearButtonInactive);
+
+                namesPanel.RemoveChild(npcPreview);
+                namesPanel.RemoveChild(switchGenderButton);
+                namesPanel.Append(switchGenderButtonInactive);
 
                 namesPanel.RemoveChild(randomizeButton);
                 namesPanel.Append(randomizeButtonInactive);

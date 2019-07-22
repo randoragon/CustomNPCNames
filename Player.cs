@@ -2,6 +2,7 @@
 using Terraria.GameInput;
 using CustomNPCNames.UI;
 using Terraria;
+using Microsoft.Xna.Framework.Input;
 
 namespace CustomNPCNames
 {
@@ -13,15 +14,15 @@ namespace CustomNPCNames
             {
                 if (CustomNPCNames.RenameMenuHotkey.ToString() != "")
                 {
-                    CustomNPCNames.renameUI.closeButton.HoverText = "Close (" + CustomNPCNames.RenameMenuHotkey.GetAssignedKeys()[0] + ')';
+                    RenameUI.closeButton.HoverText = "Close (" + CustomNPCNames.RenameMenuHotkey.GetAssignedKeys()[0] + ')';
                 }
 
                 if (CustomNPCNames.RenameMenuHotkey.JustPressed)
                 {
-                    CustomNPCNames.renameUI.Visible = !CustomNPCNames.renameUI.Visible;
-                    if (CustomNPCNames.renameUI.Visible)
+                    RenameUI.Visible = !RenameUI.Visible;
+                    if (RenameUI.Visible)
                     {
-                        CustomNPCNames.renameUI.renamePanel.UpdateState();
+                        RenameUI.renamePanel.UpdateState();
                     }
                 }
             }
