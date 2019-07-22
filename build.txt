@@ -1,5 +1,8 @@
 author = Randoragon
-version = 0.1
+version = 0.1.0
 displayName = Custom NPC Names
+homepage = https://github.com/Randoragon/CustomNPCNames.git
+hideCode = false
+hideResources = false
 includeSource = true
 buildIgnore = *.csproj, *.user, obj\*, bin\*, .vs\*, .git\*, .gitignore
