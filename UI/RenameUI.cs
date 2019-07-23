@@ -40,7 +40,7 @@ namespace CustomNPCNames.UI
         public static bool Visible = false;
         public static bool IsNPCSelected { get { return UINPCButton.Selection != null; } }
         public static short SelectedNPC { get { return UINPCButton.Selection.npcId; } }    // always check IsNPCSelected before calling this
-        public static short savedSelectedNPC = -1; // this variable gets assigned a value when loading a world file
+        public static short savedSelectedNPC = -1;  // this variable gets assigned a value when loading a world file
         
         public override void OnInitialize()
         {
@@ -359,35 +359,27 @@ namespace CustomNPCNames.UI
             base.Update(gameTime);
 
             // Select the last world-saved NPC selection, if exists
-            if (savedSelectedNPC != -2) {
-                if (savedSelectedNPC != -1) {
-                    if (savedSelectedNPC == 0) {
-                        UINPCButton.Deselect();
-                        panelList.Clear();
-                    } else {
-                        foreach (UINPCButton i in menuNPCList) {
-                            if (i.npcId == savedSelectedNPC) {
-                                var evt = new UIMouseEvent(i, new Vector2(Mouse.GetState().X, Mouse.GetState().Y));
-                                i.Click(evt);
-                                savedSelectedNPC = 0;
-                                break;
-                            }
-                        }
-                    }
-                } else {
+            if (savedSelectedNPC != -1) {
+                if (savedSelectedNPC == 0) {
                     UINPCButton.Deselect();
                     panelList.Clear();
-                    NPCs.CustomNPC.ResetCurrentNames();
-                    NPCs.CustomNPC.ResetCurrentGender();
-                    NPCs.CustomNPC.ResetJustJoined();
-                    CustomWorld.ResetCustomNames();
-                    CustomWorld.mode = 0;
-                    CustomWorld.tryUnique = true;
+                } else {
+                    foreach (UINPCButton i in menuNPCList) {
+                        if (i.npcId == savedSelectedNPC) {
+                            var evt = new UIMouseEvent(i, new Vector2(Mouse.GetState().X, Mouse.GetState().Y));
+                            i.Click(evt);
+                            savedSelectedNPC = 0;
+                            break;
+                        }
+                    }
                 }
+
+                // Most of this is probably redundant, but it could help in case the game didn't close properly (save was skipped)
+                removeMode = false;
                 modeCycleButton.State = CustomWorld.mode;
                 uniqueNameButton.State = CustomWorld.tryUnique;
-                DeselectAllEntries();   // almost certainly redundant, but just in case
-                savedSelectedNPC = -2;
+                DeselectAllEntries();
+                savedSelectedNPC = -1;
             }
 
             UpdateUIStates();
@@ -399,9 +391,18 @@ namespace CustomNPCNames.UI
             }
         }
 
+        // These two Draw overrides help eliminate a one frame jump between unloaded and loaded save data when opening the menu for the first time in a world
         public override void Draw(SpriteBatch spriteBatch)
         {
-            base.Draw(spriteBatch);
+            if (savedSelectedNPC == -1) {
+                base.Draw(spriteBatch);
+            }
+        }
+        protected override void DrawChildren(SpriteBatch spriteBatch)
+        {
+            if (savedSelectedNPC == -1) {
+                base.DrawChildren(spriteBatch);
+            }
         }
 
         public void UpdateUIStates()

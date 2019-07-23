@@ -125,6 +125,7 @@ namespace CustomNPCNames.NPCs
             foreach (short i in CustomNPCNames.TownNPCs) {
                 npcJustJoined.Add(i, false);
             }
+            npcJustJoined[NPCID.Guide] = true; // because the Guide is alive by default
         }
 
         public static void RandomizeName(short type)
@@ -248,7 +249,7 @@ namespace CustomNPCNames.NPCs
             {
                 if (npc.GivenName != currentNames[(short)npc.type])
                 {
-                    if (npcJustJoined[(short)npc.type]) {
+                    if (npcJustJoined[(short)npc.type] && Main.chatLine[0].text.Length >= 18 && Main.chatLine[0].text.Substring(Main.chatLine[0].text.Length - 12, 12) == "has arrived!") { // the chatLine condition is here as a sanity check, because npcJustJoined by itself is not foolproof
                         // Replace the default chat message with one with the custom name
                         var line = new Terraria.UI.Chat.ChatLine();
                         line.text = string.Format("{0} the {1} has arrived!", currentNames[(short)npc.type], CustomNPCNames.GetNPCName((short)npc.type));

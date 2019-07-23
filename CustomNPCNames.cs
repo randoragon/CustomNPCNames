@@ -82,20 +82,16 @@ namespace CustomNPCNames
             int mouseTextIndex = layers.FindIndex(layer => layer.Name.Equals("Vanilla: Mouse Text"));
             if (mouseTextIndex != -1)
             {
-                layers.Insert(mouseTextIndex, new LegacyGameInterfaceLayer(
-                    "CustomNPCMod: Menu UI",
-                    delegate {
-                        if (RenameUI.Visible)
-                        {
-                            renameInterface.Draw(Main.spriteBatch, new GameTime());
-                        }
-                        return true;
-                    },
-                    InterfaceScaleType.UI)
-                );
+                layers.Insert(mouseTextIndex, new LegacyGameInterfaceLayer("CustomNPCMod: Menu UI", DrawRenameMenuUI, InterfaceScaleType.UI));
             }
         }
-        
+
+        public override void PreSaveAndQuit()
+        {
+            base.PreSaveAndQuit();
+            CustomWorld.saveAndExit = true;
+        }
+
         private bool DrawRenameMenuUI()
         {
             // it will only draw if the player is not on the main menu

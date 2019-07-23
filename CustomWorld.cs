@@ -10,6 +10,7 @@ namespace CustomNPCNames
         public static Dictionary<short, List<StringWrapper>> CustomNames;
         public static byte mode;
         public static bool tryUnique;
+        public static bool saveAndExit = false; // this is turned to true in CustomNPCNames.PreSaveAndExit() to distinguish autosave from save&exit
 
         public override void Initialize()
         {
@@ -125,15 +126,20 @@ namespace CustomNPCNames
             tag.Add("tryunique", tryUnique);
             tag.Add("selected-npc", (short)(UI.UINPCButton.Selection != null ? UI.UINPCButton.Selection.npcId : 0)); // 0 is conventional for none, -1 is conventional for reset
 
-            // default reset in case a non-modded  (the Load() method doesn't run in such cases)
-            UI.UINPCButton.Deselect();
-            UI.RenameUI.panelList.Clear();
-            NPCs.CustomNPC.ResetCurrentNames();
-            NPCs.CustomNPC.ResetCurrentGender();
-            NPCs.CustomNPC.ResetJustJoined();
-            ResetCustomNames();
-            UI.RenameUI.modeCycleButton.State = 0;
-            UI.RenameUI.uniqueNameButton.State = true;
+            // Reset everything if this is a save&exit moment (as opposed to autosave)
+            if (saveAndExit) {
+                UI.RenameUI.Visible = false;
+                UI.UINPCButton.Deselect();
+                UI.RenameUI.panelList.Clear();
+                NPCs.CustomNPC.ResetCurrentNames();
+                NPCs.CustomNPC.ResetCurrentGender();
+                NPCs.CustomNPC.ResetJustJoined();
+                ResetCustomNames();
+                UI.RenameUI.modeCycleButton.State = 0;
+                UI.RenameUI.uniqueNameButton.State = true;
+                UI.RenameUI.removeMode = false;
+                saveAndExit = false;
+            }
 
             return tag;
         }
@@ -239,9 +245,7 @@ namespace CustomNPCNames
                 tryUnique = true;
             }
 
-            UI.RenameUI.savedSelectedNPC = tag.ContainsKey("selected-npc") ? tag.GetShort("selected-npc") : (short)-1; // 0 is conventional for none, -1 is conventional for reset
-
-            UI.RenameUI.Visible = false;
+            UI.RenameUI.savedSelectedNPC = tag.ContainsKey("selected-npc") ? tag.GetShort("selected-npc") : (short)-1; // 0 is conventional for none, -1 is conventional for "Do Nothing"
         }
 
         public override void PreUpdate()
