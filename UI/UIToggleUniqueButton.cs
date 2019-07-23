@@ -57,6 +57,7 @@ namespace CustomNPCNames.UI
             if (MouseButtonPressed(this) && hover)
             {
                 State = !CustomWorld.tryUnique;
+                CustomWorld.SyncWorldData();
             }
         }
 

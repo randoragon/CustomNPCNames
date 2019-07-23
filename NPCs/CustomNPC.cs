@@ -219,7 +219,7 @@ namespace CustomNPCNames.NPCs
                 currentNames[type] = (string)list[Main.rand.Next(list.Count)];
             }
         }
-
+        
         public override void SetDefaults(NPC npc)
         {
             if (currentNames.ContainsKey((short)npc.type)) {

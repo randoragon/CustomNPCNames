@@ -58,8 +58,10 @@ namespace CustomNPCNames.UI
             if (hover) {
                 if (MouseButtonPressed(this)) {
                     State = (byte)(++CustomWorld.mode % 4);
+                    CustomWorld.SyncWorldData();
                 } else if (MouseRButtonPressed(this)) {
                     State = (byte)(--CustomWorld.mode % 4);
+                    CustomWorld.SyncWorldData();
                 }
             }
         }

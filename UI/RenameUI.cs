@@ -41,7 +41,7 @@ namespace CustomNPCNames.UI
         public static bool IsNPCSelected { get { return UINPCButton.Selection != null; } }
         public static short SelectedNPC { get { return UINPCButton.Selection.npcId; } }    // always check IsNPCSelected before calling this
         public static short savedSelectedNPC = -1;  // this variable gets assigned a value when loading a world file
-        
+
         public override void OnInitialize()
         {
             menuPanel = new DragableUIPanel();
@@ -55,8 +55,7 @@ namespace CustomNPCNames.UI
             // Town NPC buttons
             const int NPC_BUTTON_PADDING = 4;
             menuNPCList = new List<UINPCButton>();
-            for (int i = 0; i < 24; i++)
-            {
+            for (int i = 0; i < 24; i++) {
                 short id = CustomNPCNames.TownNPCs[i];
                 var newButton = new UINPCButton(GetNPCHeadTexture(id), CustomNPCNames.GetNPCName(id), id);
                 newButton.Top.Set(60 + ((i % 12) * (34 + NPC_BUTTON_PADDING)), 0);
@@ -67,7 +66,7 @@ namespace CustomNPCNames.UI
             }
 
             // Male-Female buttons
-            menuNPCList.Add(new UINPCButton(ModContent.GetTexture("CustomNPCNames/UI/MaleIcon"),   "Male",   1000)); // NPCID 1000 is conventionally assigned to male
+            menuNPCList.Add(new UINPCButton(ModContent.GetTexture("CustomNPCNames/UI/MaleIcon"), "Male", 1000)); // NPCID 1000 is conventionally assigned to male
             menuNPCList.Last().Top.Set(60 + (12 * (34 + NPC_BUTTON_PADDING)), 0);
             menuNPCList.Last().Left.Set(8, 0);
             menuPanel.Append(menuNPCList.Last());
@@ -295,7 +294,6 @@ namespace CustomNPCNames.UI
             string newName = "";
             var newWrapper = new StringWrapper(ref newName);
 
-            CustomWorld.CustomNames[SelectedNPC].Add(newWrapper);
             var field = new UINameField(newWrapper, (uint)panelList.Count);
             field.IsNew = true;
             panelList.Add(field);
@@ -334,6 +332,7 @@ namespace CustomNPCNames.UI
                     CustomWorld.CustomNames[SelectedNPC].Remove(i.NameWrapper);
                     panelList.RemoveName(i);
                 }
+                CustomWorld.SyncWorldData();
             }
         }
 
@@ -341,6 +340,7 @@ namespace CustomNPCNames.UI
         {
             NPCs.CustomNPC.isMale[SelectedNPC] = !NPCs.CustomNPC.isMale[SelectedNPC];
             npcPreview.UpdateNPC(SelectedNPC);
+            CustomWorld.SyncWorldData();
         }
 
         private void RandomizeButtonClicked(UIMouseEvent evt, UIElement listeningElement)
@@ -532,8 +532,7 @@ namespace CustomNPCNames.UI
         public static Texture2D GetNPCHeadTexture(short id)
         {
             int textureId = 0;
-            switch(id)
-            {
+            switch (id) {
                 case NPCID.Guide:
                     textureId = 1;
                     break;

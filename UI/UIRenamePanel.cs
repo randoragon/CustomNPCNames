@@ -110,6 +110,7 @@ namespace CustomNPCNames.UI
                         }
                         RemoveChild(focusVariant);
                         NPCs.CustomNPC.currentNames[UINPCButton.Selection.npcId] = idleVariant.Text;
+                        CustomWorld.SyncWorldData();
                         Append(idleVariant);
                     }
                 }
@@ -124,6 +125,7 @@ namespace CustomNPCNames.UI
                 idleVariant.SetText(focusVariant.Text);
                 if (RenameUI.IsNPCSelected) {
                     NPCs.CustomNPC.currentNames[RenameUI.SelectedNPC] = idleVariant.Text;
+                    CustomWorld.SyncWorldData();
                 }
             }
             RemoveChild(focusVariant);

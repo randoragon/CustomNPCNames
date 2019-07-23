@@ -15,6 +15,9 @@ namespace CustomNPCNames.UI
             set { name.str = value; }
         }
         public StringWrapper NameWrapper { get { return name; } }
+        private string editName;            // this string is the one actually getting edited by keyboard (changes are applied to Name when the editing is finished)
+        private bool hadFocus;              // used to determine whether or not the focus of the entry has just been lost - in Update()
+        private string lastName;            // used to determine whether or not the text of the entry has just been changed - in Update()
         public readonly uint nthElement;
         private bool isNew = false;
         public bool IsNew
@@ -73,22 +76,34 @@ namespace CustomNPCNames.UI
             base.SetText(text);
             if (name != null)
             {
-                Name = text;
+                editName = text;
             }
         }
 
         public override void Update(GameTime gameTime)
         {
+            hadFocus = HasFocus;
+            lastName = editName;
+
             base.Update(gameTime);
+
+            // Sync world data when necessary - only if the entry was exited from, and only if its contents have been altered. This is to minimize overhead
+            if (hadFocus && !HasFocus && lastName != editName) {
+                Name = editName;
+                CustomWorld.SyncWorldData();
+            }
 
             if (!HasFocus && IsNew) {
                 IsNew = false;
+                CustomWorld.CustomNames[RenameUI.SelectedNPC].Add(name);
+                CustomWorld.SyncWorldData();
             }
 
             if (RenameUI.removeMode && HasFocus) {
                 CustomWorld.CustomNames[UINPCButton.Selection.npcId].Remove(name);
                 RenameUI.panelList.RemoveName(this);
                 Deselect();
+                CustomWorld.SyncWorldData();
                 return;
             }
 

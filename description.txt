@@ -1,16 +1,18 @@
- 
 Ever get bored of the default NPC names?
+ 
+[g:5] [c/FFFF00:SUMMARY]
 This mod adds an on-screen editor which allows you to rename your town NPCs to whatever you want!
 Only the vanilla NPCs are and probably ever will be supported.
  
-
-[FEATURES] v1.0.0
+[g:5] [c/FFFF00:FEATURES v1.0.0]
 + Edit names manually,
++ Force a name to be randomized again,
 + Create lists of names to randomize from,
 + Randomize with respect to profession, gender or nothing.
  
-If you encounter any bugs, be sure to open an issue on the GitHub homepage. You'll find the full source code there as well.
+[c/9977CC:Be sure to leave your suggestions, bug reports and]
+[c/9977CC:other comments on the] [c/BB99EE:Mod Homepage!]
  
 ---------------
-Dedicated to tvgBadger
-#BadgerClan
+[c/77EE77:Dedicated to tvgBadger]
+[c/44BB44:#BadgerClan]
