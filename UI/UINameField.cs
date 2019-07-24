@@ -18,7 +18,7 @@ namespace CustomNPCNames.UI
         private string editName;            // this string is the one actually getting edited by keyboard (changes are applied to Name when the editing is finished)
         private bool hadFocus;              // used to determine whether or not the focus of the entry has just been lost - in Update()
         private string lastName;            // used to determine whether or not the text of the entry has just been changed - in Update()
-        public readonly uint nthElement;
+        public uint nthElement;
         private bool isNew = false;
         public bool IsNew
         {

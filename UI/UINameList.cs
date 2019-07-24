@@ -36,9 +36,19 @@ namespace CustomNPCNames.UI
 
         public override void Update(GameTime gameTime)
         {
-            // Remove items from list marked to be removed
-            foreach (UIElement i in _removeList) {
-                Remove(i);
+            // Remove items from removal list and update namefields' "nth" indexing
+            if (_removeList.Count != 0) {
+                _removeList.Sort();
+                _removeList.Reverse();
+                foreach (UIElement i in _removeList) {
+                    foreach (UIElement j in _items) {
+                        if ((j as UINameField).nthElement > (i as UINameField).nthElement) {
+                            (j as UINameField).nthElement--;
+                        }
+                    }
+                    Remove(i);
+                }
+                _removeList.Clear();
             }
 
             // Calculate the currently selected Name Field of the list (or -1 for none)

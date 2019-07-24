@@ -415,7 +415,6 @@ namespace CustomNPCNames.UI
         public override void Update(GameTime gameTime)
         {
             base.Update(gameTime);
-
             // Select the last world-saved NPC selection, if exists
             if (savedSelectedNPC != -1) {
                 if (savedSelectedNPC == 0) {
