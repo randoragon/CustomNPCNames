@@ -293,7 +293,7 @@ namespace CustomNPCNames.UI
             Main.NewText("  from 4 modes of randomizing names of newly spawned NPCs:");
             Main.NewText("  A) USING: VANILLA NAMES", new Color(255, 255, 120));
             Main.NewText("    This method will ignore the modded name lists and use default vanilla names.");
-            Main.NewText("    You will still be able to change individual names manually.");
+            Main.NewText("    You will only be able to change individual names manually.");
             Main.NewText("  B) USING: CUSTOM NAMES", new Color(255, 255, 120));
             Main.NewText("    This method will use each of the NPC lists' names adequately to the NPC");
             Main.NewText("    that's being spawned. Male, Female and Global lists will be ignored.");
@@ -302,14 +302,26 @@ namespace CustomNPCNames.UI
             Main.NewText("    An NPC's gender can be changed by selecting them and pressing Switch Gender.");
             Main.NewText("  D) USING: GLOBAL NAMES", new Color(255, 255, 120));
             Main.NewText("    This method will use the Global list only. ");
-            Main.NewText(" ");
+            Main.NewText("4. The Unique Names Setting", new Color(50, 125, 190));
             Main.NewText("  For each method you can toggle the UNIQUE NAMES box. If enabled,");
-            Main.NewText("  the mod will attempt to pick names not picked before, HOWEVER names may repeat");
+            Main.NewText("  the mod will choose names not picked before first. However, names may repeat");
             Main.NewText("  if there's not enough unique entries. This has no effect in Vanilla Mode.");
-            Main.NewText(" ");
-            Main.NewText("  If a target list is empty, e.g. the mode is set to CUSTOM NAMES but some NPCs'");
+            Main.NewText("5. Randomizing Entire Groups", new Color(50, 125, 190));
+            Main.NewText("  Clicking the Randomize button inside Male, Female or Global tabs will cause");
+            Main.NewText("  every NPC in that group to randomize its name. It's literally the same as");
+            Main.NewText("  going through every such NPC and randomizing their name individually.");
+            Main.NewText("6. Dealing with Empty Lists", new Color(50, 125, 190));
+            Main.NewText("  If a target list is empty, e.g. Mode is set to CUSTOM NAMES but some NPCs'");
             Main.NewText("  lists are empty, vanilla names will be used for those NPCs and those only.");
-            Main.NewText("  Such NPCs will be skipped completely when randomizing names manually though.");
+            Main.NewText("  Such NPCs will be skipped altogether when randomizing names manually though.");
+            Main.NewText("7. The Copy, Paste and Carry Buttons", new Color(50, 125, 190));
+            Main.NewText("  The Copy and Paste buttons in the bottom right corner are a great tool");
+            Main.NewText("  for transfering your data between different worlds. They save information");
+            Main.NewText("  about all name lists, genders, the current Mode and the Unique setting.");
+            Main.NewText("  With Data Carriage on, the same information will be automatically transferred");
+            Main.NewText("  from the last opened world to a freshly generated one.");
+            Main.NewText("  The Copy, Paste and Carry buttons won't retain data across separate tModLoader");
+            Main.NewText("  sessions.");
             Main.NewText(" ");
             Main.NewText("(open the chat and use arrow keys to read)", new Color(0, 255, 0));
         }
@@ -415,6 +427,7 @@ namespace CustomNPCNames.UI
         public override void Update(GameTime gameTime)
         {
             base.Update(gameTime);
+
             // Select the last world-saved NPC selection, if exists
             if (savedSelectedNPC != -1) {
                 if (savedSelectedNPC == 0) {
