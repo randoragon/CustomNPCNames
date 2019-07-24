@@ -40,6 +40,14 @@ namespace CustomNPCNames.UI
             Append(NpcHead);
         }
 
+        public static void Refresh()
+        {
+            if (Selection != null) {
+                var evt = new UIMouseEvent(Selection, Vector2.Zero);
+                Selection.Click(evt);
+            }
+        }
+
         public static void Deselect()
         {
             Selection = null;

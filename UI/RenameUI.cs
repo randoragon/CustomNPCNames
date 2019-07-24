@@ -33,10 +33,16 @@ namespace CustomNPCNames.UI
         public static UINPCPreview npcPreview;
         public static UIModeCycleButton modeCycleButton;
         public static UIToggleUniqueButton uniqueNameButton;
+        public static UIHoverImageButton copyButton;
+        public static UIHoverImageButton pasteButton;
+        public static UIHoverImage pasteButtonInactive;
+        public static UIHoverImageButton carryButton;
         public static UIToggleText listMessage;
         public static UIToggleText listCount;
         public static bool removeMode = false;
         public static UIImage trashIcon;
+        public static bool carry = true;
+        public static ListData copyData;
         public static bool Visible = false;
         public static bool IsNPCSelected { get { return UINPCButton.Selection != null; } }
         public static short SelectedNPC { get { return UINPCButton.Selection.npcId; } }    // always check IsNPCSelected before calling this
@@ -233,9 +239,30 @@ namespace CustomNPCNames.UI
             // Toggle Unique Name Button
             uniqueNameButton = new UIToggleUniqueButton();
             uniqueNameButton.Top.Set(596 - 41, 0);
-            uniqueNameButton.Left.Set(86 + 210, 0);
+            uniqueNameButton.Left.Set(86 + 206, 0);
             uniqueNameButton.SetScale(0.85f);
             menuPanel.Append(uniqueNameButton);
+
+            // Copy, Paste, Carry buttons
+            copyButton = new UIHoverImageButton(ModContent.GetTexture("CustomNPCNames/UI/copy_button"), "Copy Everything\n(hold Alt to Cut)");
+            copyButton.Top.Set(596 - 41, 0);
+            copyButton.Left.Set(86 + 206 + 182, 0);
+            copyButton.OnClick += new MouseEvent(CopyButtonClicked);
+            pasteButton = new UIHoverImageButton(ModContent.GetTexture("CustomNPCNames/UI/paste_button"), "Paste Everything");
+            pasteButton.Top.Set(596 - 41, 0);
+            pasteButton.Left.Set(86 + 206 + 182 + 30, 0);
+            pasteButton.OnClick += new MouseEvent(PasteButtonClicked);
+            pasteButtonInactive = new UIHoverImage(ModContent.GetTexture("CustomNPCNames/UI/paste_button_inactive"), "Mod Clipboard\nis empty");
+            pasteButtonInactive.Top.Set(596 - 41, 0);
+            pasteButtonInactive.Left.Set(86 + 206 + 182 + 30, 0);
+            carryButton = new UIHoverImageButton(ModContent.GetTexture("CustomNPCNames/UI/carry_button_on"), "Toggle Data Carriage");
+            carryButton.Top.Set(596 - 41, 0);
+            carryButton.Left.Set(86 + 206 + 182 + 60, 0);
+            carryButton.OnClick += new MouseEvent(CarryButtonClicked);
+            menuPanel.Append(copyButton);
+            menuPanel.Append(pasteButtonInactive);
+            menuPanel.Append(carryButton);
+            copyData = new ListData();
 
             Append(menuPanel);
 
@@ -354,6 +381,37 @@ namespace CustomNPCNames.UI
             renamePanel.Deselect();
         }
 
+        private void CopyButtonClicked(UIMouseEvent evt, UIElement listeningElement)
+        {
+            copyData.Copy();
+            menuPanel.RemoveChild(pasteButtonInactive);
+            menuPanel.Append(pasteButton);
+            if (Keyboard.GetState().IsKeyDown(Keys.LeftAlt) || Keyboard.GetState().IsKeyDown(Keys.RightAlt)) {
+                modeCycleButton.State = 0;
+                uniqueNameButton.State = true;
+                CustomWorld.ResetCustomNames();
+                NPCs.CustomNPC.ResetCurrentGender();
+                UINPCButton.Refresh();
+            }
+        }
+
+        private void PasteButtonClicked(UIMouseEvent evt, UIElement listeningElement)
+        {
+            copyData.Paste();
+            UINPCButton.Refresh();
+        }
+
+        private void CarryButtonClicked(UIMouseEvent evt, UIElement listeningElement)
+        {
+            if (carry) {
+                carryButton.SetImage(ModContent.GetTexture("CustomNPCNames/UI/carry_button_off"));
+                carry = false;
+            } else {
+                carryButton.SetImage(ModContent.GetTexture("CustomNPCNames/UI/carry_button_on"));
+                carry = true;
+            }
+        }
+
         public override void Update(GameTime gameTime)
         {
             base.Update(gameTime);
@@ -409,10 +467,9 @@ namespace CustomNPCNames.UI
         {
             if (IsNPCSelected) {
                 short id = SelectedNPC;
-                bool noNames = (id != 1000 && id != 1001 && id != 1002)
-                           && ((CustomWorld.mode == 1 && CustomWorld.CustomNames[id].Count == 0)
-                            || (CustomWorld.mode == 2 && CustomWorld.CustomNames[(short)(NPCs.CustomNPC.isMale[id] ? 1000 : 1001)].Count == 0)
-                            || (CustomWorld.mode == 3 && CustomWorld.CustomNames[1002].Count == 0));
+                bool noNames = (CustomWorld.mode == 1 && id != 1000 && id != 1001 && id != 1002 && CustomWorld.CustomNames[id].Count == 0)
+                            || (CustomWorld.mode == 2 && (id != 1002 ? CustomWorld.CustomNames[(short)(id == 1000 || id == 1001 ? id : (NPCs.CustomNPC.isMale[id] ? 1000 : 1001))].Count == 0 : CustomWorld.CustomNames[1000].Count == 0 && CustomWorld.CustomNames[1001].Count == 0))
+                            || (CustomWorld.mode == 3 && CustomWorld.CustomNames[1002].Count == 0);
 
                 namesPanel.RemoveChild(addButtonInactive);
                 namesPanel.Append(addButton);
@@ -426,67 +483,82 @@ namespace CustomNPCNames.UI
                     namesPanel.RemoveChild(switchGenderButton);
                     namesPanel.Append(switchGenderButtonInactive);
                     if (id == 1000) {
-                        if ((CustomWorld.CustomNames[1000].Count == 0)) {
+                        bool noMaleNPCs = true;
+                        foreach (short i in CustomNPCNames.TownNPCs) {
+                            if (NPCs.CustomNPC.isMale[i] && NPC.CountNPCS(i) != 0) { noMaleNPCs = false; break; }
+                        }
+
+                        if (CustomWorld.mode == 1) {
+                            noNames = true;
+                            foreach (short i in CustomNPCNames.TownNPCs) {
+                                if (NPCs.CustomNPC.isMale[i] && CustomWorld.CustomNames[i].Count != 0) { noNames = false; break; }
+                            }
+                        }
+
+                        if (noMaleNPCs) {
+                            namesPanel.RemoveChild(randomizeButton);
+                            namesPanel.Append(randomizeButtonInactive);
+                            randomizeButtonInactive.HoverText = "No male NPCs\nare alive right now!";
+                        } else if (noNames) {
                             namesPanel.RemoveChild(randomizeButton);
                             namesPanel.Append(randomizeButtonInactive);
                             randomizeButtonInactive.HoverText = "There are no names\non the list to choose from!";
                         } else {
-                            bool noMaleNPCs = true;
-                            foreach (short i in CustomNPCNames.TownNPCs) {
-                                if (NPCs.CustomNPC.isMale[i] && NPC.CountNPCS(i) != 0) { noMaleNPCs = false; break; }
-                            }
-
-                            if (noMaleNPCs) {
-                                namesPanel.RemoveChild(randomizeButton);
-                                namesPanel.Append(randomizeButtonInactive);
-                                randomizeButtonInactive.HoverText = "No male NPCs\nare alive right now!";
-                            } else {
-                                namesPanel.RemoveChild(randomizeButtonInactive);
-                                namesPanel.Append(randomizeButton);
-                                randomizeButton.HoverText = "Randomize Male Names";
-                            }
+                            namesPanel.RemoveChild(randomizeButtonInactive);
+                            namesPanel.Append(randomizeButton);
+                            randomizeButton.HoverText = "Randomize Male Names";
                         }
                     } else if (id == 1001) {
-                        if ((CustomWorld.CustomNames[1001].Count == 0)) {
-                            namesPanel.RemoveChild(randomizeButton);
-                            namesPanel.Append(randomizeButtonInactive);
-                            randomizeButtonInactive.HoverText = "There are no names\non the list to choose from!";
-                        } else {
-                            bool noFemaleNPCs = true;
-                            foreach (short i in CustomNPCNames.TownNPCs) {
-                                if (!NPCs.CustomNPC.isMale[i] && NPC.CountNPCS(i) != 0) { noFemaleNPCs = false; break; }
-                            }
+                        bool noFemaleNPCs = true;
+                        foreach (short i in CustomNPCNames.TownNPCs) {
+                            if (!NPCs.CustomNPC.isMale[i] && NPC.CountNPCS(i) != 0) { noFemaleNPCs = false; break; }
+                        }
 
-                            if (noFemaleNPCs) {
-                                namesPanel.RemoveChild(randomizeButton);
-                                namesPanel.Append(randomizeButtonInactive);
-                                randomizeButtonInactive.HoverText = "No female NPCs\nare alive right now!";
-                            } else {
-                                namesPanel.RemoveChild(randomizeButtonInactive);
-                                namesPanel.Append(randomizeButton);
-                                randomizeButton.HoverText = "Randomize Female Names";
+                        if (CustomWorld.mode == 1) {
+                            noNames = true;
+                            foreach (short i in CustomNPCNames.TownNPCs) {
+                                if (!NPCs.CustomNPC.isMale[i] && CustomWorld.CustomNames[i].Count != 0) { noNames = false; break; }
                             }
                         }
-                    } else if (id == 1002) {
-                        if ((CustomWorld.CustomNames[1002].Count == 0)) {
+
+                        if (noFemaleNPCs) {
+                            namesPanel.RemoveChild(randomizeButton);
+                            namesPanel.Append(randomizeButtonInactive);
+                            randomizeButtonInactive.HoverText = "No female NPCs\nare alive right now!";
+                        } else if (noNames) {
                             namesPanel.RemoveChild(randomizeButton);
                             namesPanel.Append(randomizeButtonInactive);
                             randomizeButtonInactive.HoverText = "There are no names\non the list to choose from!";
                         } else {
-                            bool noNPCs = true;
-                            foreach (short i in CustomNPCNames.TownNPCs) {
-                                if (NPC.CountNPCS(i) != 0) { noNPCs = false; break; }
-                            }
+                            namesPanel.RemoveChild(randomizeButtonInactive);
+                            namesPanel.Append(randomizeButton);
+                            randomizeButton.HoverText = "Randomize Female Names";
+                        }
+                    } else if (id == 1002) {
+                        bool noNPCs = true;
+                        foreach (short i in CustomNPCNames.TownNPCs) {
+                            if (NPC.CountNPCS(i) != 0) { noNPCs = false; break; }
+                        }
 
-                            if (noNPCs) {
-                                namesPanel.RemoveChild(randomizeButton);
-                                namesPanel.Append(randomizeButtonInactive);
-                                randomizeButtonInactive.HoverText = "No NPCs are\nalive right now!";
-                            } else {
-                                namesPanel.RemoveChild(randomizeButtonInactive);
-                                namesPanel.Append(randomizeButton);
-                                randomizeButton.HoverText = "Randomize All";
+                        if (CustomWorld.mode == 1) {
+                            noNames = true;
+                            foreach (short i in CustomNPCNames.TownNPCs) {
+                                if (CustomWorld.CustomNames[i].Count != 0) { noNames = false; break; }
                             }
+                        }
+
+                        if (noNPCs) {
+                            namesPanel.RemoveChild(randomizeButton);
+                            namesPanel.Append(randomizeButtonInactive);
+                            randomizeButtonInactive.HoverText = "No NPCs are\nalive right now!";
+                        } else if (noNames) {
+                            namesPanel.RemoveChild(randomizeButton);
+                            namesPanel.Append(randomizeButtonInactive);
+                            randomizeButtonInactive.HoverText = "There are no names\non the list to choose from!";
+                        } else {
+                            namesPanel.RemoveChild(randomizeButtonInactive);
+                            namesPanel.Append(randomizeButton);
+                            randomizeButton.HoverText = "Randomize All";
                         }
                     }
                 } else {
@@ -526,6 +598,15 @@ namespace CustomNPCNames.UI
                 namesPanel.RemoveChild(randomizeButton);
                 namesPanel.Append(randomizeButtonInactive);
                 randomizeButtonInactive.HoverText = "No NPC Selected";
+            }
+
+            var k = Keyboard.GetState();
+            if (!k.IsKeyDown(Keys.LeftAlt) && !k.IsKeyDown(Keys.RightAlt)) {
+                copyButton.SetImage(ModContent.GetTexture("CustomNPCNames/UI/copy_button"));
+                copyButton.HoverText = "Copy Everything\n(Hold Alt to Cut)";
+            } else {
+                copyButton.SetImage(ModContent.GetTexture("CustomNPCNames/UI/cut_button"));
+                copyButton.HoverText = "Cut Everything";
             }
         }
 
@@ -607,6 +688,51 @@ namespace CustomNPCNames.UI
                     break;
             }
             return ModContent.GetTexture("Terraria/NPC_Head_" + System.Convert.ToString(textureId));
+        }
+    }
+
+    /// <summary>
+    /// This struct is a container for all lists data, it is used to make copying, pasting and carrying data between worlds easier.
+    /// </summary>
+    internal struct ListData
+    {
+        public byte mode;
+        public bool tryUnique;
+        public Dictionary<short, List<string>> customNames;
+        public Dictionary<short, bool> isMale;
+
+        public void Copy()
+        {
+            mode = CustomWorld.mode;
+            tryUnique = CustomWorld.tryUnique;
+            customNames = new Dictionary<short, List<string>>();
+            foreach (KeyValuePair<short, List<StringWrapper>> i in CustomWorld.CustomNames) {
+                var list = new List<string>();
+                foreach (StringWrapper j in i.Value) {
+                    list.Add(j.ToString());
+                }
+                customNames.Add(i.Key, list);
+            }
+            isMale = new Dictionary<short, bool>();
+            foreach (KeyValuePair<short, bool> i in NPCs.CustomNPC.isMale) {
+                isMale.Add(i.Key, i.Value);
+            }
+        }
+
+        public void Paste()
+        {
+            RenameUI.modeCycleButton.State = mode;
+            RenameUI.uniqueNameButton.State = tryUnique;
+            if (customNames != null) {
+                foreach (KeyValuePair<short, List<string>> i in customNames) {
+                    CustomWorld.CustomNames[i.Key] = StringWrapper.ConvertList(i.Value);
+                }
+            }
+            if (isMale != null) {
+                foreach (KeyValuePair<short, bool> i in isMale) {
+                    NPCs.CustomNPC.isMale[i.Key] = i.Value;
+                }
+            }
         }
     }
 }

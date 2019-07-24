@@ -83,9 +83,12 @@ namespace CustomNPCNames.UI
         public override void Update(GameTime gameTime)
         {
             hadFocus = HasFocus;
-            lastName = editName;
 
             base.Update(gameTime);
+
+            if (!hadFocus && HasFocus) {
+                lastName = editName;
+            }
 
             // Sync world data when necessary - only if the entry was exited from, and only if its contents have been altered. This is to minimize overhead
             if (hadFocus && !HasFocus && lastName != editName) {

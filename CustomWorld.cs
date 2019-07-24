@@ -3,7 +3,6 @@ using Terraria.ModLoader;
 using System.Collections.Generic;
 using Terraria.ModLoader.IO;
 using Terraria;
-using Terraria.IO;
 using System.IO;
 
 namespace CustomNPCNames
@@ -15,10 +14,11 @@ namespace CustomNPCNames
         public static bool tryUnique;
         public static bool saveAndExit = false; // this is turned to true in CustomNPCNames.PreSaveAndExit() to distinguish autosave from save&exit
 
-        public override void Initialize()
+        public CustomWorld()
         {
             ResetCustomNames();
             mode = 0;
+            tryUnique = true;
         }
 
         public static void ResetCustomNames()
@@ -132,12 +132,16 @@ namespace CustomNPCNames
                 UI.UINPCButton.Deselect();
                 UI.RenameUI.panelList.Clear();
                 NPCs.CustomNPC.ResetCurrentNames();
-                NPCs.CustomNPC.ResetCurrentGender();
                 NPCs.CustomNPC.ResetJustJoined();
-                ResetCustomNames();
-                UI.RenameUI.modeCycleButton.State = 0;
-                UI.RenameUI.uniqueNameButton.State = true;
                 UI.RenameUI.removeMode = false;
+
+                if (!UI.RenameUI.carry) {
+                    ResetCustomNames();
+                    NPCs.CustomNPC.ResetCurrentGender();
+                    UI.RenameUI.modeCycleButton.State = 0;
+                    UI.RenameUI.uniqueNameButton.State = true;
+                }
+
                 saveAndExit = false;
             }
 
@@ -174,7 +178,7 @@ namespace CustomNPCNames
                 CustomNames[1000] = StringWrapper.ConvertList(tag.GetList<string>("male"));
                 CustomNames[1001] = StringWrapper.ConvertList(tag.GetList<string>("female"));
                 CustomNames[1002] = StringWrapper.ConvertList(tag.GetList<string>("global"));
-            } else {
+            } else if (!UI.RenameUI.carry) {
                 ResetCustomNames();
             }
 
@@ -232,14 +236,14 @@ namespace CustomNPCNames
                 NPCs.CustomNPC.isMale[NPCID.Cyborg] = tag.GetBool("cyborg-gender");
                 NPCs.CustomNPC.isMale[NPCID.SantaClaus] = tag.GetBool("santaclaus-gender");
                 NPCs.CustomNPC.isMale[NPCID.TravellingMerchant] = tag.GetBool("travellingmerchant-gender");
-            } else {
+            } else if (!UI.RenameUI.carry) {
                 NPCs.CustomNPC.ResetCurrentGender();
             }
 
             if (tag.ContainsKey("mode")) {
                 mode = tag.GetByte("mode");
                 tryUnique = tag.GetBool("tryunique");
-            } else {
+            } else if (!UI.RenameUI.carry) {
                 mode = 0;
                 tryUnique = true;
             }

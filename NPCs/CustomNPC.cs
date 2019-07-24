@@ -188,7 +188,7 @@ namespace CustomNPCNames.NPCs
                         break;
                 }
 
-                if (CustomWorld.tryUnique) {
+                if (list.Count > 1 && CustomWorld.tryUnique) {
                     var listsIntersection = new List<StringWrapper>();
                     var excludedNames = new List<StringWrapper>();
                     foreach (KeyValuePair<short, string> i in currentNames) {
