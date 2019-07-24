@@ -733,6 +733,7 @@ namespace CustomNPCNames.UI
                     NPCs.CustomNPC.isMale[i.Key] = i.Value;
                 }
             }
+            CustomWorld.SyncWorldData();
         }
     }
 }
