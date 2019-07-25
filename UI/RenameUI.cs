@@ -269,6 +269,38 @@ namespace CustomNPCNames.UI
             trashIcon = new UIImage(ModContent.GetTexture("CustomNPCNames/UI/trash_icon"));
         }
 
+        public static void Unload()
+        {
+            menuPanel = null;
+            menuNPCList = null;
+            closeButton = null;
+            helpButton = null;
+            renamePanel = null;
+            panelList = null;
+            panelListScrollbar = null;
+            namesPanel = null;
+            addButton = null;
+            addButtonInactive = null;
+            removeButton = null;
+            removeButtonInactive = null;
+            clearButton = null;
+            clearButtonInactive = null;
+            switchGenderButton = null;
+            switchGenderButtonInactive = null;
+            randomizeButton = null;
+            randomizeButtonInactive = null;
+            npcPreview = null;
+            modeCycleButton = null;
+            uniqueNameButton = null;
+            copyButton = null;
+            pasteButton = null;
+            pasteButtonInactive = null;
+            carryButton = null;
+            listMessage = null;
+            listCount = null;
+            trashIcon = null;
+        }
+
         private void CloseButtonClicked(UIMouseEvent evt, UIElement listeningElement)
         {
             Main.PlaySound(SoundID.MenuClose);

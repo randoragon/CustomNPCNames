@@ -67,7 +67,20 @@ namespace CustomNPCNames
                 renameInterface.SetState(renameUI);
             }
         }
-        
+
+        public override void Unload()
+        {
+            renameUI = null;
+            renameInterface = null;
+            RenameMenuHotkey = null;
+            CustomWorld.Unload();
+            NPCs.CustomNPC.Unload();
+            RenameUI.Unload();
+            UINPCButton.Unload();
+
+            base.Unload();
+        }
+
         public override void UpdateUI(GameTime gameTime)
         {
             // it will only draw if the player is not on the main menu

@@ -123,7 +123,7 @@ namespace CustomNPCNames.UI
             if (save)
             {
                 idleVariant.SetText(focusVariant.Text);
-                if (RenameUI.IsNPCSelected) {
+                if (RenameUI.IsNPCSelected && RenameUI.SelectedNPC != 1000 && RenameUI.SelectedNPC != 1001 && RenameUI.SelectedNPC != 1002) {
                     NPCs.CustomNPC.currentNames[RenameUI.SelectedNPC] = idleVariant.Text;
                     CustomWorld.SyncWorldData();
                 }

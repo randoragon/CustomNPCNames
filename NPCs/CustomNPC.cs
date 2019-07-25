@@ -81,12 +81,22 @@ namespace CustomNPCNames.NPCs
             vanillaNames.Add(NPCID.TravellingMerchant, new List<StringWrapper>() { "Abraham", "Aedan", "Aphraim", "Bohemas", "Eladon", "Gallius", "Llewellyn", "Mercer", "Rawleigh", "Riley", "Romeo", "Shipton", "Willy" });
         }
 
+        public static void Unload()
+        {
+            currentNames = null;
+            npcCount = null;
+            npcCountPrev = null;
+            isMale = null;
+            vanillaNames = null;
+            npcJustJoined = null;
+        }
+
         public static void ResetCurrentNames()
         {
             currentNames.Clear();
             foreach (short i in CustomNPCNames.TownNPCs)
             {
-                currentNames.Add(i, null);
+                currentNames.Add(i, "\0");
             }
         }
 
@@ -132,7 +142,7 @@ namespace CustomNPCNames.NPCs
         {
             if (type == 1000) {
                 foreach (short i in CustomNPCNames.TownNPCs) {
-                    if (isMale[i] && NPC.CountNPCS(i) != 0) { currentNames[i] = null; }
+                    if (isMale[i] && NPC.CountNPCS(i) != 0) { currentNames[i] = "\0"; }
                 }
                 foreach (int i in Enumerable.Range(0, CustomNPCNames.TownNPCs.Length).OrderBy(x => Main.rand.Next())) {
                     short id = CustomNPCNames.TownNPCs[i];
@@ -141,7 +151,7 @@ namespace CustomNPCNames.NPCs
                 return;
             } else if (type == 1001) {
                 foreach (short i in CustomNPCNames.TownNPCs) {
-                    if (!isMale[i] && NPC.CountNPCS(i) != 0) { currentNames[i] = null; }
+                    if (!isMale[i] && NPC.CountNPCS(i) != 0) { currentNames[i] = "\0"; }
                 }
                 foreach (int i in Enumerable.Range(0, CustomNPCNames.TownNPCs.Length).OrderBy(x => Main.rand.Next())) {
                     short id = CustomNPCNames.TownNPCs[i];
@@ -150,7 +160,7 @@ namespace CustomNPCNames.NPCs
                 return;
             } else if (type == 1002) {
                 foreach (short i in CustomNPCNames.TownNPCs) {
-                    if (NPC.CountNPCS(i) != 0) { currentNames[i] = null; }
+                    if (NPC.CountNPCS(i) != 0) { currentNames[i] = "\0"; }
                 }
                 foreach (int i in Enumerable.Range(0, CustomNPCNames.TownNPCs.Length).OrderBy(x => Main.rand.Next())) {
                     short id = CustomNPCNames.TownNPCs[i];
@@ -159,7 +169,7 @@ namespace CustomNPCNames.NPCs
                 return;
             } else {
                 var list = new List<StringWrapper>();
-                currentNames[type] = null;
+                currentNames[type] = "\0";
 
                 switch (CustomWorld.mode) {
                     case 0: // Vanilla names mode
@@ -188,35 +198,25 @@ namespace CustomNPCNames.NPCs
                         break;
                 }
 
-                if (list.Count > 1 && CustomWorld.tryUnique) {
+                if (CustomWorld.tryUnique) {
                     var listsIntersection = new List<StringWrapper>();
-                    var excludedNames = new List<StringWrapper>();
-                    foreach (KeyValuePair<short, string> i in currentNames) {
-                        if (NPC.CountNPCS(i.Key) != 0 && StringWrapper.ListContains(list, i.Value)) {
-                            bool contains = false;
-                            foreach (StringWrapper j in listsIntersection) {
-                                if (j.str == i.Value) { contains = true; break; }
-                            }
-                            if (!contains) {
-                                listsIntersection.Add(i.Value);
+                    foreach (StringWrapper i in list) {
+                        foreach (KeyValuePair<short, string> j in currentNames) {
+                            if (i.ToString() == j.Value) {
+                                listsIntersection.Add(i);
+                                break;
                             }
                         }
                     }
 
-                    if (listsIntersection.Count < list.Count) {
-                        foreach (StringWrapper i in listsIntersection) {
-                            foreach (StringWrapper j in list) {
-                                if (i.str == j.str) { excludedNames.Add(j); }
-                            }
-                        }
-
-                        foreach (StringWrapper i in excludedNames) {
-                            list.Remove(i);
-                        }
+                    foreach (StringWrapper i in listsIntersection) {
+                        list.Remove(i);
                     }
+
+                    if (list.Count == 0) { list = listsIntersection; }
                 }
 
-                currentNames[type] = (string)list[Main.rand.Next(list.Count)];
+                currentNames[type] = list[Main.rand.Next(list.Count)].ToString();
             }
         }
         
@@ -238,14 +238,25 @@ namespace CustomNPCNames.NPCs
                         }
                     }
                 } else {
-                    currentNames[(short)npc.type] = null;
+                    currentNames[(short)npc.type] = "\0";
                 }
             }
         }
 
+        public override bool CheckDead(NPC npc)
+        {
+            bool dead = base.CheckDead(npc);
+
+            if (dead && currentNames.ContainsKey((short)npc.type) && currentNames[(short)npc.type] != "\0") {
+                currentNames[(short)npc.type] = "\0";
+            }
+
+            return dead;
+        }
+
         public override bool PreAI(NPC npc)
         {
-            if (currentNames.ContainsKey((short)npc.type) && currentNames[(short)npc.type] != null)
+            if (currentNames.ContainsKey((short)npc.type) && currentNames[(short)npc.type] != "\0")
             {
                 if (npc.GivenName != currentNames[(short)npc.type])
                 {

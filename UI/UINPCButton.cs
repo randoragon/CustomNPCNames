@@ -40,6 +40,11 @@ namespace CustomNPCNames.UI
             Append(NpcHead);
         }
 
+        public static void Unload()
+        {
+            Selection = null;
+        }
+
         public static void Refresh()
         {
             if (Selection != null) {
