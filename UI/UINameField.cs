@@ -88,21 +88,18 @@ namespace CustomNPCNames.UI
 
             if (!hadFocus && HasFocus) {
                 lastName = editName;
+            }            
+
+            if (!HasFocus && IsNew) {
+                IsNew = false;
+                CustomWorld.CustomNames[RenameUI.SelectedNPC].Add(name);
             }
 
             // Sync world data when necessary - only if the entry was exited from, and only if its contents have been altered. This is to minimize overhead
             if (hadFocus && !HasFocus && lastName != editName) {
                 Name = editName;
                 CustomWorld.SyncWorldData();
-            }
-
-            if (!HasFocus && IsNew) {
-                IsNew = false;
-                CustomWorld.CustomNames[RenameUI.SelectedNPC].Add(name);
-                CustomWorld.SyncWorldData();
-            }
-
-            if (RenameUI.removeMode && HasFocus) {
+            } else if (RenameUI.removeMode && HasFocus) {
                 CustomWorld.CustomNames[UINPCButton.Selection.npcId].Remove(name);
                 RenameUI.panelList.RemoveName(this);
                 Deselect();

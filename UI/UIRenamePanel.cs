@@ -27,6 +27,7 @@ namespace CustomNPCNames.UI
                 return (mouse.X >= pos.X && mouse.X <= pos.X + pos.Width && mouse.Y >= pos.Y && mouse.Y <= pos.Y + pos.Height);
             }
         }
+        private string lastName;
 
         public UIRenamePanel() : base()
         {
@@ -63,6 +64,7 @@ namespace CustomNPCNames.UI
                 RemoveChild(idleVariant);
                 Append(focusVariant);
                 cursorClock = 0;
+                lastName = Text;
             } else if (!hover && MouseButtonPressed(this) && HasFocus)
             {
                 Deselect();
@@ -120,13 +122,14 @@ namespace CustomNPCNames.UI
         public override void Deselect(bool save = true)
         {
             HasFocus = false;
-            if (save)
+            if (lastName != focusVariant.Text && save)
             {
                 idleVariant.SetText(focusVariant.Text);
                 if (RenameUI.IsNPCSelected && RenameUI.SelectedNPC != 1000 && RenameUI.SelectedNPC != 1001 && RenameUI.SelectedNPC != 1002) {
                     NPCs.CustomNPC.currentNames[RenameUI.SelectedNPC] = idleVariant.Text;
                     CustomWorld.SyncWorldData();
                 }
+                lastName = Text;
             }
             RemoveChild(focusVariant);
             Append(idleVariant);

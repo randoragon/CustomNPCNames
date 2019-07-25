@@ -239,6 +239,7 @@ namespace CustomNPCNames
 
         public static void SyncWorldData()
         {
+            Main.NewText("Sync! " + Main.time);
             NetMessage.SendData(MessageID.WorldData);
         }
 
@@ -246,7 +247,9 @@ namespace CustomNPCNames
         {
             packet.Write(mode);
             packet.Write(tryUnique);
+            packet.Write(CustomNames.Count); // this theoretically should be constant and equal to 27 (24 NPCs + male, female and global), but it's safer to send the size anyway
             foreach (KeyValuePair<short, List<StringWrapper>> i in CustomNames) {
+                packet.Write(i.Value.Count);
                 foreach (StringWrapper j in i.Value) {
                     packet.Write(j.ToString());
                 }
@@ -264,10 +267,15 @@ namespace CustomNPCNames
             mode = reader.ReadByte();
             tryUnique = reader.ReadBoolean();
             foreach (KeyValuePair<short, List<StringWrapper>> i in CustomNames) {
-                foreach (StringWrapper j in i.Value) {
-                    j.str = reader.ReadString();
+                int size = reader.ReadInt32();
+                while (i.Value.Count < size) { i.Value.Add(""); }
+                while (i.Value.Count > size) { i.Value.RemoveAt(0); }
+                for (int j = 0; j < size; j++) {
+                    i.Value[j] = reader.ReadString();
                 }
             }
+            UI.RenameUI.panelList.PrintContent();
+
             foreach (short i in CustomNPCNames.TownNPCs) {
                 NPCs.CustomNPC.currentNames[i] = reader.ReadString();
             }
