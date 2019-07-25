@@ -520,8 +520,8 @@ namespace CustomNPCNames.UI
 
             if (removeMode) {
                 var mouse = Mouse.GetState();
-                trashIcon.Left.Set(mouse.X + 15, 0);
-                trashIcon.Top.Set(mouse.Y + 15, 0);
+                trashIcon.Left.Set((mouse.X + 15) / Main.UIScale, 0);
+                trashIcon.Top.Set((mouse.Y + 15) / Main.UIScale, 0);
             }
         }
 
