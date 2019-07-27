@@ -15,15 +15,7 @@ namespace CustomNPCNames.UI
             set
             {
                 CustomWorld.tryUnique = value;
-                if (value) {
-                    BorderColor = new Color(0, 40, 0);
-                    BackgroundColor = new Color(0, 150, 0);
-                    SetText("UNIQUE NAMES: ON");
-                } else {
-                    BorderColor = new Color(40, 0, 0);
-                    BackgroundColor = new Color(150, 0, 0);
-                    SetText("UNIQUE NAMES: OFF");
-                }
+                UpdateState();
             }
         }
         bool IDragableUIPanelChild.Hover
@@ -44,6 +36,19 @@ namespace CustomNPCNames.UI
             State = true;
         }
 
+        public void UpdateState()
+        {
+            if (CustomWorld.tryUnique) {
+                BorderColor = new Color(0, 40, 0);
+                BackgroundColor = new Color(0, 150, 0);
+                SetText("UNIQUE NAMES: ON");
+            } else {
+                BorderColor = new Color(40, 0, 0);
+                BackgroundColor = new Color(150, 0, 0);
+                SetText("UNIQUE NAMES: OFF");
+            }
+        }
+
         public override void Update(GameTime gameTime)
         {
             base.Update(gameTime);
@@ -57,7 +62,7 @@ namespace CustomNPCNames.UI
             if (MouseButtonPressed(this) && hover)
             {
                 State = !CustomWorld.tryUnique;
-                CustomWorld.SyncWorldData();
+                Network.PacketSender.SendPacketToServer(Network.PacketType.TRY_UNIQUE);
             }
         }
 

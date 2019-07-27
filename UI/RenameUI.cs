@@ -541,6 +541,9 @@ namespace CustomNPCNames.UI
 
         public void UpdateUIStates()
         {
+            modeCycleButton.UpdateState();
+            uniqueNameButton.UpdateState();
+
             if (IsNPCSelected) {
                 short id = SelectedNPC;
                 bool noNames = (CustomWorld.mode == 1 && id != 1000 && id != 1001 && id != 1002 && CustomWorld.CustomNames[id].Count == 0)

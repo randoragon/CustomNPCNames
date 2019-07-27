@@ -5,13 +5,14 @@ using CustomNPCNames.UI;
 using Terraria.UI;
 using Terraria;
 using Microsoft.Xna.Framework;
-using System;
+using System.IO;
+using CustomNPCNames.Network;
 
 namespace CustomNPCNames
 {
     class CustomNPCNames : Mod
     {
-        
+        public static CustomNPCNames instance;
         public static readonly short[] TownNPCs = {
             NPCID.Guide,         NPCID.Merchant,        NPCID.Nurse,
             NPCID.Demolitionist, NPCID.DyeTrader,       NPCID.Dryad,
@@ -57,6 +58,8 @@ namespace CustomNPCNames
 
         public override void Load()
         {
+            instance = this;
+
             // this makes sure that the UI doesn't get opened on the server console
             if (!Main.dedServ)
             {
@@ -66,6 +69,21 @@ namespace CustomNPCNames
                 renameInterface = new UserInterface();
                 renameInterface.SetState(renameUI);
             }
+        }
+
+        public override void HandlePacket(BinaryReader reader, int whoAmI)
+        {
+                byte type = reader.ReadByte();
+                switch (type) {
+                    case PacketType.MODE:
+                        CustomWorld.mode = reader.ReadByte();
+                        break;
+                    case PacketType.TRY_UNIQUE:
+                        CustomWorld.tryUnique = (reader.ReadByte() == 1 ? true : false);
+                        break;
+                }
+
+                CustomWorld.SyncWorldData();
         }
 
         public override void Unload()

@@ -15,13 +15,7 @@ namespace CustomNPCNames.UI
             set
             {
                 CustomWorld.mode = value;
-                switch (value)
-                {
-                    case 0: SetText("USING: VANILLA NAMES"); break;
-                    case 1: SetText("USING: CUSTOM NAMES");  break;
-                    case 2: SetText("USING: GENDER NAMES");  break;
-                    case 3: SetText("USING: GLOBAL NAMES");  break;
-                }
+                UpdateState();
             }
         }
         bool IDragableUIPanelChild.Hover
@@ -44,6 +38,16 @@ namespace CustomNPCNames.UI
             BorderColor = new Color(30, 10, 51);
             BackgroundColor = new Color(150, 50, 255);
         }
+        
+        public void UpdateState()
+        {
+            switch (CustomWorld.mode) {
+                case 0: SetText("USING: VANILLA NAMES"); break;
+                case 1: SetText("USING: CUSTOM NAMES"); break;
+                case 2: SetText("USING: GENDER NAMES"); break;
+                case 3: SetText("USING: GLOBAL NAMES"); break;
+            }
+        }
 
         public override void Update(GameTime gameTime)
         {
@@ -58,10 +62,10 @@ namespace CustomNPCNames.UI
             if (hover) {
                 if (MouseButtonPressed(this)) {
                     State = (byte)(++CustomWorld.mode % 4);
-                    CustomWorld.SyncWorldData();
+                    Network.PacketSender.SendPacketToServer(Network.PacketType.MODE);
                 } else if (MouseRButtonPressed(this)) {
                     State = (byte)(--CustomWorld.mode % 4);
-                    CustomWorld.SyncWorldData();
+                    Network.PacketSender.SendPacketToServer(Network.PacketType.MODE);
                 }
             }
         }
