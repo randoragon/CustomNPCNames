@@ -332,7 +332,9 @@ namespace CustomNPCNames.UI
                 if (KeyPressed(Keys.Back)) { return '\b'; }
                 for (Keys i = Keys.A; i <= Keys.Z; i++)
                 {
-                    if (KeyPressed(i)) { return (char)((int)i - ((!KeyHeld(Keys.LeftShift) && !KeyHeld(Keys.RightShift)) ? ('A' - 'a') : 0)); }
+                    bool capslock = System.Windows.Forms.Control.IsKeyLocked(System.Windows.Forms.Keys.CapsLock);
+                    bool uppercase = capslock ^ Main.keyState.PressingShift();
+                    if (KeyPressed(i)) { return (char)((int)i - (!uppercase ? ('A' - 'a') : 0)); }
                 }
 
                 for (Keys i = Keys.D0; i <= Keys.D9; i++)

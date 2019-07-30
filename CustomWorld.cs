@@ -13,6 +13,7 @@ namespace CustomNPCNames
         public static byte mode;
         public static bool tryUnique;
         public static bool saveAndExit = false; // this is turned to true in CustomNPCNames.PreSaveAndExit() to distinguish autosave from save&exit
+        public static bool updateNameList = false; // this is turned to true in NetReceive() to print renameUI's panelList's contents to the screen
 
         public CustomWorld()
         {
@@ -47,6 +48,7 @@ namespace CustomNPCNames
                 List<string> list = new List<string>();
                 foreach (StringWrapper j in i.Value) {
                     list.Add((string)j);
+                    list.Add(System.Convert.ToString((long)j.ID));
                 }
                 nameStrings.Add(i.Key, list);
             }
@@ -156,33 +158,33 @@ namespace CustomNPCNames
         public override void Load(TagCompound tag)
         {
             if (tag.ContainsKey("guide")) {
-                CustomNames[NPCID.Guide]              = StringWrapper.ConvertList(tag.GetList<string>("guide"));
-                CustomNames[NPCID.Merchant]           = StringWrapper.ConvertList(tag.GetList<string>("merchant"));
-                CustomNames[NPCID.Nurse]              = StringWrapper.ConvertList(tag.GetList<string>("nurse"));
-                CustomNames[NPCID.Demolitionist]      = StringWrapper.ConvertList(tag.GetList<string>("demolitionist"));
-                CustomNames[NPCID.DyeTrader]          = StringWrapper.ConvertList(tag.GetList<string>("dyetrader"));
-                CustomNames[NPCID.Dryad]              = StringWrapper.ConvertList(tag.GetList<string>("dryad"));
-                CustomNames[NPCID.DD2Bartender]       = StringWrapper.ConvertList(tag.GetList<string>("tavernkeep"));
-                CustomNames[NPCID.ArmsDealer]         = StringWrapper.ConvertList(tag.GetList<string>("armsdealer"));
-                CustomNames[NPCID.Stylist]            = StringWrapper.ConvertList(tag.GetList<string>("stylist"));
-                CustomNames[NPCID.Painter]            = StringWrapper.ConvertList(tag.GetList<string>("painter"));
-                CustomNames[NPCID.Angler]             = StringWrapper.ConvertList(tag.GetList<string>("angler"));
-                CustomNames[NPCID.GoblinTinkerer]     = StringWrapper.ConvertList(tag.GetList<string>("goblintinkerer"));
-                CustomNames[NPCID.WitchDoctor]        = StringWrapper.ConvertList(tag.GetList<string>("witchdoctor"));
-                CustomNames[NPCID.Clothier]           = StringWrapper.ConvertList(tag.GetList<string>("clothier"));
-                CustomNames[NPCID.Mechanic]           = StringWrapper.ConvertList(tag.GetList<string>("mechanic"));
-                CustomNames[NPCID.PartyGirl]          = StringWrapper.ConvertList(tag.GetList<string>("partygirl"));
-                CustomNames[NPCID.Wizard]             = StringWrapper.ConvertList(tag.GetList<string>("wizard"));
-                CustomNames[NPCID.TaxCollector]       = StringWrapper.ConvertList(tag.GetList<string>("taxcollector"));
-                CustomNames[NPCID.Truffle]            = StringWrapper.ConvertList(tag.GetList<string>("truffle"));
-                CustomNames[NPCID.Pirate]             = StringWrapper.ConvertList(tag.GetList<string>("pirate"));
-                CustomNames[NPCID.Steampunker]        = StringWrapper.ConvertList(tag.GetList<string>("steampunker"));
-                CustomNames[NPCID.Cyborg]             = StringWrapper.ConvertList(tag.GetList<string>("cyborg"));
-                CustomNames[NPCID.SantaClaus]         = StringWrapper.ConvertList(tag.GetList<string>("santaclaus"));
-                CustomNames[NPCID.TravellingMerchant] = StringWrapper.ConvertList(tag.GetList<string>("travellingmerchant"));
-                CustomNames[1000] = StringWrapper.ConvertList(tag.GetList<string>("male"));
-                CustomNames[1001] = StringWrapper.ConvertList(tag.GetList<string>("female"));
-                CustomNames[1002] = StringWrapper.ConvertList(tag.GetList<string>("global"));
+                CustomNames[NPCID.Guide]              = StringWrapper.ConvertSaveList(tag.GetList<string>("guide"));
+                CustomNames[NPCID.Merchant]           = StringWrapper.ConvertSaveList(tag.GetList<string>("merchant"));
+                CustomNames[NPCID.Nurse]              = StringWrapper.ConvertSaveList(tag.GetList<string>("nurse"));
+                CustomNames[NPCID.Demolitionist]      = StringWrapper.ConvertSaveList(tag.GetList<string>("demolitionist"));
+                CustomNames[NPCID.DyeTrader]          = StringWrapper.ConvertSaveList(tag.GetList<string>("dyetrader"));
+                CustomNames[NPCID.Dryad]              = StringWrapper.ConvertSaveList(tag.GetList<string>("dryad"));
+                CustomNames[NPCID.DD2Bartender]       = StringWrapper.ConvertSaveList(tag.GetList<string>("tavernkeep"));
+                CustomNames[NPCID.ArmsDealer]         = StringWrapper.ConvertSaveList(tag.GetList<string>("armsdealer"));
+                CustomNames[NPCID.Stylist]            = StringWrapper.ConvertSaveList(tag.GetList<string>("stylist"));
+                CustomNames[NPCID.Painter]            = StringWrapper.ConvertSaveList(tag.GetList<string>("painter"));
+                CustomNames[NPCID.Angler]             = StringWrapper.ConvertSaveList(tag.GetList<string>("angler"));
+                CustomNames[NPCID.GoblinTinkerer]     = StringWrapper.ConvertSaveList(tag.GetList<string>("goblintinkerer"));
+                CustomNames[NPCID.WitchDoctor]        = StringWrapper.ConvertSaveList(tag.GetList<string>("witchdoctor"));
+                CustomNames[NPCID.Clothier]           = StringWrapper.ConvertSaveList(tag.GetList<string>("clothier"));
+                CustomNames[NPCID.Mechanic]           = StringWrapper.ConvertSaveList(tag.GetList<string>("mechanic"));
+                CustomNames[NPCID.PartyGirl]          = StringWrapper.ConvertSaveList(tag.GetList<string>("partygirl"));
+                CustomNames[NPCID.Wizard]             = StringWrapper.ConvertSaveList(tag.GetList<string>("wizard"));
+                CustomNames[NPCID.TaxCollector]       = StringWrapper.ConvertSaveList(tag.GetList<string>("taxcollector"));
+                CustomNames[NPCID.Truffle]            = StringWrapper.ConvertSaveList(tag.GetList<string>("truffle"));
+                CustomNames[NPCID.Pirate]             = StringWrapper.ConvertSaveList(tag.GetList<string>("pirate"));
+                CustomNames[NPCID.Steampunker]        = StringWrapper.ConvertSaveList(tag.GetList<string>("steampunker"));
+                CustomNames[NPCID.Cyborg]             = StringWrapper.ConvertSaveList(tag.GetList<string>("cyborg"));
+                CustomNames[NPCID.SantaClaus]         = StringWrapper.ConvertSaveList(tag.GetList<string>("santaclaus"));
+                CustomNames[NPCID.TravellingMerchant] = StringWrapper.ConvertSaveList(tag.GetList<string>("travellingmerchant"));
+                CustomNames[1000] = StringWrapper.ConvertSaveList(tag.GetList<string>("male"));
+                CustomNames[1001] = StringWrapper.ConvertSaveList(tag.GetList<string>("female"));
+                CustomNames[1002] = StringWrapper.ConvertSaveList(tag.GetList<string>("global"));
                 NPCs.CustomNPC.currentNames[NPCID.Guide]              = tag.GetString("guide-current");
                 NPCs.CustomNPC.currentNames[NPCID.Merchant]           = tag.GetString("merchant-current");
                 NPCs.CustomNPC.currentNames[NPCID.Nurse]              = tag.GetString("nurse-current");
@@ -251,6 +253,7 @@ namespace CustomNPCNames
                 packet.Write(i.Value.Count);
                 foreach (StringWrapper j in i.Value) {
                     packet.Write(j.ToString());
+                    packet.Write(j.ID);
                 }
             }
             foreach (short i in CustomNPCNames.TownNPCs) {
@@ -270,10 +273,13 @@ namespace CustomNPCNames
                 while (i.Value.Count < size) { i.Value.Add(""); }
                 while (i.Value.Count > size) { i.Value.RemoveAt(0); }
                 for (int j = 0; j < size; j++) {
-                    i.Value[j] = reader.ReadString();
+                    string name = reader.ReadString();
+                    ulong id = reader.ReadUInt64();
+                    i.Value[j] = new StringWrapper(ref name, id);
                 }
             }
             if (Main.netMode == NetmodeID.MultiplayerClient) {
+                updateNameList = true;
                 Main.NewText("Receiving " + Main.time);
             }
 

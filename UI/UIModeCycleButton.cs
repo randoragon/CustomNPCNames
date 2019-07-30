@@ -2,6 +2,7 @@
 using Terraria.UI;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
+using Terraria.ID;
 
 namespace CustomNPCNames.UI
 {
@@ -61,11 +62,17 @@ namespace CustomNPCNames.UI
 
             if (hover) {
                 if (MouseButtonPressed(this)) {
-                    State = (byte)(++CustomWorld.mode % 4);
-                    Network.PacketSender.SendPacketToServer(Network.PacketType.MODE);
+                    if (Main.netMode == NetmodeID.SinglePlayer) {
+                        State = (byte)(++CustomWorld.mode % 4);
+                    } else if (Main.netMode == NetmodeID.MultiplayerClient) {
+                        Network.PacketSender.SendPacketToServer(Network.PacketType.NEXT_MODE);
+                    }
                 } else if (MouseRButtonPressed(this)) {
-                    State = (byte)(--CustomWorld.mode % 4);
-                    Network.PacketSender.SendPacketToServer(Network.PacketType.MODE);
+                    if (Main.netMode == NetmodeID.SinglePlayer) {
+                        State = (byte)(--CustomWorld.mode % 4);
+                    } else if (Main.netMode == NetmodeID.MultiplayerClient) {
+                        Network.PacketSender.SendPacketToServer(Network.PacketType.PREV_MODE);
+                    }
                 }
             }
         }

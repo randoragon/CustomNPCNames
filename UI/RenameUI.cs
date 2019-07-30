@@ -40,6 +40,7 @@ namespace CustomNPCNames.UI
         public static UIToggleText listMessage;
         public static UIToggleText listCount;
         public static bool removeMode = false;
+        public static bool panelListReady = false; // UIList for 1 tick has all UIElements in one place after printing it. It needs to be locked when that happens to avoid multiple removals/selections etc.
         public static UIImage trashIcon;
         public static bool carry = true;
         public static ListData copyData;
@@ -361,17 +362,8 @@ namespace CustomNPCNames.UI
         private void AddButtonClicked(UIMouseEvent evt, UIElement listeningElement)
         {
             SetRemoveMode(false);
-
-            string newName = "";
-            var newWrapper = new StringWrapper(ref newName);
-
-            var field = new UINameField(newWrapper, (uint)panelList.Count);
-            field.IsNew = true;
-            panelList.Add(field);
-            DeselectAllEntries();
             panelListScrollbar.ViewPosition = 0;
-            field.HasFocus = true;
-            field.Select();
+            panelList.AddNew();
         }
 
         private void RemoveButtonClicked(UIMouseEvent evt, UIElement listeningElement)
@@ -381,73 +373,62 @@ namespace CustomNPCNames.UI
 
         public void SetRemoveMode(bool active)
         {
-            removeMode = active;
-
-            if (!active) {
+            if (removeMode && !active) {
                 DeselectAllEntries();
                 RemoveChild(trashIcon);
                 removeButton.SetVisibility(1f, 0.5f);
                 removeButton.HoverText = "Remove Name";
-            } else {
+            } else if (!removeMode && active) {
                 Append(trashIcon);
                 removeButton.SetVisibility(1f, 1f);
                 removeButton.HoverText = "";
             }
+
+            removeMode = active;
         }
 
         private void ClearButtonClicked(UIMouseEvent evt, UIElement listeningElement)
         {
             KeyboardState key = Keyboard.GetState();
             if (key.IsKeyDown(Keys.LeftAlt) || key.IsKeyDown(Keys.RightAlt)) {
+                CustomWorld.CustomNames[SelectedNPC].Clear();
                 foreach (UINameField i in panelList._items) {
-                    CustomWorld.CustomNames[SelectedNPC].Remove(i.NameWrapper);
                     panelList.RemoveName(i);
                 }
-                CustomWorld.SyncWorldData();
+                Network.PacketSender.SendPacketToServer(Network.PacketType.SEND_CUSTOM_NAMES, SelectedNPC);
             }
         }
 
         private void SwitchGenderButtonClicked(UIMouseEvent evt, UIElement listeningElement)
         {
-            NPCs.CustomNPC.isMale[SelectedNPC] = !NPCs.CustomNPC.isMale[SelectedNPC];
             npcPreview.UpdateNPC(SelectedNPC);
-            CustomWorld.SyncWorldData();
+            if (Main.netMode == NetmodeID.SinglePlayer) {
+                NPCs.CustomNPC.isMale[SelectedNPC] = !NPCs.CustomNPC.isMale[SelectedNPC];
+            } else if (Main.netMode == NetmodeID.MultiplayerClient) {
+                Network.PacketSender.SendPacketToServer(Network.PacketType.SWITCH_GENDER, SelectedNPC);
+            }
         }
 
         private void RandomizeButtonClicked(UIMouseEvent evt, UIElement listeningElement)
         {
             if (SelectedNPC != 1000 && SelectedNPC != 1001 && SelectedNPC != 1002) {
                 string oldName = NPCs.CustomNPC.currentNames[SelectedNPC];
-
                 NPCs.CustomNPC.RandomizeName(SelectedNPC);
-
-                if (oldName != NPCs.CustomNPC.currentNames[SelectedNPC]) {
-                    CustomWorld.SyncWorldData();
-                }
             } else if (SelectedNPC == 1000) {
                 var old = new Dictionary<short, string>();
                 foreach (short i in CustomNPCNames.TownNPCs) {
                     if (NPCs.CustomNPC.isMale[i]) { old.Add(i, NPCs.CustomNPC.currentNames[i]); }
                 }
                 NPCs.CustomNPC.RandomizeName(SelectedNPC);
-                foreach (short i in CustomNPCNames.TownNPCs) {
-                    if (NPCs.CustomNPC.isMale[i] && old[i] != NPCs.CustomNPC.currentNames[i]) { CustomWorld.SyncWorldData(); break; }
-                }
             } else if (SelectedNPC == 1001) {
                 var old = new Dictionary<short, string>();
                 foreach (short i in CustomNPCNames.TownNPCs) {
                     if (!NPCs.CustomNPC.isMale[i]) { old.Add(i, NPCs.CustomNPC.currentNames[i]); }
                 }
                 NPCs.CustomNPC.RandomizeName(SelectedNPC);
-                foreach (short i in CustomNPCNames.TownNPCs) {
-                    if (!NPCs.CustomNPC.isMale[i] && old[i] != NPCs.CustomNPC.currentNames[i]) { CustomWorld.SyncWorldData(); break; }
-                }
             } else if (SelectedNPC == 1002) {
                 var old = new Dictionary<short, string>(NPCs.CustomNPC.currentNames);
                 NPCs.CustomNPC.RandomizeName(SelectedNPC);
-                foreach (short i in CustomNPCNames.TownNPCs) {
-                    if (old[i] != NPCs.CustomNPC.currentNames[i]) { CustomWorld.SyncWorldData(); break; }
-                }
             }
         }
 
@@ -679,8 +660,7 @@ namespace CustomNPCNames.UI
                 randomizeButtonInactive.HoverText = "No NPC Selected";
             }
 
-            var k = Keyboard.GetState();
-            if (!k.IsKeyDown(Keys.LeftAlt) && !k.IsKeyDown(Keys.RightAlt)) {
+            if (!Main.keyState.IsKeyDown(Keys.LeftAlt) && !Main.keyState.IsKeyDown(Keys.RightAlt)) {
                 copyButton.SetImage(ModContent.GetTexture("CustomNPCNames/UI/copy_button"));
                 copyButton.HoverText = "Copy Everything\n(Hold Alt to Cut)";
             } else {
@@ -771,7 +751,7 @@ namespace CustomNPCNames.UI
     }
 
     /// <summary>
-    /// This struct is a container for all lists data, it is used to make copying, pasting and carrying data between worlds easier.
+    /// This struct is a container for all lists data, it is used to make copying and pasting data between worlds easier.
     /// </summary>
     internal struct ListData
     {
@@ -800,19 +780,22 @@ namespace CustomNPCNames.UI
 
         public void Paste()
         {
-            RenameUI.modeCycleButton.State = mode;
-            RenameUI.uniqueNameButton.State = tryUnique;
-            if (customNames != null) {
-                foreach (KeyValuePair<short, List<string>> i in customNames) {
-                    CustomWorld.CustomNames[i.Key] = StringWrapper.ConvertList(i.Value);
+            if (Main.netMode == NetmodeID.SinglePlayer) {
+                RenameUI.modeCycleButton.State = mode;
+                RenameUI.uniqueNameButton.State = tryUnique;
+                if (customNames != null) {
+                    foreach (KeyValuePair<short, List<string>> i in customNames) {
+                        CustomWorld.CustomNames[i.Key] = StringWrapper.ConvertList(i.Value);
+                    }
                 }
-            }
-            if (isMale != null) {
-                foreach (KeyValuePair<short, bool> i in isMale) {
-                    NPCs.CustomNPC.isMale[i.Key] = i.Value;
+                if (isMale != null) {
+                    foreach (KeyValuePair<short, bool> i in isMale) {
+                        NPCs.CustomNPC.isMale[i.Key] = i.Value;
+                    }
                 }
+            } else if (Main.netMode == NetmodeID.MultiplayerClient) {
+                Network.PacketSender.SendPacketToServer(Network.PacketType.SEND_EVERYTHING);
             }
-            CustomWorld.SyncWorldData();
         }
     }
 }

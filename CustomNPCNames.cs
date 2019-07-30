@@ -1,12 +1,14 @@
-using Terraria.ModLoader;
 using System.Collections.Generic;
-using Terraria.ID;
-using CustomNPCNames.UI;
-using Terraria.UI;
-using Terraria;
-using Microsoft.Xna.Framework;
+using System;
 using System.IO;
+using Terraria;
+using Terraria.ModLoader;
+using Terraria.ID;
+using Terraria.UI;
+using Microsoft.Xna.Framework;
+using CustomNPCNames.UI;
 using CustomNPCNames.Network;
+
 
 namespace CustomNPCNames
 {
@@ -59,10 +61,8 @@ namespace CustomNPCNames
         public override void Load()
         {
             instance = this;
-
             // this makes sure that the UI doesn't get opened on the server console
-            if (!Main.dedServ)
-            {
+            if (!Main.dedServ) {
                 RenameMenuHotkey = RegisterHotKey("Toggle Menu", "K");
                 renameUI = new RenameUI();
                 renameUI.Initialize();
@@ -73,17 +73,144 @@ namespace CustomNPCNames
 
         public override void HandlePacket(BinaryReader reader, int whoAmI)
         {
-                byte type = reader.ReadByte();
-                switch (type) {
-                    case PacketType.MODE:
-                        CustomWorld.mode = reader.ReadByte();
-                        break;
-                    case PacketType.TRY_UNIQUE:
-                        CustomWorld.tryUnique = (reader.ReadByte() == 1 ? true : false);
-                        break;
-                }
+            byte type = reader.ReadByte();
+            switch (type) {
+                case PacketType.NEXT_MODE:
+                    CustomWorld.mode = (byte)(++CustomWorld.mode % 4);
+                    CustomWorld.SyncWorldData();
+                    break;
+                case PacketType.PREV_MODE:
+                    CustomWorld.mode = (byte)(--CustomWorld.mode % 4);
+                    CustomWorld.SyncWorldData();
+                    break;
+                case PacketType.TOGGLE_TRY_UNIQUE:
+                    CustomWorld.tryUnique = !CustomWorld.tryUnique;
+                    CustomWorld.SyncWorldData();
+                    break;
+                case PacketType.SEND_CURRENT_NAMES: {
+                        short id = reader.ReadInt16();
+                        if (id != 1000 && id != 1001 && id != 1002) {
+                            NPCs.CustomNPC.currentNames[id] = reader.ReadString();
+                            CustomWorld.SyncWorldData();
+                        } else if (id == 1000) {
+                            var ids = new List<short>();
+                            foreach (short i in TownNPCs) {
+                                if (NPCs.CustomNPC.isMale[i]) {
+                                    ids.Add(i);
+                                }
+                            }
+                            int index = reader.ReadInt32();
+                            byte offset = reader.ReadByte();
+                            bool lastPacket = reader.ReadBoolean();
+                            for (int i = index; i < index + offset; i++) {
+                                NPCs.CustomNPC.currentNames[ids[i]] = reader.ReadString();
+                            }
+                            CustomWorld.SyncWorldData();
+                        }
+                    }
+                    break;
+                case PacketType.SWITCH_GENDER: {
+                        short id = reader.ReadInt16();
+                        NPCs.CustomNPC.isMale[id] = !NPCs.CustomNPC.isMale[id];
+                        CustomWorld.SyncWorldData();
+                    }
+                    break;
+                case PacketType.SEND_CUSTOM_NAMES: {
+                        short id = reader.ReadInt16();
+                        int index = reader.ReadInt32();
+                        if (index != -1) {
+                            byte offset = reader.ReadByte();
+                            bool lastPacket = reader.ReadBoolean();
+                            while (CustomWorld.CustomNames[id].Count < index + offset) {
+                                CustomWorld.CustomNames[id].Add("");
+                            }
+                            if (lastPacket) {
+                                int overshoot = CustomWorld.CustomNames[id].Count - (index + offset);
+                                if (overshoot > 0) {
+                                    CustomWorld.CustomNames[id].RemoveRange(index + offset, overshoot);
+                                }
+                            }
+                            for (int i = index; i < index + offset; i++) {
+                                CustomWorld.CustomNames[id][i] = reader.ReadString();
+                            }
 
-                CustomWorld.SyncWorldData();
+                            if (lastPacket) { CustomWorld.SyncWorldData(); }
+                        } else {
+                            CustomWorld.CustomNames[id].Clear();
+                            CustomWorld.SyncWorldData();
+                        }
+                    }
+                    break;
+                case PacketType.SEND_EVERYTHING: {
+                        byte number = reader.ReadByte();
+                        switch (number) {
+                            case 1:
+                                CustomWorld.mode = reader.ReadByte();
+                                CustomWorld.tryUnique = reader.ReadBoolean();
+                                break;
+                            case 2:
+                            case 3:
+                            case 4:
+                                for (int i = (number - 2) * 8; i < (number - 1) * 8; i++) {
+                                    NPCs.CustomNPC.currentNames[TownNPCs[i]] = reader.ReadString();
+                                }
+                                break;
+                            case 5: {
+                                    // isMale
+                                    for (int i = 0; i < 3; i++) {
+                                        BitsByte b = reader.ReadByte();
+                                        for (int j = 0; j < 8; j++) {
+                                            NPCs.CustomNPC.isMale[TownNPCs[(short)((8 * i) + j)]] = b[j];
+                                        }
+                                    }
+                                }
+                                break;
+                        }
+
+                        CustomWorld.SyncWorldData();
+                    }
+                    break;
+                case PacketType.RANDOMIZE: {
+                        short id = reader.ReadInt16();
+                        NPCs.CustomNPC.RandomizeName(id);
+                        CustomWorld.SyncWorldData();
+                    }
+                    break;
+                case PacketType.ADD_NAME: {
+                        short id = reader.ReadInt16();
+                        string name = reader.ReadString();
+                        ulong nameID = reader.ReadUInt64();
+                        var newWrapper = new StringWrapper(ref name, nameID);
+                        CustomWorld.CustomNames[id].Add(newWrapper);
+                        CustomWorld.SyncWorldData();
+                    }
+                    break;
+                case PacketType.EDIT_NAME: {
+                        short id = reader.ReadInt16();
+                        string name = reader.ReadString();
+                        ulong nameID = reader.ReadUInt64();
+                        foreach (StringWrapper i in CustomWorld.CustomNames[id]) {
+                            if (i.ID == nameID) {
+                                i.str = name;
+                                break;
+                            }
+                        }
+                        CustomWorld.SyncWorldData();
+                    }
+                    break;
+                case PacketType.REMOVE_NAME: {
+                        short id = reader.ReadInt16();
+                        ulong nameID = reader.ReadUInt64();
+                        for (int i = 0; i < CustomWorld.CustomNames[id].Count; i++) {
+                            if (CustomWorld.CustomNames[id][i].ID == nameID) {
+                                CustomWorld.CustomNames[id].RemoveAt(i);
+                                break;
+                            }
+                        }
+                        CustomWorld.SyncWorldData();
+                    }
+                    break;
+            }
         }
 
         public override void Unload()
@@ -102,17 +229,15 @@ namespace CustomNPCNames
         public override void UpdateUI(GameTime gameTime)
         {
             // it will only draw if the player is not on the main menu
-            if (!Main.gameMenu && RenameUI.Visible)
-            {
+            if (!Main.gameMenu && RenameUI.Visible) {
                 renameInterface.Update(gameTime);
             }
         }
-        
+
         public override void ModifyInterfaceLayers(List<GameInterfaceLayer> layers)
         {
             int mouseTextIndex = layers.FindIndex(layer => layer.Name.Equals("Vanilla: Mouse Text"));
-            if (mouseTextIndex != -1)
-            {
+            if (mouseTextIndex != -1) {
                 layers.Insert(mouseTextIndex, new LegacyGameInterfaceLayer("CustomNPCMod: Menu UI", DrawRenameMenuUI, InterfaceScaleType.UI));
             }
         }
@@ -126,8 +251,7 @@ namespace CustomNPCNames
         private bool DrawRenameMenuUI()
         {
             // it will only draw if the player is not on the main menu
-            if (!Main.gameMenu && RenameUI.Visible)
-            {
+            if (!Main.gameMenu && RenameUI.Visible) {
                 renameInterface.Draw(Main.spriteBatch, new GameTime());
             }
             return true;
@@ -135,8 +259,7 @@ namespace CustomNPCNames
 
         public static string GetNPCName(short id)
         {
-            switch (id)
-            {
+            switch (id) {
                 case NPCID.Guide:
                     return "Guide";
                 case NPCID.Merchant:
@@ -192,14 +315,39 @@ namespace CustomNPCNames
     }
 
     /// <summary>
-    /// Makes it possible to store a string by mutable object reference
+    /// Makes it possible to store a string by mutable object reference. Also has an advanced ID system for distinguishing every object on a multiplayer server.
     /// </summary>
     public class StringWrapper
     {
         public string str;
+        public readonly ulong ID;
+        private static Random random = new Random();
 
-        public StringWrapper(ref string str)
-        { this.str = str; }
+        public StringWrapper(ref string str, ulong id = 0)
+        {
+            this.str = str;
+            if (id == 0) {
+                if (Main.netMode == NetmodeID.SinglePlayer || Main.netMode == NetmodeID.MultiplayerClient) {
+                    // ID must always be unique. To achieve that, it will combine datetime information with player information. That way, if two players send information at the same date and time, the IDs will be different because they're different players. If the same player were to send the information twice, it will be distinguishable because of the time difference.
+                    ulong newId = 0x0000000000000000;
+                    ushort userId = (ushort)Main.myPlayer; // ushort is sufficient, it supports up to (2^16)-1 unique players.
+                    var now = DateTime.UtcNow;
+                    ushort month = (ushort)now.Month;
+                    ushort day = (ushort)now.Day;
+                    ulong tickCount = (ulong)now.Ticks;         // converts binary format to unsigned for future parsing reasons
+                    uint time = (uint)(tickCount * 0.0000065);  // convert to 60 ticks per second (the multiplayer is roughly equal to (24*3600*60)/(24*3600*10000000), rounding errors pretty much don't matter here)
+                    newId |= (ulong)userId << 48; // 16 bits
+                    newId |= (ulong)month  << 44; // 4 bits (<=15)
+                    newId |= (ulong)day    << 39; // 5 bits (<=31)
+                    newId |= (ulong)time   << 16; // 23 bits, because (24*3600*60) lies between 2^22 and 2^23.
+                    newId |= (ulong)random.Next() >> 16; // rand.Next() generates an Int32, we have 16 bits left on the buffer, so we cut it in half by bit shifting 16 positions to the right.
+                    // the random value exists because why not, there's 16 bits of data left on the buffer, so this adds an extra layer of security.
+                    ID = newId;
+                }
+            } else {
+                ID = id;
+            }
+        }
 
         public static explicit operator string(StringWrapper wr)
         { return wr.str; }
@@ -219,12 +367,31 @@ namespace CustomNPCNames
             }
         }
 
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
+        
         public static List<StringWrapper> ConvertList(IList<string> list)
         {
             var ret = new List<StringWrapper>();
-            foreach (string s in list)
-            {
+            foreach (string s in list) {
                 ret.Add(s);
+            }
+
+            return ret;
+        }
+
+        /// <summary>
+        /// This method exists exclusively for CustomWorld.Load() method.
+        /// </summary>
+        public static List<StringWrapper> ConvertSaveList(IList<string> list)
+        {
+            var ret = new List<StringWrapper>();
+            for (int i = 0; i < list.Count; i += 2) {
+                string str = list[i];
+                ulong id = Convert.ToUInt64(list[i + 1]);
+                ret.Add(new StringWrapper(ref str, id));
             }
 
             return ret;

@@ -26,6 +26,7 @@ namespace CustomNPCNames.UI
         private KeyboardState curKey;
         protected bool lastKey = false; // false for Keys.Down, true for Keys.Up
         protected int keyClock = 0;
+        public string newText;      // holds the text of a "green" entry that's being added in case a PrintContents() gets called and interrupts editing.
 
         private List<UIElement> _removeList;
 
@@ -38,18 +39,13 @@ namespace CustomNPCNames.UI
         {
             // Remove items from removal list and update namefields' "nth" indexing
             if (_removeList.Count != 0) {
-                _removeList.Sort();
-                _removeList.Reverse();
                 foreach (UIElement i in _removeList) {
-                    foreach (UIElement j in _items) {
-                        if ((j as UINameField).nthElement > (i as UINameField).nthElement) {
-                            (j as UINameField).nthElement--;
-                        }
-                    }
                     Remove(i);
                 }
                 _removeList.Clear();
+                PrintContent();
             }
+            
 
             // Calculate the currently selected Name Field of the list (or -1 for none)
             SelectedIndex = -1;
@@ -97,21 +93,50 @@ namespace CustomNPCNames.UI
                 RenameUI.listMessage.Deactivate();
             }
 
+            if (CustomWorld.updateNameList) {
+                PrintContent();
+                CustomWorld.updateNameList = false;
+            }
+
             // Update List Count
             RenameUI.listCount.SetText((SelectedIndex + 1) + "/" + Count);
 
             base.Update(gameTime);
         }
 
+        public void AddNew(string str = "")
+        {
+            string newName = str;
+            var newWrapper = new StringWrapper(ref str);
+            var field = new UINameField(newWrapper, (uint)Count);
+            field.IsNew = true;
+            newText = "";
+            Add(field);
+            DeselectAll();
+            field.Select();
+        }
+
         public void PrintContent()
         {
-            RenameUI.panelList.Clear();
-            short id = RenameUI.SelectedNPC;
-            if (CustomWorld.CustomNames[id] != null && CustomWorld.CustomNames[id].Count > 0) {
-                for (uint i = (uint)CustomWorld.CustomNames[id].Count; i-- > 0;) {
-                    RenameUI.panelList.Add(new UINameField(CustomWorld.CustomNames[id][(int)i], i));
+            if (RenameUI.IsNPCSelected) {
+                RenameUI.panelList.Clear();
+                short id = RenameUI.SelectedNPC;
+                if (CustomWorld.CustomNames[id] != null && CustomWorld.CustomNames[id].Count > 0) {
+                    for (uint i = (uint)CustomWorld.CustomNames[id].Count; i-- > 0;) {
+                        RenameUI.panelList.Add(new UINameField(CustomWorld.CustomNames[id][(int)i], i));
+                    }
+                    RenameUI.panelListReady = false;
+                }
+                if (newText != null) {
+                    AddNew(newText);
                 }
             }
+        }
+
+        public override void RecalculateChildren()
+        {
+            base.RecalculateChildren();
+            RenameUI.panelListReady = true;
         }
 
         public void RemoveName(UINameField field)

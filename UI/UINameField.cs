@@ -1,8 +1,6 @@
 ﻿using Terraria;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using Terraria.UI;
-using ReLogic.Graphics;
+using Terraria.ID;
 
 namespace CustomNPCNames.UI
 {
@@ -50,6 +48,7 @@ namespace CustomNPCNames.UI
             idleVariant.Caption.VAlign = 0f;
             idleVariant.Caption.Top.Pixels = 9;
             SetText(name.str);
+            base.SetIdleHoverText(System.Convert.ToString(name.ID));
         }
 
         public void TextCropTop(float padding)
@@ -86,25 +85,38 @@ namespace CustomNPCNames.UI
 
             base.Update(gameTime);
 
+            if (HasFocus && !RenameUI.panelListReady) {
+                Deselect(false);
+            }
+
             if (!hadFocus && HasFocus) {
                 lastName = editName;
             }            
 
-            if (!HasFocus && IsNew) {
-                IsNew = false;
-                CustomWorld.CustomNames[RenameUI.SelectedNPC].Add(name);
-            }
-
-            // Sync world data when necessary - only if the entry was exited from, and only if its contents have been altered. This is to minimize overhead
-            if (hadFocus && !HasFocus && lastName != editName) {
-                Name = editName;
-                CustomWorld.SyncWorldData();
-            } else if (RenameUI.removeMode && HasFocus) {
-                CustomWorld.CustomNames[UINPCButton.Selection.npcId].Remove(name);
-                RenameUI.panelList.RemoveName(this);
-                Deselect();
-                CustomWorld.SyncWorldData();
-                return;
+            if (!IsNew) {
+                // Sync world data when necessary - only if the entry was exited from, and only if its contents have been altered. This is to minimize overhead
+                if (hadFocus && !HasFocus && lastName != editName) {
+                    Name = editName;
+                    Network.PacketSender.SendPacketToServer(Network.PacketType.EDIT_NAME, RenameUI.SelectedNPC, name.ID, Name);
+                } else if (RenameUI.removeMode && RenameUI.panelListReady && HasFocus && !hadFocus) {
+                    CustomWorld.CustomNames[RenameUI.SelectedNPC].Remove(name);
+                    RenameUI.panelList.RemoveName(this);
+                    Deselect();
+                    if (Main.netMode == NetmodeID.MultiplayerClient) {
+                        Network.PacketSender.SendPacketToServer(Network.PacketType.REMOVE_NAME, RenameUI.SelectedNPC, name.ID);
+                    }
+                }
+            } else {
+                if (!HasFocus) {
+                    IsNew = false;
+                    RenameUI.panelList.newText = null;
+                    CustomWorld.CustomNames[RenameUI.SelectedNPC].Add(name);
+                    if (Main.netMode == NetmodeID.MultiplayerClient) {
+                        Network.PacketSender.SendPacketToServer(Network.PacketType.ADD_NAME, RenameUI.SelectedNPC, name.ID, editName);
+                    }
+                } else {
+                    RenameUI.panelList.newText = editName;
+                }
             }
 
             focusVariant.BorderColor.A = 60;

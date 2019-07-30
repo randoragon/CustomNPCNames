@@ -1,5 +1,5 @@
 ﻿using Terraria;
-using Terraria.UI;
+using Terraria.ID;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 
@@ -61,8 +61,11 @@ namespace CustomNPCNames.UI
 
             if (MouseButtonPressed(this) && hover)
             {
-                State = !CustomWorld.tryUnique;
-                Network.PacketSender.SendPacketToServer(Network.PacketType.TRY_UNIQUE);
+                if (Main.netMode == NetmodeID.SinglePlayer) {
+                    State = !CustomWorld.tryUnique;
+                } else if (Main.netMode == NetmodeID.MultiplayerClient) {
+                    Network.PacketSender.SendPacketToServer(Network.PacketType.TOGGLE_TRY_UNIQUE);
+                }
             }
         }
 
