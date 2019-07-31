@@ -35,8 +35,12 @@ namespace CustomNPCNames
                     Network.ModSync.SyncWorldData(Network.SyncType.EVERYTHING);
                 }
 
+                if (Main.keyState.IsKeyDown(Keys.I) && !Main.oldKeyState.IsKeyDown(Keys.I)) {
+                    Network.ModSync.SyncWorldData(Network.SyncType.CURRENT_NAMES, 1000);
+                }
+
                 if (Main.keyState.IsKeyDown(Keys.L) && !Main.oldKeyState.IsKeyDown(Keys.L)) {
-                    UI.RenameUI.panelList.PrintContent();
+                    RenameUI.panelList.PrintContent();
                 }
 
                 if (Main.keyState.IsKeyDown(Keys.O) && !Main.oldKeyState.IsKeyDown(Keys.O)) {

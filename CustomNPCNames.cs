@@ -210,6 +210,12 @@ namespace CustomNPCNames
                         ModSync.SyncWorldData(SyncType.CUSTOM_NAMES, id);
                     }
                     break;
+                case PacketType.REQUEST_WORLD_SYNC: {
+                        byte syncType = (byte)reader.ReadInt16();
+                        short syncId = (short)reader.ReadUInt64();
+                        ModSync.SyncWorldData(syncType, syncId);
+                    }
+                    break;
             }
         }
 

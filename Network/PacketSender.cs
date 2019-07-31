@@ -147,6 +147,13 @@ namespace CustomNPCNames.Network
                         packet.Write(id1);
                         packet.Send();
                         break;
+                    case REQUEST_WORLD_SYNC:
+                        packet = CustomNPCNames.instance.GetPacket();
+                        packet.Write(REQUEST_WORLD_SYNC);
+                        packet.Write(id);
+                        packet.Write(id1);
+                        packet.Send();
+                        break;
                 }
                 Main.NewText(string.Format("Sending Packets({0})! ", type) + Main.time);
             }
@@ -167,5 +174,6 @@ namespace CustomNPCNames.Network
         public const byte ADD_NAME           = 8;  // used when adding a name field
         public const byte REMOVE_NAME        = 9;  // used when removing a name field
         public const byte EDIT_NAME          = 10; // used when editing a name field
+        public const byte REQUEST_WORLD_SYNC = 11; // used for syncing from the MultiplayerClient (see ModSync class)
     }
 }
