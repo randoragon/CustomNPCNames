@@ -3,6 +3,7 @@ using Terraria.GameInput;
 using CustomNPCNames.UI;
 using Terraria;
 using Microsoft.Xna.Framework.Input;
+using Terraria.ID;
 
 namespace CustomNPCNames
 {
@@ -10,31 +11,33 @@ namespace CustomNPCNames
     {
         public override void OnEnterWorld(Terraria.Player player)
         {
-            CustomWorld.SyncWorldData();
+            Network.ModSync.SyncWorldData(Network.SyncType.EVERYTHING);
         }
 
         public override void ProcessTriggers(TriggersSet triggersSet)
         {
-            if (!Main.gameMenu)
-            {
+            if (!Main.gameMenu) {
 
-                if (CustomNPCNames.RenameMenuHotkey.JustPressed)
-                {
-                    RenameUI.Visible = !RenameUI.Visible;
-                    if (RenameUI.Visible)
-                    {
+                if (CustomNPCNames.RenameMenuHotkey.JustPressed) {
+                    
+                    if (RenameUI.Visible) {
                         RenameUI.renamePanel.UpdateState();
+                        Main.PlaySound(SoundID.MenuClose);
+                        RenameUI.Visible = false;
+                    } else {
+                        Main.PlaySound(SoundID.MenuOpen);
+                        RenameUI.Visible = true;
                     }
                 }
 
                 // FOR DEBUGGING
                 if (Main.keyState.IsKeyDown(Keys.P) && !Main.oldKeyState.IsKeyDown(Keys.P)) {
-                    RenameUI.panelList.PrintContent();
+                    Network.ModSync.SyncWorldData(Network.SyncType.EVERYTHING);
                 }
 
-                //if (Keyboard.GetState().IsKeyDown(Keys.L)) {
-                    
-                //}
+                if (Main.keyState.IsKeyDown(Keys.L) && !Main.oldKeyState.IsKeyDown(Keys.L)) {
+                    UI.RenameUI.panelList.PrintContent();
+                }
 
                 if (Main.keyState.IsKeyDown(Keys.O) && !Main.oldKeyState.IsKeyDown(Keys.O)) {
                     foreach (var i in CustomWorld.CustomNames) {

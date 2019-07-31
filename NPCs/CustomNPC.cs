@@ -140,7 +140,6 @@ namespace CustomNPCNames.NPCs
 
         public static void RandomizeName(short type)
         {
-            Main.NewText("Randomizing for " + type + "!");
             if (Main.netMode == NetmodeID.SinglePlayer || Main.netMode == NetmodeID.Server) {
                 if (type == 1000) {
                     foreach (short i in CustomNPCNames.TownNPCs) {
@@ -221,6 +220,7 @@ namespace CustomNPCNames.NPCs
                     currentNames[type] = list[Main.rand.Next(list.Count)].ToString();
                 }
             } else if (Main.netMode == NetmodeID.MultiplayerClient) {
+                Main.NewText("NANI? Client is randomizing!");
                 Network.PacketSender.SendPacketToServer(Network.PacketType.RANDOMIZE, type);
             }
         }
@@ -238,6 +238,7 @@ namespace CustomNPCNames.NPCs
                     UpdateNPCCount();
                     foreach (short i in CustomNPCNames.TownNPCs) {
                         if (npc.type == i && HasNewSpawned(i)) {
+                            Main.NewText(string.Format("ERROR, {0}", CustomWorld.mode));
                             RandomizeName(i);
                             npc.GivenName = currentNames[i];
                         }

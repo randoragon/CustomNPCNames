@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Terraria.ModLoader.IO;
 using Terraria;
 using System.IO;
+using CustomNPCNames.Network;
 
 namespace CustomNPCNames
 {
@@ -239,55 +240,176 @@ namespace CustomNPCNames
             }
         }
 
-        public static void SyncWorldData()
-        {
-            Main.NewText("Sync! " + Main.time);
-            NetMessage.SendData(MessageID.WorldData);
-        }
-
         public override void NetSend(BinaryWriter packet)
         {
-            packet.Write(mode);
-            packet.Write(tryUnique);
-            foreach (KeyValuePair<short, List<StringWrapper>> i in CustomNames) {
-                packet.Write(i.Value.Count);
-                foreach (StringWrapper j in i.Value) {
-                    packet.Write(j.ToString());
-                    packet.Write(j.ID);
-                }
+            packet.Write(SyncType.Get);
+
+            switch (SyncType.Get) {
+                case SyncType.MODE:
+                    packet.Write(mode);
+                    break;
+                case SyncType.TRY_UNIQUE:
+                    packet.Write(tryUnique);
+                    break;
+                case SyncType.GENDER: {
+                        short id = ModSync.ID;
+                        packet.Write(id);
+                        packet.Write(NPCs.CustomNPC.isMale[id]);
+                    }
+                    break;
+                case SyncType.CURRENT_NAMES: {
+                            short id = ModSync.ID;
+                            packet.Write(id);
+                        if (id != 1000 && id != 1001 && id != 1002) {
+                            packet.Write(NPCs.CustomNPC.currentNames[id]);
+                        } else if (id == 1000) {
+                            var list = new List<string>();
+                            foreach (var i in CustomNPCNames.TownNPCs) {
+                                if (NPCs.CustomNPC.isMale[i]) {
+                                    list.Add(NPCs.CustomNPC.currentNames[i]);
+                                }
+                            }
+                            packet.Write(list.Count);
+                            foreach (var i in list) {
+                                packet.Write(i);
+                            }
+                        } else if (id == 1001) {
+                            var list = new List<string>();
+                            foreach (var i in CustomNPCNames.TownNPCs) {
+                                if (!NPCs.CustomNPC.isMale[i]) {
+                                    list.Add(NPCs.CustomNPC.currentNames[i]);
+                                }
+                            }
+                            packet.Write(list.Count);
+                            foreach (var i in list) {
+                                packet.Write(i);
+                            }
+                        } else if (id == 1002) {
+                            var list = new List<string>();
+                            foreach (var i in NPCs.CustomNPC.currentNames) {
+                                packet.Write(i.Value);
+                            }
+                        }
+                    }
+                    break;
+                case SyncType.CUSTOM_NAMES: {
+                        short id = ModSync.ID;
+                        packet.Write(id);
+                        packet.Write(CustomNames[id].Count);
+                        foreach (var i in CustomNames[id]) {
+                            packet.Write(i.ToString());
+                            packet.Write(i.ID);
+                        }
+                    }
+                    break;
+                case SyncType.EVERYTHING:
+                    packet.Write(mode);
+                    packet.Write(tryUnique);
+                    foreach (KeyValuePair<short, List<StringWrapper>> i in CustomNames) {
+                        packet.Write(i.Value.Count);
+                        foreach (StringWrapper j in i.Value) {
+                            packet.Write(j.ToString());
+                            packet.Write(j.ID);
+                        }
+                    }
+                    foreach (short i in CustomNPCNames.TownNPCs) {
+                        packet.Write(NPCs.CustomNPC.currentNames[i]);
+                    }
+                    foreach (short i in CustomNPCNames.TownNPCs) {
+                        packet.Write(NPCs.CustomNPC.isMale[i]);
+                    }
+                    break;
             }
-            foreach (short i in CustomNPCNames.TownNPCs) {
-                packet.Write(NPCs.CustomNPC.currentNames[i]);
-            }
-            foreach (short i in CustomNPCNames.TownNPCs) {
-                packet.Write(NPCs.CustomNPC.isMale[i]);
-            }
+            
         }
 
         public override void NetReceive(BinaryReader reader)
         {
-            mode = reader.ReadByte();
-            tryUnique = reader.ReadBoolean();
-            foreach (KeyValuePair<short, List<StringWrapper>> i in CustomNames) {
-                int size = reader.ReadInt32();
-                while (i.Value.Count < size) { i.Value.Add(""); }
-                while (i.Value.Count > size) { i.Value.RemoveAt(0); }
-                for (int j = 0; j < size; j++) {
-                    string name = reader.ReadString();
-                    ulong id = reader.ReadUInt64();
-                    i.Value[j] = new StringWrapper(ref name, id);
-                }
-            }
-            if (Main.netMode == NetmodeID.MultiplayerClient) {
-                updateNameList = true;
-                Main.NewText("Receiving " + Main.time);
-            }
+            byte syncType = reader.ReadByte();
+            Main.NewText("Receiving (" + syncType + ")! " + Main.time);
+            switch (syncType) {
+                case SyncType.MODE:
+                    mode = reader.ReadByte();
+                    break;
+                case SyncType.TRY_UNIQUE:
+                    tryUnique = reader.ReadBoolean();
+                    break;
+                case SyncType.GENDER: {
+                        short id = reader.ReadInt16();
+                        NPCs.CustomNPC.isMale[id] = reader.ReadBoolean();
+                    }
+                    break;
+                case SyncType.CURRENT_NAMES: {
+                        short id = reader.ReadInt16();
+                        if (id != 1000 && id != 1001 && id != 1002) {
+                            NPCs.CustomNPC.currentNames[id] = reader.ReadString();
+                        } else if (id == 1000) {
+                            int count = reader.ReadInt32();
+                            int i = 0;
+                            while (i < CustomNPCNames.TownNPCs.Length && count > 0) {
+                                if (NPCs.CustomNPC.isMale[CustomNPCNames.TownNPCs[i]]) {
+                                    NPCs.CustomNPC.currentNames[CustomNPCNames.TownNPCs[i]] = reader.ReadString();
+                                    count--;
+                                }
+                                i++;
+                            }
+                        } else if (id == 1001) {
+                            int count = reader.ReadInt32();
+                            int i = 0;
+                            while (i < CustomNPCNames.TownNPCs.Length && count > 0) {
+                                if (!NPCs.CustomNPC.isMale[CustomNPCNames.TownNPCs[i]]) {
+                                    NPCs.CustomNPC.currentNames[CustomNPCNames.TownNPCs[i]] = reader.ReadString();
+                                    count--;
+                                }
+                                i++;
+                            }
+                        } else if (id == 1002) {
+                            foreach (var i in CustomNPCNames.TownNPCs) {
+                                NPCs.CustomNPC.currentNames[i] = reader.ReadString();
+                            }
+                        }
+                    }
+                    break;
+                case SyncType.CUSTOM_NAMES: {
+                        short id = reader.ReadInt16();
+                        int count = reader.ReadInt32();
+                        while (CustomNames[id].Count < count) { CustomNames[id].Add(""); }
+                        while (CustomNames[id].Count > count) { CustomNames[id].RemoveAt(0); }
+                        for (int i = 0; i < count; i++) {
+                            string name = reader.ReadString();
+                            ulong nameID = reader.ReadUInt64();
+                            CustomNames[id][i] = new StringWrapper(ref name, nameID);
+                        }
 
-            foreach (short i in CustomNPCNames.TownNPCs) {
-                NPCs.CustomNPC.currentNames[i] = reader.ReadString();
-            }
-            foreach (short i in CustomNPCNames.TownNPCs) {
-                NPCs.CustomNPC.isMale[i] = reader.ReadBoolean();
+                        if (Main.netMode == NetmodeID.MultiplayerClient) {
+                            updateNameList = true;
+                        }
+                    }
+                    break;
+                case SyncType.EVERYTHING:
+                    mode = reader.ReadByte();
+                    tryUnique = reader.ReadBoolean();
+                    foreach (KeyValuePair<short, List<StringWrapper>> i in CustomNames) {
+                        int size = reader.ReadInt32();
+                        while (i.Value.Count < size) { i.Value.Add(""); }
+                        while (i.Value.Count > size) { i.Value.RemoveAt(0); }
+                        for (int j = 0; j < size; j++) {
+                            string name = reader.ReadString();
+                            ulong id = reader.ReadUInt64();
+                            i.Value[j] = new StringWrapper(ref name, id);
+                        }
+                    }
+                    if (Main.netMode == NetmodeID.MultiplayerClient) {
+                        updateNameList = true;
+                    }
+
+                    foreach (short i in CustomNPCNames.TownNPCs) {
+                        NPCs.CustomNPC.currentNames[i] = reader.ReadString();
+                    }
+                    foreach (short i in CustomNPCNames.TownNPCs) {
+                        NPCs.CustomNPC.isMale[i] = reader.ReadBoolean();
+                    }
+                    break;
             }
         }
 

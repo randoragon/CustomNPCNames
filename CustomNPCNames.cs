@@ -77,21 +77,21 @@ namespace CustomNPCNames
             switch (type) {
                 case PacketType.NEXT_MODE:
                     CustomWorld.mode = (byte)(++CustomWorld.mode % 4);
-                    CustomWorld.SyncWorldData();
+                    ModSync.SyncWorldData(SyncType.MODE);
                     break;
                 case PacketType.PREV_MODE:
                     CustomWorld.mode = (byte)(--CustomWorld.mode % 4);
-                    CustomWorld.SyncWorldData();
+                    ModSync.SyncWorldData(SyncType.MODE);
                     break;
                 case PacketType.TOGGLE_TRY_UNIQUE:
                     CustomWorld.tryUnique = !CustomWorld.tryUnique;
-                    CustomWorld.SyncWorldData();
+                    ModSync.SyncWorldData(SyncType.TRY_UNIQUE);
                     break;
                 case PacketType.SEND_CURRENT_NAMES: {
                         short id = reader.ReadInt16();
                         if (id != 1000 && id != 1001 && id != 1002) {
                             NPCs.CustomNPC.currentNames[id] = reader.ReadString();
-                            CustomWorld.SyncWorldData();
+                            ModSync.SyncWorldData(SyncType.CURRENT_NAMES, id);
                         } else if (id == 1000) {
                             var ids = new List<short>();
                             foreach (short i in TownNPCs) {
@@ -105,14 +105,14 @@ namespace CustomNPCNames
                             for (int i = index; i < index + offset; i++) {
                                 NPCs.CustomNPC.currentNames[ids[i]] = reader.ReadString();
                             }
-                            CustomWorld.SyncWorldData();
+                            ModSync.SyncWorldData(SyncType.CURRENT_NAMES, id);
                         }
                     }
                     break;
                 case PacketType.SWITCH_GENDER: {
                         short id = reader.ReadInt16();
                         NPCs.CustomNPC.isMale[id] = !NPCs.CustomNPC.isMale[id];
-                        CustomWorld.SyncWorldData();
+                        ModSync.SyncWorldData(SyncType.GENDER, id);
                     }
                     break;
                 case PacketType.SEND_CUSTOM_NAMES: {
@@ -134,10 +134,10 @@ namespace CustomNPCNames
                                 CustomWorld.CustomNames[id][i] = reader.ReadString();
                             }
 
-                            if (lastPacket) { CustomWorld.SyncWorldData(); }
+                            if (lastPacket) { ModSync.SyncWorldData(SyncType.CUSTOM_NAMES, id); }
                         } else {
                             CustomWorld.CustomNames[id].Clear();
-                            CustomWorld.SyncWorldData();
+                            ModSync.SyncWorldData(SyncType.CUSTOM_NAMES, id);
                         }
                     }
                     break;
@@ -167,13 +167,13 @@ namespace CustomNPCNames
                                 break;
                         }
 
-                        CustomWorld.SyncWorldData();
+                        ModSync.SyncWorldData(SyncType.EVERYTHING);
                     }
                     break;
                 case PacketType.RANDOMIZE: {
                         short id = reader.ReadInt16();
                         NPCs.CustomNPC.RandomizeName(id);
-                        CustomWorld.SyncWorldData();
+                        ModSync.SyncWorldData(SyncType.CURRENT_NAMES, id);
                     }
                     break;
                 case PacketType.ADD_NAME: {
@@ -182,7 +182,7 @@ namespace CustomNPCNames
                         ulong nameID = reader.ReadUInt64();
                         var newWrapper = new StringWrapper(ref name, nameID);
                         CustomWorld.CustomNames[id].Add(newWrapper);
-                        CustomWorld.SyncWorldData();
+                        ModSync.SyncWorldData(SyncType.CUSTOM_NAMES, id);
                     }
                     break;
                 case PacketType.EDIT_NAME: {
@@ -195,7 +195,7 @@ namespace CustomNPCNames
                                 break;
                             }
                         }
-                        CustomWorld.SyncWorldData();
+                        ModSync.SyncWorldData(SyncType.CUSTOM_NAMES, id);
                     }
                     break;
                 case PacketType.REMOVE_NAME: {
@@ -207,7 +207,7 @@ namespace CustomNPCNames
                                 break;
                             }
                         }
-                        CustomWorld.SyncWorldData();
+                        ModSync.SyncWorldData(SyncType.CUSTOM_NAMES, id);
                     }
                     break;
             }
