@@ -107,10 +107,10 @@ namespace CustomNPCNames.UI
         public void AddNew(string str = "")
         {
             string newName = str;
-            var newWrapper = new StringWrapper(ref str);
+            var newWrapper = new StringWrapper(ref newName);
             var field = new UINameField(newWrapper, (uint)Count);
             field.IsNew = true;
-            newText = "";
+            newText = str;
             Add(field);
             DeselectAll();
             field.Select();

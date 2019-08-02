@@ -228,6 +228,7 @@ namespace CustomNPCNames
             NPCs.CustomNPC.Unload();
             RenameUI.Unload();
             UINPCButton.Unload();
+            instance = null;
 
             base.Unload();
         }
@@ -335,19 +336,19 @@ namespace CustomNPCNames
             if (id == 0) {
                 if (Main.netMode == NetmodeID.SinglePlayer || Main.netMode == NetmodeID.MultiplayerClient) {
                     // ID must always be unique. To achieve that, it will combine datetime information with player information. That way, if two players send information at the same date and time, the IDs will be different because they're different players. If the same player were to send the information twice, it will be distinguishable because of the time difference.
-                    ulong newId = 0x0000000000000000;
-                    ushort userId = (ushort)Main.myPlayer; // ushort is sufficient, it supports up to (2^16)-1 unique players.
+                    ulong newId = 0x0000000000000000;      // this will be used as a buffer
+                    byte userId = (byte)Main.myPlayer; // byte, because the max number of players is 255, which is (2^8)-1
                     var now = DateTime.UtcNow;
                     ushort month = (ushort)now.Month;
                     ushort day = (ushort)now.Day;
                     ulong tickCount = (ulong)now.Ticks;         // converts binary format to unsigned for future parsing reasons
                     uint time = (uint)(tickCount * 0.0000065);  // convert to 60 ticks per second (the multiplayer is roughly equal to (24*3600*60)/(24*3600*10000000), rounding errors pretty much don't matter here)
-                    newId |= (ulong)userId << 48; // 16 bits
-                    newId |= (ulong)month  << 44; // 4 bits (<=15)
-                    newId |= (ulong)day    << 39; // 5 bits (<=31)
-                    newId |= (ulong)time   << 16; // 23 bits, because (24*3600*60) lies between 2^22 and 2^23.
-                    newId |= (ulong)random.Next() >> 16; // rand.Next() generates an Int32, we have 16 bits left on the buffer, so we cut it in half by bit shifting 16 positions to the right.
-                    // the random value exists because why not, there's 16 bits of data left on the buffer, so this adds an extra layer of security.
+                    newId |= (ulong)userId << 56; // 8 bits
+                    newId |= (ulong)month  << 52; // 4 bits (<=15)
+                    newId |= (ulong)day    << 47; // 5 bits (<=31)
+                    newId |= (ulong)time   << 24; // 23 bits, because (24*3600*60) lies between 2^22 and 2^23.
+                    newId |= (ulong)random.Next() >> 8; // rand.Next() generates an Int32, we have 24 bits left on the buffer, so we fill the remaining space by shifting it 32-24=8 places to the right.
+                    // the random value exists because why not, there's 24 bits of data left on the buffer, so this adds an extra layer of security.
                     ID = newId;
                 }
             } else {
@@ -367,7 +368,7 @@ namespace CustomNPCNames
         public override bool Equals(object obj)
         {
             if (obj != null && GetType().Equals(obj.GetType())) {
-                return str == ((StringWrapper)obj).str;
+                return ID == (obj as StringWrapper).ID;
             } else {
                 return false;
             }
