@@ -26,7 +26,6 @@ namespace CustomNPCNames.UI
         private KeyboardState curKey;
         protected bool lastKey = false; // false for Keys.Down, true for Keys.Up
         protected int keyClock = 0;
-        //public string newText;        // holds the text of a "green" entry that's being added in case a PrintContents() gets called and interrupts editing.
         public StringWrapper curName; // holds the name of a currently selected entry in case a PrintContents() gets called and interrupts editing.
 
         private List<UIElement> _removeList;
@@ -64,13 +63,17 @@ namespace CustomNPCNames.UI
                 
                 if ((downPressed || lastKey == false && keyClock == 30) && SelectedIndex < Count - 1) {
                     (_items[SelectedIndex] as UINameField).Deselect();
+                    (_items[SelectedIndex] as UINameField).FinishEdit();
                     (_items[++SelectedIndex] as UINameField).Select();
+                    (_items[SelectedIndex] as UINameField).BeginEdit();
                     _scrollbar.ViewPosition = System.Math.Max(_scrollbar.ViewPosition, ((SelectedIndex + 1) * 36f) - Height.Pixels);
                     keyClock = (keyClock == 30 && lastKey == false ? 28 : 0);
                     lastKey = false;
                 } else if ((upPressed || lastKey == true && keyClock == 30) && SelectedIndex > 0) {
                     (_items[SelectedIndex] as UINameField).Deselect();
+                    (_items[SelectedIndex] as UINameField).FinishEdit();
                     (_items[--SelectedIndex] as UINameField).Select();
+                    (_items[SelectedIndex] as UINameField).BeginEdit();
                     _scrollbar.ViewPosition = System.Math.Min(_scrollbar.ViewPosition, SelectedIndex * 36f);
                     keyClock = (keyClock == 30 && lastKey == true ? 28 : 0);
                     lastKey = true;
@@ -111,9 +114,6 @@ namespace CustomNPCNames.UI
             var newWrapper = new StringWrapper(ref newName);
             var field = new UINameField(newWrapper, (uint)Count);
             field.IsNew = true;
-            //newText = str;
-            curName = newWrapper;
-            Terraria.Main.NewText("curName = newWrapper", Color.Orange);
             Add(field);
             DeselectAll();
             field.Select();
@@ -162,7 +162,6 @@ namespace CustomNPCNames.UI
                             i.Select();
                             i.HadFocus = true; // this is necessary to prevent the editName assignment in UINameField.Update(), i.e. make the nameField believe that it had been selected all along, not just now
                             i.SetText(curName.str);
-                            Terraria.Main.NewText("ReSelect! (Found Existing) " + curName.str, Color.Orange);
                             foundExisting = true;
                             break;
                         }
@@ -170,7 +169,6 @@ namespace CustomNPCNames.UI
                     // ...if it doesn't exist, assume it disappeared because it was a new one, and recreate it
                     if (!foundExisting) {
                         AddNew(curName.str);
-                        Terraria.Main.NewText("ReCreate! (Existing Not Found)", Color.Orange);
                     }
                     curName = null;
                 }
