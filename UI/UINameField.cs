@@ -49,6 +49,7 @@ namespace CustomNPCNames.UI
             idleVariant.Caption.VAlign = 0f;
             idleVariant.Caption.Top.Pixels = 9;
             SetText(name.str);
+            lastName = name.str;
             base.SetIdleHoverText(System.Convert.ToString(name.ID));
         }
 
