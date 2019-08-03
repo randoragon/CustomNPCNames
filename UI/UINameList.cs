@@ -26,7 +26,8 @@ namespace CustomNPCNames.UI
         private KeyboardState curKey;
         protected bool lastKey = false; // false for Keys.Down, true for Keys.Up
         protected int keyClock = 0;
-        public string newText;      // holds the text of a "green" entry that's being added in case a PrintContents() gets called and interrupts editing.
+        //public string newText;        // holds the text of a "green" entry that's being added in case a PrintContents() gets called and interrupts editing.
+        public StringWrapper curName; // holds the name of a currently selected entry in case a PrintContents() gets called and interrupts editing.
 
         private List<UIElement> _removeList;
 
@@ -110,7 +111,9 @@ namespace CustomNPCNames.UI
             var newWrapper = new StringWrapper(ref newName);
             var field = new UINameField(newWrapper, (uint)Count);
             field.IsNew = true;
-            newText = str;
+            //newText = str;
+            curName = newWrapper;
+            Terraria.Main.NewText("curName = newWrapper", Color.Orange);
             Add(field);
             DeselectAll();
             field.Select();
@@ -119,6 +122,17 @@ namespace CustomNPCNames.UI
         public void PrintContent()
         {
             if (RenameUI.IsNPCSelected) {
+                bool reassignEditName = false;
+                foreach (UINameField i in _items) {
+                    if (i.HasFocus) {
+                        // If an entry is being edited, its displayed value is not assigned to its StringWrapper yet, instead it's being held in editName. To reassign it later, it's necessary to take this editName and store it in another StringWrapper.
+                        // StringWrapper.Equal() method compares only IDs, so if the new StringWrapper has the EditName as its str, and shares the same ID, the exact same entry will later be found based on the equality of IDs.
+                        string name = i.EditName;
+                        curName = new StringWrapper(ref name, i.NameWrapper.ID);
+                        reassignEditName = true;
+                        break;
+                    }
+                }
                 RenameUI.panelList.Clear();
                 short id = RenameUI.SelectedNPC;
                 if (CustomWorld.CustomNames[id] != null && CustomWorld.CustomNames[id].Count > 0) {
@@ -127,8 +141,9 @@ namespace CustomNPCNames.UI
                     }
                     RenameUI.panelListReady = false;
                 }
-                if (newText != null) {
-                    AddNew(newText);
+
+                if (reassignEditName) {
+                    Recalculate(); // this also calls RecalculateChildren(), where the actual reassignment will take place
                 }
             }
         }
@@ -136,11 +151,38 @@ namespace CustomNPCNames.UI
         public override void RecalculateChildren()
         {
             base.RecalculateChildren();
-            RenameUI.panelListReady = true;
+            // Reselect/Recreate an entry that was selected before a PrintContent(). This should only ever execute after a PrintContent()
+            if (!RenameUI.panelListReady) {
+                RenameUI.panelListReady = true;
+                if (curName != null) {
+                    bool foundExisting = false;
+                    // Reselect entry if it exists...
+                    foreach (UINameField i in _items) {
+                        if (i.NameWrapper.Equals(curName)) {
+                            i.Select();
+                            i.HadFocus = true; // this is necessary to prevent the editName assignment in UINameField.Update(), i.e. make the nameField believe that it had been selected all along, not just now
+                            i.SetText(curName.str);
+                            Terraria.Main.NewText("ReSelect! (Found Existing) " + curName.str, Color.Orange);
+                            foundExisting = true;
+                            break;
+                        }
+                    }
+                    // ...if it doesn't exist, assume it disappeared because it was a new one, and recreate it
+                    if (!foundExisting) {
+                        AddNew(curName.str);
+                        Terraria.Main.NewText("ReCreate! (Existing Not Found)", Color.Orange);
+                    }
+                    curName = null;
+                }
+            }
+            
         }
 
         public void RemoveName(UINameField field)
         {
+            if (field.NameWrapper.Equals(curName)) {
+                curName = null;
+            }
             _removeList.Add(field);
         }
 

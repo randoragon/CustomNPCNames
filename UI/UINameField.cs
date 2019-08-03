@@ -14,7 +14,8 @@ namespace CustomNPCNames.UI
         }
         public StringWrapper NameWrapper { get { return name; } }
         private string editName;            // this string is the one actually getting edited by keyboard (changes are applied to Name when the editing is finished)
-        private bool hadFocus;              // used to determine whether or not the focus of the entry has just been lost - in Update()
+        public string EditName { get { return editName; } }
+        public bool HadFocus { get; set; }  // used to determine whether or not the focus of the entry has just been lost - in Update()
         private string lastName;            // used to determine whether or not the text of the entry has just been changed - in Update()
         public uint nthElement;
         private bool isNew = false;
@@ -25,10 +26,10 @@ namespace CustomNPCNames.UI
             {
                 if (value) {
                     SetFocusColor(new Color(70, 150, 40), new Color(50, 180, 20));
-                    RenameUI.panelList.newText = "";
+                    //RenameUI.panelList.newText = "";
                 } else {
                     SetFocusColor(new Color(170, 90, 80), new Color(30, 15, 10));
-                    RenameUI.panelList.newText = null;
+                    //RenameUI.panelList.newText = null;
                 }
                 isNew = value;
             }
@@ -85,7 +86,7 @@ namespace CustomNPCNames.UI
         {
             CustomWorld.CustomNames[RenameUI.SelectedNPC].Remove(name);
             RenameUI.panelList.RemoveName(this);
-            Deselect();
+            Deselect(false);
             if (Main.netMode == NetmodeID.MultiplayerClient) {
                 Network.PacketSender.SendPacketToServer(Network.PacketType.REMOVE_NAME, RenameUI.SelectedNPC, name.ID);
             }
@@ -93,28 +94,28 @@ namespace CustomNPCNames.UI
 
         public override void Update(GameTime gameTime)
         {
-            hadFocus = HasFocus;
+            HadFocus = HasFocus;
 
             base.Update(gameTime);
-
-            if (!hadFocus && HasFocus) {
-                lastName = editName;
-            }
 
             if (!IsNew) {
                 if (HasFocus && !RenameUI.panelListReady) {
                     Deselect(false);
+                } else if (HasFocus && !HadFocus && !RenameUI.removeMode && RenameUI.panelListReady) {
+                    lastName = editName;
                 }
 
                 // Sync world data when necessary - only if the entry was exited from, and only if its contents have been altered. This is to minimize overhead
-                if (hadFocus && !HasFocus && lastName != editName) {
-                    Name = editName;
-                    Network.PacketSender.SendPacketToServer(Network.PacketType.EDIT_NAME, RenameUI.SelectedNPC, name.ID, Name);
-                } else if (RenameUI.removeMode && RenameUI.panelListReady && HasFocus && !hadFocus) {
+                if (HadFocus && !HasFocus) {
+                    if (lastName != editName) {
+                        Name = editName;
+                        Network.PacketSender.SendPacketToServer(Network.PacketType.EDIT_NAME, RenameUI.SelectedNPC, name.ID, Name);
+                    }
+                } else if (HasFocus && !HadFocus && RenameUI.removeMode && RenameUI.panelListReady) {
                     RemoveFromList();
                 }
             } else if (!HasFocus) {
-                if (hadFocus && KeyPressed(Microsoft.Xna.Framework.Input.Keys.Escape)) {
+                if (HadFocus && KeyPressed(Microsoft.Xna.Framework.Input.Keys.Escape)) {
                     IsNew = false;
                     RenameUI.panelList.RemoveName(this);
                     Deselect(false);
@@ -126,7 +127,7 @@ namespace CustomNPCNames.UI
                     }
                 }
             } else {
-                RenameUI.panelList.newText = editName;
+                //RenameUI.panelList.newText = editName;
             }
 
             focusVariant.BorderColor.A = 60;

@@ -227,7 +227,7 @@ namespace CustomNPCNames.NPCs
         
         public override void SetDefaults(NPC npc)
         {
-            if (currentNames.ContainsKey((short)npc.type)) {
+            if (currentNames.ContainsKey((short)npc.type) && currentNames[(short)npc.type] == "\0") {
                 npcJustJoined[(short)npc.type] = true;
                 bool noNames = (CustomWorld.CustomNames != null
                 && ((CustomWorld.mode == 1 && CustomWorld.CustomNames[(short)npc.type].Count == 0)
