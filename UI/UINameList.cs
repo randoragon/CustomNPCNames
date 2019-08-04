@@ -1,4 +1,5 @@
-﻿using Terraria.UI;
+﻿using Terraria;
+using Terraria.UI;
 using Terraria.GameContent.UI.Elements;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
@@ -22,8 +23,6 @@ namespace CustomNPCNames.UI
             }
         }
         public int SelectedIndex { get; protected set; }
-        private KeyboardState oldKey;
-        private KeyboardState curKey;
         protected bool lastKey = false; // false for Keys.Down, true for Keys.Up
         protected int keyClock = 0;
         public StringWrapper curName; // holds the name of a currently selected entry in case a PrintContents() gets called and interrupts editing.
@@ -54,12 +53,9 @@ namespace CustomNPCNames.UI
             }
 
             // Up-Down arrow scrolling functionality
-            oldKey = curKey;
-            curKey = Keyboard.GetState();
-
             if (SelectedIndex != -1) {
-                bool upPressed   = curKey.IsKeyDown(Keys.Up)   && !oldKey.IsKeyDown(Keys.Up);
-                bool downPressed = curKey.IsKeyDown(Keys.Down) && !oldKey.IsKeyDown(Keys.Down);
+                bool upPressed   = Main.keyState.IsKeyDown(Keys.Up)   && !Main.oldKeyState.IsKeyDown(Keys.Up);
+                bool downPressed = Main.keyState.IsKeyDown(Keys.Down) && !Main.oldKeyState.IsKeyDown(Keys.Down);
                 
                 if ((downPressed || lastKey == false && keyClock == 30) && SelectedIndex < Count - 1) {
                     (_items[SelectedIndex] as UINameField).Deselect();
@@ -79,7 +75,7 @@ namespace CustomNPCNames.UI
                     lastKey = true;
                 }
 
-                if (SelectedIndex != 0 && SelectedIndex != Count - 1 && ((lastKey == true && curKey.IsKeyDown(Keys.Up)) || (lastKey == false && curKey.IsKeyDown(Keys.Down)))) {
+                if (SelectedIndex != 0 && SelectedIndex != Count - 1 && ((lastKey == true && Main.keyState.IsKeyDown(Keys.Up)) || (lastKey == false && Main.keyState.IsKeyDown(Keys.Down)))) {
                     keyClock += (keyClock < 30 ? 1 : 0);
                 } else {
                     keyClock = 0;

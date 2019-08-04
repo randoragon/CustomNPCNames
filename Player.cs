@@ -4,6 +4,8 @@ using CustomNPCNames.UI;
 using Terraria;
 using Microsoft.Xna.Framework.Input;
 using Terraria.ID;
+using Microsoft.Xna.Framework;
+using Terraria.Localization;
 
 namespace CustomNPCNames
 {
@@ -36,7 +38,7 @@ namespace CustomNPCNames
                 }
 
                 if (Main.keyState.IsKeyDown(Keys.I) && !Main.oldKeyState.IsKeyDown(Keys.I)) {
-                    Network.ModSync.SyncWorldData(Network.SyncType.CURRENT_NAMES, 1000);
+                    
                 }
 
                 if (Main.keyState.IsKeyDown(Keys.L) && !Main.oldKeyState.IsKeyDown(Keys.L)) {

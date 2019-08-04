@@ -256,7 +256,6 @@ namespace CustomNPCNames.NPCs
             if (dead && currentNames.ContainsKey((short)npc.type) && currentNames[(short)npc.type] != "\0") {
                 currentNames[(short)npc.type] = "\0";
             }
-
             return dead;
         }
 
@@ -276,7 +275,6 @@ namespace CustomNPCNames.NPCs
                         Main.chatLine[0] = line;
                         npcJustJoined[(short)npc.type] = false;
                     }
-
                     npc.GivenName = currentNames[(short)npc.type];
                 }
             }

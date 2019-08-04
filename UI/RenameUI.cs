@@ -389,8 +389,7 @@ namespace CustomNPCNames.UI
 
         private void ClearButtonClicked(UIMouseEvent evt, UIElement listeningElement)
         {
-            KeyboardState key = Keyboard.GetState();
-            if (key.IsKeyDown(Keys.LeftAlt) || key.IsKeyDown(Keys.RightAlt)) {
+            if (Main.keyState.IsKeyDown(Keys.LeftAlt) || Main.keyState.IsKeyDown(Keys.RightAlt)) {
                 CustomWorld.CustomNames[SelectedNPC].Clear();
                 foreach (UINameField i in panelList._items) {
                     panelList.RemoveName(i);
@@ -443,7 +442,7 @@ namespace CustomNPCNames.UI
             copyData.Copy();
             menuPanel.RemoveChild(pasteButtonInactive);
             menuPanel.Append(pasteButton);
-            if (Keyboard.GetState().IsKeyDown(Keys.LeftAlt) || Keyboard.GetState().IsKeyDown(Keys.RightAlt)) {
+            if (Main.keyState.IsKeyDown(Keys.LeftAlt) || Main.keyState.IsKeyDown(Keys.RightAlt)) {
                 modeCycleButton.State = 0;
                 uniqueNameButton.State = true;
                 CustomWorld.ResetCustomNames();
