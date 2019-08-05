@@ -47,8 +47,8 @@ namespace CustomNPCNames.Network
 
         public const byte MODE          = 0;
         public const byte TRY_UNIQUE    = 1;
-        public const byte GENDER        = 2;
-        public const byte CURRENT_NAMES = 3;
+        public const byte NAME          = 2;
+        public const byte GENDER        = 3;
         public const byte CUSTOM_NAMES  = 4;
         public const byte EVERYTHING    = 5;
     }

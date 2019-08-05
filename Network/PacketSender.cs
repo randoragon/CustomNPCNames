@@ -28,35 +28,12 @@ namespace CustomNPCNames.Network
                         packet.Write(id);
                         packet.Send();
                         break;
-                    case SEND_CURRENT_NAMES: {
-                            if (id != 1000 && id != 1001 && id != 1002) {
-                                packet = CustomNPCNames.instance.GetPacket();
-                                packet.Write(SEND_CURRENT_NAMES);
-                                packet.Write(id);
-                                packet.Write(NPCs.CustomNPC.currentNames[id]);
-                                packet.Send();
-                            } else if (id == 1000) {
-                                var ids = new List<short>();
-                                foreach (short i in CustomNPCNames.TownNPCs) {
-                                    if (NPCs.CustomNPC.isMale[i]) {
-                                        ids.Add(i);
-                                    }
-                                }
-                                for (int i = 0; i < ids.Count; i += 8) {
-                                    packet = CustomNPCNames.instance.GetPacket();
-                                    packet.Write(SEND_CURRENT_NAMES);
-                                    packet.Write(id);
-                                    packet.Write(i);
-                                    int count = System.Math.Min(8, ids.Count - i);
-                                    packet.Write((byte)count);
-                                    packet.Write(i + 8 >= ids.Count);
-                                    for (int j = i; j < i + count; j++) {
-                                        packet.Write(NPCs.CustomNPC.currentNames[ids[j]]);
-                                    }
-                                    packet.Send();
-                                }
-                            }
-                        }
+                    case SEND_NAME:
+                        packet = CustomNPCNames.instance.GetPacket();
+                        packet.Write(type);
+                        packet.Write(id);
+                        packet.Write(name);
+                        packet.Send();
                         break;
                     case SEND_CUSTOM_NAMES: // a maximum of 8 names will be sent per packet, see explanation starting at line 15
                         if (CustomWorld.CustomNames[id].Count == 0) {
@@ -85,26 +62,8 @@ namespace CustomNPCNames.Network
                             // mode and tryUnique
                             packet = CustomNPCNames.instance.GetPacket();
                             packet.Write(SEND_EVERYTHING);
-                            packet.Write((byte)1);
                             packet.Write(CustomWorld.mode);
                             packet.Write(CustomWorld.tryUnique);
-                            packet.Send();
-
-                            // currentNames (better to send in 3 packets containing 8 names, rather than 24 packets 1 name each)
-                            for (int i = 0; i < 3; i++) {
-                                packet = CustomNPCNames.instance.GetPacket();
-                                packet.Write(SEND_EVERYTHING);
-                                packet.Write((byte)(2 + i));
-                                for (int j = i * 8; j < (i + 1) * 8; j++) {
-                                    packet.Write(NPCs.CustomNPC.currentNames[CustomNPCNames.TownNPCs[j]]);
-                                }
-                                packet.Send();
-                            }
-
-                            // All isMale (better to send in one 3 bytes large packet, rather than send 24 packets 1 boolean each)
-                            packet = CustomNPCNames.instance.GetPacket();
-                            packet.Write(SEND_EVERYTHING);
-                            packet.Write((byte)5);
                             var bits = new BitsByte();
                             for (int i = 0; i < 3; i++) {
                                 for (int j = 0; j < 8; j++) {
@@ -112,7 +71,6 @@ namespace CustomNPCNames.Network
                                 }
                                 packet.Write(bits);
                             }
-                            packet.Write(bits);
                             packet.Send();
 
                             // CustomNames
@@ -166,8 +124,8 @@ namespace CustomNPCNames.Network
         public const byte NEXT_MODE          = 0;  // used when left-clicking the Mode button
         public const byte PREV_MODE          = 1;  // used when right-clicking the Mode button
         public const byte TOGGLE_TRY_UNIQUE  = 2;  // used when Toggle Unique Names button is pressed
-        public const byte SWITCH_GENDER      = 3;  // used when Switch Gender button is pressed
-        public const byte SEND_CURRENT_NAMES = 4;  // used in SEND_EVERYTHING
+        public const byte SEND_NAME          = 3;  // used when a client updates an NPC's name
+        public const byte SWITCH_GENDER      = 4;  // used when Switch Gender button is pressed
         public const byte SEND_CUSTOM_NAMES  = 5;  // used in SEND_EVERYTHING
         public const byte SEND_EVERYTHING    = 6;  // used when pasting everything
         public const byte RANDOMIZE          = 7;  // used when clicking the Randomize button

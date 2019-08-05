@@ -101,8 +101,8 @@ namespace CustomNPCNames.UI
                             SetText(focusVariant.Text);
                         }
                         RemoveChild(focusVariant);
-                        NPCs.CustomNPC.currentNames[RenameUI.SelectedNPC] = idleVariant.Text;
-                        Network.PacketSender.SendPacketToServer(Network.PacketType.SEND_CURRENT_NAMES, RenameUI.SelectedNPC);
+                        NPCs.CustomNPC.FindFirstNPC(RenameUI.SelectedNPC).GivenName = idleVariant.Text;
+                        Network.PacketSender.SendPacketToServer(Network.PacketType.SEND_NAME, id: RenameUI.SelectedNPC, name: idleVariant.Text);
                         Append(idleVariant);
                     }
                 }
@@ -115,8 +115,8 @@ namespace CustomNPCNames.UI
             if (lastName != focusVariant.Text && save) {
                 idleVariant.SetText(focusVariant.Text);
                 if (RenameUI.IsNPCSelected && RenameUI.SelectedNPC != 1000 && RenameUI.SelectedNPC != 1001 && RenameUI.SelectedNPC != 1002) {
-                    NPCs.CustomNPC.currentNames[RenameUI.SelectedNPC] = idleVariant.Text;
-                    Network.PacketSender.SendPacketToServer(Network.PacketType.SEND_CURRENT_NAMES, RenameUI.SelectedNPC);
+                    NPCs.CustomNPC.FindFirstNPC(RenameUI.SelectedNPC).GivenName = idleVariant.Text;
+                    Network.PacketSender.SendPacketToServer(Network.PacketType.SEND_NAME, id: RenameUI.SelectedNPC, name: idleVariant.Text);
                 }
                 lastName = Text;
             }

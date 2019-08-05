@@ -87,32 +87,20 @@ namespace CustomNPCNames
                     CustomWorld.tryUnique = !CustomWorld.tryUnique;
                     ModSync.SyncWorldData(SyncType.TRY_UNIQUE);
                     break;
-                case PacketType.SEND_CURRENT_NAMES: {
-                        short id = reader.ReadInt16();
-                        if (id != 1000 && id != 1001 && id != 1002) {
-                            NPCs.CustomNPC.currentNames[id] = reader.ReadString();
-                            ModSync.SyncWorldData(SyncType.CURRENT_NAMES, id);
-                        } else if (id == 1000) {
-                            var ids = new List<short>();
-                            foreach (short i in TownNPCs) {
-                                if (NPCs.CustomNPC.isMale[i]) {
-                                    ids.Add(i);
-                                }
-                            }
-                            int index = reader.ReadInt32();
-                            byte offset = reader.ReadByte();
-                            bool lastPacket = reader.ReadBoolean();
-                            for (int i = index; i < index + offset; i++) {
-                                NPCs.CustomNPC.currentNames[ids[i]] = reader.ReadString();
-                            }
-                            ModSync.SyncWorldData(SyncType.CURRENT_NAMES, id);
-                        }
-                    }
-                    break;
                 case PacketType.SWITCH_GENDER: {
                         short id = reader.ReadInt16();
                         NPCs.CustomNPC.isMale[id] = !NPCs.CustomNPC.isMale[id];
                         ModSync.SyncWorldData(SyncType.GENDER, id);
+                    }
+                    break;
+                case PacketType.SEND_NAME: {
+                        short id = reader.ReadInt16();
+                        string name = reader.ReadString();
+                        NPC npc = NPCs.CustomNPC.FindFirstNPC(id);
+                        if (npc != null) {
+                            npc.GivenName = name;
+                        }
+                        ModSync.SyncWorldData(SyncType.NAME, id);
                     }
                     break;
                 case PacketType.SEND_CUSTOM_NAMES: {
@@ -142,38 +130,21 @@ namespace CustomNPCNames
                     }
                     break;
                 case PacketType.SEND_EVERYTHING: {
-                        byte number = reader.ReadByte();
-                        switch (number) {
-                            case 1:
-                                CustomWorld.mode = reader.ReadByte();
-                                CustomWorld.tryUnique = reader.ReadBoolean();
-                                break;
-                            case 2:
-                            case 3:
-                            case 4:
-                                for (int i = (number - 2) * 8; i < (number - 1) * 8; i++) {
-                                    NPCs.CustomNPC.currentNames[TownNPCs[i]] = reader.ReadString();
-                                }
-                                break;
-                            case 5: {
-                                    // isMale
-                                    for (int i = 0; i < 3; i++) {
-                                        BitsByte b = reader.ReadByte();
-                                        for (int j = 0; j < 8; j++) {
-                                            NPCs.CustomNPC.isMale[TownNPCs[(short)((8 * i) + j)]] = b[j];
-                                        }
-                                    }
-                                }
-                                break;
+                        CustomWorld.mode = reader.ReadByte();
+                        CustomWorld.tryUnique = reader.ReadBoolean();
+                        for (int i = 0; i < 3; i++) {
+                            BitsByte b = reader.ReadByte();
+                            for (int j = 0; j < 8; j++) {
+                                NPCs.CustomNPC.isMale[TownNPCs[(short)((8 * i) + j)]] = b[j];
+                            }
                         }
-
                         ModSync.SyncWorldData(SyncType.EVERYTHING);
                     }
                     break;
                 case PacketType.RANDOMIZE: {
                         short id = reader.ReadInt16();
                         NPCs.CustomNPC.RandomizeName(id);
-                        ModSync.SyncWorldData(SyncType.CURRENT_NAMES, id);
+                        ModSync.SyncWorldData(SyncType.NAME, id);
                     }
                     break;
                 case PacketType.ADD_NAME: {

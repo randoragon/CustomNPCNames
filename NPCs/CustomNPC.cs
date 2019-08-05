@@ -3,55 +3,18 @@ using Terraria.ModLoader;
 using System.Collections.Generic;
 using Terraria.ID;
 using System.Linq;
-using Microsoft.Xna.Framework;
 
 namespace CustomNPCNames.NPCs
 {
     class CustomNPC : GlobalNPC
     {
-        public  static Dictionary<short, string> currentNames;
         public  static Dictionary<short, bool>   isMale;
         public  static Dictionary<short, List<StringWrapper>> vanillaNames;
-        private static Dictionary<short, ushort> npcCount;
-        private static Dictionary<short, ushort> npcCountPrev;
-        private static Dictionary<short, bool>   npcJustJoined;
-
-        /// <summary>
-        /// Determines whether or not an NPC of the given type has spawned since last time UpdateNPCCount() was called for that NPC.
-        /// </summary>
-        /// <remarks>
-        /// It's neccessary because in some cases the SetDefaults() method is called even when an NPC is NOT spawning, and then the NPC name randomizes pointlessly.
-        /// </remarks>
-        public static bool HasNewSpawned(short type)
-        {
-            return npcCount[type] > npcCountPrev[type];
-        }
-
-        // this gets called in CustomWorld.PostUpdate()
-        public static void UpdateNPCCount()
-        {
-            foreach (short id in CustomNPCNames.TownNPCs) {
-                npcCountPrev[id] = npcCount[id];
-                npcCount[id] = (ushort)NPC.CountNPCS(id);
-            }
-        }
 
         public CustomNPC()
         {
-            currentNames  = new Dictionary<short, string>();
             isMale        = new Dictionary<short, bool>();
-            npcJustJoined = new Dictionary<short, bool>();
-            ResetCurrentNames();
             ResetCurrentGender();
-            ResetJustJoined();
-
-            npcCount = new Dictionary<short, ushort>();
-            npcCountPrev = new Dictionary<short, ushort>();
-            foreach (short i in CustomNPCNames.TownNPCs)
-            {
-                npcCount.Add(i, (ushort)NPC.CountNPCS(i));
-                npcCountPrev.Add(i, npcCount[i]);
-            }
 
             // vanilla names need to be added manually for randomization, because it's otherwise impossible to "force" a name change via Randomize Button
             vanillaNames = new Dictionary<short, List<StringWrapper>>();
@@ -83,21 +46,8 @@ namespace CustomNPCNames.NPCs
 
         public static void Unload()
         {
-            currentNames = null;
-            npcCount = null;
-            npcCountPrev = null;
             isMale = null;
             vanillaNames = null;
-            npcJustJoined = null;
-        }
-
-        public static void ResetCurrentNames()
-        {
-            currentNames.Clear();
-            foreach (short i in CustomNPCNames.TownNPCs)
-            {
-                currentNames.Add(i, "\0");
-            }
         }
 
         public static void ResetCurrentGender()
@@ -129,156 +79,116 @@ namespace CustomNPCNames.NPCs
             isMale.Add(NPCID.TravellingMerchant, true);
         }
 
-        public static void ResetJustJoined()
+        public static string GetRandomName(short type)
         {
-            npcJustJoined.Clear();
-            foreach (short i in CustomNPCNames.TownNPCs) {
-                npcJustJoined.Add(i, false);
+            var list = new List<StringWrapper>();
+
+            switch (CustomWorld.mode) {
+                case 0: // Vanilla names mode
+                    list = new List<StringWrapper>(vanillaNames[type]);
+                    break;
+                case 1: // Custom Names mode
+                    list = new List<StringWrapper>(CustomWorld.CustomNames[type]);
+                    break;
+                case 2: // Gender Names mode
+                    list = new List<StringWrapper>(CustomWorld.CustomNames[(short)(isMale[type] ? 1000 : 1001)]);
+                    break;
+                case 3: // Global Names mode
+                    list = new List<StringWrapper>(CustomWorld.CustomNames[1002]);
+                    break;
             }
-            npcJustJoined[NPCID.Guide] = true; // because the Guide is alive by default
+
+            if (CustomWorld.tryUnique) {
+                var currentNames = new List<string>();
+                foreach (NPC i in Main.npc) {
+                    if (i.type != NPCID.None && CustomNPCNames.TownNPCs.Contains((short)i.type)) {
+                        currentNames.Add(i.GivenName);
+                    }
+                }
+                var listsIntersection = new List<StringWrapper>();
+                foreach (StringWrapper i in list) {
+                    foreach (string j in currentNames) {
+                        if (i.ToString() == j) {
+                            listsIntersection.Add(i);
+                            break;
+                        }
+                    }
+                }
+
+                foreach (StringWrapper i in listsIntersection) {
+                    list.Remove(i);
+                }
+
+                if (list.Count == 0) { list = listsIntersection; }
+            }
+
+            return list[Main.rand.Next(list.Count)].ToString();
         }
 
         public static void RandomizeName(short type)
         {
             if (Main.netMode == NetmodeID.SinglePlayer || Main.netMode == NetmodeID.Server) {
                 if (type == 1000) {
-                    foreach (short i in CustomNPCNames.TownNPCs) {
-                        if (isMale[i] && NPC.CountNPCS(i) != 0) { currentNames[i] = "\0"; }
-                    }
                     foreach (int i in Enumerable.Range(0, CustomNPCNames.TownNPCs.Length).OrderBy(x => Main.rand.Next())) {
                         short id = CustomNPCNames.TownNPCs[i];
                         if (isMale[id] && NPC.CountNPCS(id) != 0) { RandomizeName(id); }
                     }
                     return;
                 } else if (type == 1001) {
-                    foreach (short i in CustomNPCNames.TownNPCs) {
-                        if (!isMale[i] && NPC.CountNPCS(i) != 0) { currentNames[i] = "\0"; }
-                    }
                     foreach (int i in Enumerable.Range(0, CustomNPCNames.TownNPCs.Length).OrderBy(x => Main.rand.Next())) {
                         short id = CustomNPCNames.TownNPCs[i];
                         if (!isMale[id] && NPC.CountNPCS(id) != 0) { RandomizeName(id); }
                     }
                     return;
                 } else if (type == 1002) {
-                    foreach (short i in CustomNPCNames.TownNPCs) {
-                        if (NPC.CountNPCS(i) != 0) { currentNames[i] = "\0"; }
-                    }
                     foreach (int i in Enumerable.Range(0, CustomNPCNames.TownNPCs.Length).OrderBy(x => Main.rand.Next())) {
                         short id = CustomNPCNames.TownNPCs[i];
                         if (NPC.CountNPCS(id) != 0) { RandomizeName(id); }
                     }
                     return;
                 } else {
-                    var list = new List<StringWrapper>();
-                    currentNames[type] = "\0";
-
-                    switch (CustomWorld.mode) {
-                        case 0: // Vanilla names mode
-                            list = new List<StringWrapper>(vanillaNames[type]);
-                            break;
-                        case 1: // Custom Names mode
-                            if (CustomWorld.CustomNames[type].Count != 0) {
-                                list = new List<StringWrapper>(CustomWorld.CustomNames[type]);
-                            } else {
-                                list = new List<StringWrapper>() { NPC.GetFirstNPCNameOrNull(type) };
-                            }
-                            break;
-                        case 2: // Gender Names mode
-                            if (CustomWorld.CustomNames[(short)(isMale[type] ? 1000 : 1001)].Count != 0) {
-                                list = new List<StringWrapper>(CustomWorld.CustomNames[(short)(isMale[type] ? 1000 : 1001)]);
-                            } else {
-                                list = new List<StringWrapper>() { NPC.GetFirstNPCNameOrNull(type) };
-                            }
-                            break;
-                        case 3: // Global Names mode
-                            if (CustomWorld.CustomNames[1002].Count != 0) {
-                                list = new List<StringWrapper>(CustomWorld.CustomNames[1002]);
-                            } else {
-                                list = new List<StringWrapper>() { NPC.GetFirstNPCNameOrNull(type) };
-                            }
-                            break;
-                    }
-
-                    if (CustomWorld.tryUnique) {
-                        var listsIntersection = new List<StringWrapper>();
-                        foreach (StringWrapper i in list) {
-                            foreach (KeyValuePair<short, string> j in currentNames) {
-                                if (i.ToString() == j.Value) {
-                                    listsIntersection.Add(i);
-                                    break;
-                                }
-                            }
+                    foreach (NPC i in Main.npc) {
+                        if (i.type == type) {
+                            i.GivenName = GetRandomName((short)i.type);
+                            return;
                         }
-
-                        foreach (StringWrapper i in listsIntersection) {
-                            list.Remove(i);
-                        }
-
-                        if (list.Count == 0) { list = listsIntersection; }
                     }
-
-                    currentNames[type] = list[Main.rand.Next(list.Count)].ToString();
                 }
             } else if (Main.netMode == NetmodeID.MultiplayerClient) {
-                Main.NewText("NANI? Client is randomizing!");
                 Network.PacketSender.SendPacketToServer(Network.PacketType.RANDOMIZE, type);
             }
         }
         
-        public override void SetDefaults(NPC npc)
+        public static NPC FindFirstNPC(short type)
         {
-            if (currentNames.ContainsKey((short)npc.type) && currentNames[(short)npc.type] == "\0") {
-                npcJustJoined[(short)npc.type] = true;
-                bool noNames = (CustomWorld.CustomNames != null
-                && ((CustomWorld.mode == 1 && CustomWorld.CustomNames[(short)npc.type].Count == 0)
-                 || (CustomWorld.mode == 2 && CustomWorld.CustomNames[(short)(isMale[(short)npc.type] ? 1000 : 1001)].Count == 0)
-                 || (CustomWorld.mode == 3 && CustomWorld.CustomNames[1002].Count == 0)));
-
-                if (!noNames) {
-                    UpdateNPCCount();
-                    foreach (short i in CustomNPCNames.TownNPCs) {
-                        if (npc.type == i && HasNewSpawned(i)) {
-                            Main.NewText(string.Format("ERROR, {0}", CustomWorld.mode));
-                            RandomizeName(i);
-                            npc.GivenName = currentNames[i];
-                        }
-                    }
-                } else {
-                    currentNames[(short)npc.type] = "\0";
-                }
+            foreach (NPC i in Main.npc) {
+                if (i.type == type) { return i; }
             }
+            return null;
         }
 
-        public override bool CheckDead(NPC npc)
-        {
-            bool dead = base.CheckDead(npc);
+        //public override void SetDefaults(NPC npc)
+        //{
+        //    if (currentNames.ContainsKey((short)npc.type) && currentNames[(short)npc.type] == "\0") {
+        //        npcJustJoined[(short)npc.type] = true;
+        //        bool noNames = (CustomWorld.CustomNames != null
+        //        && ((CustomWorld.mode == 1 && CustomWorld.CustomNames[(short)npc.type].Count == 0)
+        //         || (CustomWorld.mode == 2 && CustomWorld.CustomNames[(short)(isMale[(short)npc.type] ? 1000 : 1001)].Count == 0)
+        //         || (CustomWorld.mode == 3 && CustomWorld.CustomNames[1002].Count == 0)));
 
-            if (dead && currentNames.ContainsKey((short)npc.type) && currentNames[(short)npc.type] != "\0") {
-                currentNames[(short)npc.type] = "\0";
-            }
-            return dead;
-        }
-
-        public override bool PreAI(NPC npc)
-        {
-            if (currentNames.ContainsKey((short)npc.type) && currentNames[(short)npc.type] != "\0")
-            {
-                if (npc.GivenName != currentNames[(short)npc.type])
-                {
-                    if (npcJustJoined[(short)npc.type] && Main.chatLine[0].text.Length >= 18 && Main.chatLine[0].text.Substring(Main.chatLine[0].text.Length - 12, 12) == "has arrived!") { // the chatLine condition is here as a sanity check, because npcJustJoined by itself is not foolproof
-                        // Replace the default chat message with one with the custom name
-                        var line = new Terraria.UI.Chat.ChatLine();
-                        line.text = string.Format("{0} the {1} has arrived!", currentNames[(short)npc.type], CustomNPCNames.GetNPCName((short)npc.type));
-                        line.showTime = Main.chatLength;
-                        line.color = new Color(50, 125, 255); // this is the vanilla color for Town NPC arrival messages
-                        line.parsedText = Terraria.UI.Chat.ChatManager.ParseMessage(line.text, line.color).ToArray();
-                        Main.chatLine[0] = line;
-                        npcJustJoined[(short)npc.type] = false;
-                    }
-                    npc.GivenName = currentNames[(short)npc.type];
-                }
-            }
-            return true;
-        }
+        //        if (!noNames) {
+        //            UpdateNPCCount();
+        //            foreach (short i in CustomNPCNames.TownNPCs) {
+        //                if (npc.type == i && HasNewSpawned(i)) {
+        //                    Main.NewText(string.Format("ERROR, {0}", CustomWorld.mode));
+        //                    RandomizeName(i);
+        //                    npc.GivenName = currentNames[i];
+        //                }
+        //            }
+        //        } else {
+        //            currentNames[(short)npc.type] = "\0";
+        //        }
+        //    }
+        //}
     }
 }

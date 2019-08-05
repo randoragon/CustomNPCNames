@@ -82,30 +82,6 @@ namespace CustomNPCNames
             tag.Add("male",   nameStrings[1000]);
             tag.Add("female", nameStrings[1001]);
             tag.Add("global", nameStrings[1002]);
-            tag.Add("guide-current",              NPCs.CustomNPC.currentNames[NPCID.Guide]);
-            tag.Add("merchant-current",           NPCs.CustomNPC.currentNames[NPCID.Merchant]);
-            tag.Add("nurse-current",              NPCs.CustomNPC.currentNames[NPCID.Nurse]);
-            tag.Add("demolitionist-current",      NPCs.CustomNPC.currentNames[NPCID.Demolitionist]);
-            tag.Add("dyetrader-current",          NPCs.CustomNPC.currentNames[NPCID.DyeTrader]);
-            tag.Add("dryad-current",              NPCs.CustomNPC.currentNames[NPCID.Dryad]);
-            tag.Add("tavernkeep-current",         NPCs.CustomNPC.currentNames[NPCID.DD2Bartender]);
-            tag.Add("armsdealer-current",         NPCs.CustomNPC.currentNames[NPCID.ArmsDealer]);
-            tag.Add("stylist-current",            NPCs.CustomNPC.currentNames[NPCID.Stylist]);
-            tag.Add("painter-current",            NPCs.CustomNPC.currentNames[NPCID.Painter]);
-            tag.Add("angler-current",             NPCs.CustomNPC.currentNames[NPCID.Angler]);
-            tag.Add("goblintinkerer-current",     NPCs.CustomNPC.currentNames[NPCID.GoblinTinkerer]);
-            tag.Add("witchdoctor-current",        NPCs.CustomNPC.currentNames[NPCID.WitchDoctor]);
-            tag.Add("clothier-current",           NPCs.CustomNPC.currentNames[NPCID.Clothier]);
-            tag.Add("mechanic-current",           NPCs.CustomNPC.currentNames[NPCID.Mechanic]);
-            tag.Add("partygirl-current",          NPCs.CustomNPC.currentNames[NPCID.PartyGirl]);
-            tag.Add("wizard-current",             NPCs.CustomNPC.currentNames[NPCID.Wizard]);
-            tag.Add("taxcollector-current",       NPCs.CustomNPC.currentNames[NPCID.TaxCollector]);
-            tag.Add("truffle-current",            NPCs.CustomNPC.currentNames[NPCID.Truffle]);
-            tag.Add("pirate-current",             NPCs.CustomNPC.currentNames[NPCID.Pirate]);
-            tag.Add("steampunker-current",        NPCs.CustomNPC.currentNames[NPCID.Steampunker]);
-            tag.Add("cyborg-current",             NPCs.CustomNPC.currentNames[NPCID.Cyborg]);
-            tag.Add("santaclaus-current",         NPCs.CustomNPC.currentNames[NPCID.SantaClaus]);
-            tag.Add("travellingmerchant-current", NPCs.CustomNPC.currentNames[NPCID.TravellingMerchant]);
             tag.Add("guide-gender",              NPCs.CustomNPC.isMale[NPCID.Guide]);
             tag.Add("merchant-gender",           NPCs.CustomNPC.isMale[NPCID.Merchant]);
             tag.Add("nurse-gender",              NPCs.CustomNPC.isMale[NPCID.Nurse]);
@@ -139,8 +115,6 @@ namespace CustomNPCNames
                 UI.RenameUI.Visible = false;
                 UI.UINPCButton.Deselect();
                 UI.RenameUI.panelList.Clear();
-                NPCs.CustomNPC.ResetCurrentNames();
-                NPCs.CustomNPC.ResetJustJoined();
                 UI.RenameUI.removeMode = false;
 
                 if (!UI.RenameUI.carry) {
@@ -186,30 +160,6 @@ namespace CustomNPCNames
                 CustomNames[1000] = StringWrapper.ConvertSaveList(tag.GetList<string>("male"));
                 CustomNames[1001] = StringWrapper.ConvertSaveList(tag.GetList<string>("female"));
                 CustomNames[1002] = StringWrapper.ConvertSaveList(tag.GetList<string>("global"));
-                NPCs.CustomNPC.currentNames[NPCID.Guide]              = tag.GetString("guide-current");
-                NPCs.CustomNPC.currentNames[NPCID.Merchant]           = tag.GetString("merchant-current");
-                NPCs.CustomNPC.currentNames[NPCID.Nurse]              = tag.GetString("nurse-current");
-                NPCs.CustomNPC.currentNames[NPCID.Demolitionist]      = tag.GetString("demolitionist-current");
-                NPCs.CustomNPC.currentNames[NPCID.DyeTrader]          = tag.GetString("dyetrader-current");
-                NPCs.CustomNPC.currentNames[NPCID.Dryad]              = tag.GetString("dryad-current");
-                NPCs.CustomNPC.currentNames[NPCID.DD2Bartender]       = tag.GetString("tavernkeep-current");
-                NPCs.CustomNPC.currentNames[NPCID.ArmsDealer]         = tag.GetString("armsdealer-current");
-                NPCs.CustomNPC.currentNames[NPCID.Stylist]            = tag.GetString("stylist-current");
-                NPCs.CustomNPC.currentNames[NPCID.Painter]            = tag.GetString("painter-current");
-                NPCs.CustomNPC.currentNames[NPCID.Angler]             = tag.GetString("angler-current");
-                NPCs.CustomNPC.currentNames[NPCID.GoblinTinkerer]     = tag.GetString("goblintinkerer-current");
-                NPCs.CustomNPC.currentNames[NPCID.WitchDoctor]        = tag.GetString("witchdoctor-current");
-                NPCs.CustomNPC.currentNames[NPCID.Clothier]           = tag.GetString("clothier-current");
-                NPCs.CustomNPC.currentNames[NPCID.Mechanic]           = tag.GetString("mechanic-current");
-                NPCs.CustomNPC.currentNames[NPCID.PartyGirl]          = tag.GetString("partygirl-current");
-                NPCs.CustomNPC.currentNames[NPCID.Wizard]             = tag.GetString("wizard-current");
-                NPCs.CustomNPC.currentNames[NPCID.TaxCollector]       = tag.GetString("taxcollector-current");
-                NPCs.CustomNPC.currentNames[NPCID.Truffle]            = tag.GetString("truffle-current");
-                NPCs.CustomNPC.currentNames[NPCID.Pirate]             = tag.GetString("pirate-current");
-                NPCs.CustomNPC.currentNames[NPCID.Steampunker]        = tag.GetString("steampunker-current");
-                NPCs.CustomNPC.currentNames[NPCID.Cyborg]             = tag.GetString("cyborg-current");
-                NPCs.CustomNPC.currentNames[NPCID.SantaClaus]         = tag.GetString("santaclaus-current");
-                NPCs.CustomNPC.currentNames[NPCID.TravellingMerchant] = tag.GetString("travellingmerchant-current");
                 NPCs.CustomNPC.isMale[NPCID.Guide] =              tag.GetBool("guide-gender");
                 NPCs.CustomNPC.isMale[NPCID.Merchant] =           tag.GetBool("merchant-gender");
                 NPCs.CustomNPC.isMale[NPCID.Nurse] =              tag.GetBool("nurse-gender");
@@ -251,45 +201,16 @@ namespace CustomNPCNames
                 case SyncType.TRY_UNIQUE:
                     packet.Write(tryUnique);
                     break;
+                case SyncType.NAME: {
+                        short id = ModSync.ID;
+                        packet.Write(id);
+                        packet.Write(NPCs.CustomNPC.FindFirstNPC(id)?.GivenName);
+                    }
+                    break;
                 case SyncType.GENDER: {
                         short id = ModSync.ID;
                         packet.Write(id);
                         packet.Write(NPCs.CustomNPC.isMale[id]);
-                    }
-                    break;
-                case SyncType.CURRENT_NAMES: {
-                            short id = ModSync.ID;
-                            packet.Write(id);
-                        if (id != 1000 && id != 1001 && id != 1002) {
-                            packet.Write(NPCs.CustomNPC.currentNames[id]);
-                        } else if (id == 1000) {
-                            var list = new List<string>();
-                            foreach (var i in CustomNPCNames.TownNPCs) {
-                                if (NPCs.CustomNPC.isMale[i]) {
-                                    list.Add(NPCs.CustomNPC.currentNames[i]);
-                                }
-                            }
-                            packet.Write(list.Count);
-                            foreach (var i in list) {
-                                packet.Write(i);
-                            }
-                        } else if (id == 1001) {
-                            var list = new List<string>();
-                            foreach (var i in CustomNPCNames.TownNPCs) {
-                                if (!NPCs.CustomNPC.isMale[i]) {
-                                    list.Add(NPCs.CustomNPC.currentNames[i]);
-                                }
-                            }
-                            packet.Write(list.Count);
-                            foreach (var i in list) {
-                                packet.Write(i);
-                            }
-                        } else if (id == 1002) {
-                            var list = new List<string>();
-                            foreach (var i in NPCs.CustomNPC.currentNames) {
-                                packet.Write(i.Value);
-                            }
-                        }
                     }
                     break;
                 case SyncType.CUSTOM_NAMES: {
@@ -313,9 +234,6 @@ namespace CustomNPCNames
                         }
                     }
                     foreach (short i in CustomNPCNames.TownNPCs) {
-                        packet.Write(NPCs.CustomNPC.currentNames[i]);
-                    }
-                    foreach (short i in CustomNPCNames.TownNPCs) {
                         packet.Write(NPCs.CustomNPC.isMale[i]);
                     }
                     break;
@@ -334,40 +252,20 @@ namespace CustomNPCNames
                 case SyncType.TRY_UNIQUE:
                     tryUnique = reader.ReadBoolean();
                     break;
+                case SyncType.NAME: {
+                        short id = reader.ReadInt16();
+                        string name = reader.ReadString();
+                        if (name != null) {
+                            NPC npc = NPCs.CustomNPC.FindFirstNPC(id);
+                            if (npc != null) {
+                                npc.GivenName = name;
+                            }
+                        }
+                    }
+                    break;
                 case SyncType.GENDER: {
                         short id = reader.ReadInt16();
                         NPCs.CustomNPC.isMale[id] = reader.ReadBoolean();
-                    }
-                    break;
-                case SyncType.CURRENT_NAMES: {
-                        short id = reader.ReadInt16();
-                        if (id != 1000 && id != 1001 && id != 1002) {
-                            NPCs.CustomNPC.currentNames[id] = reader.ReadString();
-                        } else if (id == 1000) {
-                            int count = reader.ReadInt32();
-                            int i = 0;
-                            while (i < CustomNPCNames.TownNPCs.Length && count > 0) {
-                                if (NPCs.CustomNPC.isMale[CustomNPCNames.TownNPCs[i]]) {
-                                    NPCs.CustomNPC.currentNames[CustomNPCNames.TownNPCs[i]] = reader.ReadString();
-                                    count--;
-                                }
-                                i++;
-                            }
-                        } else if (id == 1001) {
-                            int count = reader.ReadInt32();
-                            int i = 0;
-                            while (i < CustomNPCNames.TownNPCs.Length && count > 0) {
-                                if (!NPCs.CustomNPC.isMale[CustomNPCNames.TownNPCs[i]]) {
-                                    NPCs.CustomNPC.currentNames[CustomNPCNames.TownNPCs[i]] = reader.ReadString();
-                                    count--;
-                                }
-                                i++;
-                            }
-                        } else if (id == 1002) {
-                            foreach (var i in CustomNPCNames.TownNPCs) {
-                                NPCs.CustomNPC.currentNames[i] = reader.ReadString();
-                            }
-                        }
                     }
                     break;
                 case SyncType.CUSTOM_NAMES: {
@@ -402,21 +300,11 @@ namespace CustomNPCNames
                     if (Main.netMode == NetmodeID.MultiplayerClient) {
                         updateNameList = true;
                     }
-
-                    foreach (short i in CustomNPCNames.TownNPCs) {
-                        NPCs.CustomNPC.currentNames[i] = reader.ReadString();
-                    }
                     foreach (short i in CustomNPCNames.TownNPCs) {
                         NPCs.CustomNPC.isMale[i] = reader.ReadBoolean();
                     }
                     break;
             }
-        }
-
-        public override void PreUpdate()
-        {
-            base.PostUpdate();
-            NPCs.CustomNPC.UpdateNPCCount();
         }
     }
 }

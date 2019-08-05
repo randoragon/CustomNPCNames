@@ -410,25 +410,7 @@ namespace CustomNPCNames.UI
 
         private void RandomizeButtonClicked(UIMouseEvent evt, UIElement listeningElement)
         {
-            if (SelectedNPC != 1000 && SelectedNPC != 1001 && SelectedNPC != 1002) {
-                string oldName = NPCs.CustomNPC.currentNames[SelectedNPC];
-                NPCs.CustomNPC.RandomizeName(SelectedNPC);
-            } else if (SelectedNPC == 1000) {
-                var old = new Dictionary<short, string>();
-                foreach (short i in CustomNPCNames.TownNPCs) {
-                    if (NPCs.CustomNPC.isMale[i]) { old.Add(i, NPCs.CustomNPC.currentNames[i]); }
-                }
-                NPCs.CustomNPC.RandomizeName(SelectedNPC);
-            } else if (SelectedNPC == 1001) {
-                var old = new Dictionary<short, string>();
-                foreach (short i in CustomNPCNames.TownNPCs) {
-                    if (!NPCs.CustomNPC.isMale[i]) { old.Add(i, NPCs.CustomNPC.currentNames[i]); }
-                }
-                NPCs.CustomNPC.RandomizeName(SelectedNPC);
-            } else if (SelectedNPC == 1002) {
-                var old = new Dictionary<short, string>(NPCs.CustomNPC.currentNames);
-                NPCs.CustomNPC.RandomizeName(SelectedNPC);
-            }
+            NPCs.CustomNPC.RandomizeName(SelectedNPC);
         }
 
         public void DeselectAllEntries()
