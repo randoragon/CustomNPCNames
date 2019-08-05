@@ -122,7 +122,7 @@ namespace CustomNPCNames.NPCs
                 if (list.Count == 0) { list = listsIntersection; }
             }
 
-            return list[Main.rand.Next(list.Count)].ToString();
+            return list[WorldGen.genRand.Next(list.Count)].ToString();
         }
 
         public static void RandomizeName(short type)
