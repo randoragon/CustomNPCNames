@@ -77,7 +77,7 @@ namespace CustomNPCNames
             tag.Add("pirate",             nameStrings[NPCID.Pirate]);
             tag.Add("steampunker",        nameStrings[NPCID.Steampunker]);
             tag.Add("cyborg",             nameStrings[NPCID.Cyborg]);
-            tag.Add("santaclaus",         nameStrings[NPCID.SantaClaus]);
+            tag.Add("skeletonmerchant",   nameStrings[NPCID.SkeletonMerchant]);
             tag.Add("travellingmerchant", nameStrings[NPCID.TravellingMerchant]);
             tag.Add("male",   nameStrings[1000]);
             tag.Add("female", nameStrings[1001]);
@@ -104,7 +104,7 @@ namespace CustomNPCNames
             tag.Add("pirate-gender",             NPCs.CustomNPC.isMale[NPCID.Pirate]);
             tag.Add("steampunker-gender",        NPCs.CustomNPC.isMale[NPCID.Steampunker]);
             tag.Add("cyborg-gender",             NPCs.CustomNPC.isMale[NPCID.Cyborg]);
-            tag.Add("santaclaus-gender",         NPCs.CustomNPC.isMale[NPCID.SantaClaus]);
+            tag.Add("skeletonmerchant-gender",   NPCs.CustomNPC.isMale[NPCID.SkeletonMerchant]);
             tag.Add("travellingmerchant-gender", NPCs.CustomNPC.isMale[NPCID.TravellingMerchant]);
             tag.Add("mode", mode);
             tag.Add("tryunique", tryUnique);
@@ -155,7 +155,7 @@ namespace CustomNPCNames
                 CustomNames[NPCID.Pirate]             = StringWrapper.ConvertSaveList(tag.GetList<string>("pirate"));
                 CustomNames[NPCID.Steampunker]        = StringWrapper.ConvertSaveList(tag.GetList<string>("steampunker"));
                 CustomNames[NPCID.Cyborg]             = StringWrapper.ConvertSaveList(tag.GetList<string>("cyborg"));
-                CustomNames[NPCID.SantaClaus]         = StringWrapper.ConvertSaveList(tag.GetList<string>("santaclaus"));
+                CustomNames[NPCID.SkeletonMerchant]   = StringWrapper.ConvertSaveList(tag.GetList<string>("skeletonmerchant"));
                 CustomNames[NPCID.TravellingMerchant] = StringWrapper.ConvertSaveList(tag.GetList<string>("travellingmerchant"));
                 CustomNames[1000] = StringWrapper.ConvertSaveList(tag.GetList<string>("male"));
                 CustomNames[1001] = StringWrapper.ConvertSaveList(tag.GetList<string>("female"));
@@ -182,7 +182,7 @@ namespace CustomNPCNames
                 NPCs.CustomNPC.isMale[NPCID.Pirate] =             tag.GetBool("pirate-gender");
                 NPCs.CustomNPC.isMale[NPCID.Steampunker] =        tag.GetBool("steampunker-gender");
                 NPCs.CustomNPC.isMale[NPCID.Cyborg] =             tag.GetBool("cyborg-gender");
-                NPCs.CustomNPC.isMale[NPCID.SantaClaus] =         tag.GetBool("santaclaus-gender");
+                NPCs.CustomNPC.isMale[NPCID.SkeletonMerchant] =   tag.GetBool("skeletonmerchant-gender");
                 NPCs.CustomNPC.isMale[NPCID.TravellingMerchant] = tag.GetBool("travellingmerchant-gender");
                 mode =      tag.GetByte("mode");
                 tryUnique = tag.GetBool("tryunique");

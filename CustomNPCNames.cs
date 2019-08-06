@@ -16,14 +16,14 @@ namespace CustomNPCNames
     {
         public static CustomNPCNames instance;
         public static readonly short[] TownNPCs = {
-            NPCID.Guide,         NPCID.Merchant,        NPCID.Nurse,
-            NPCID.Demolitionist, NPCID.DyeTrader,       NPCID.Dryad,
-            NPCID.DD2Bartender,  NPCID.ArmsDealer,      NPCID.Stylist,
-            NPCID.Painter,       NPCID.Angler,          NPCID.GoblinTinkerer,
-            NPCID.WitchDoctor,   NPCID.Clothier,        NPCID.Mechanic,
-            NPCID.PartyGirl,     NPCID.Wizard,          NPCID.TaxCollector,
-            NPCID.Truffle,       NPCID.Pirate,          NPCID.Steampunker,
-            NPCID.Cyborg,        NPCID.SantaClaus,      NPCID.TravellingMerchant
+            NPCID.Guide,         NPCID.Merchant,         NPCID.Nurse,
+            NPCID.Demolitionist, NPCID.DyeTrader,        NPCID.Dryad,
+            NPCID.DD2Bartender,  NPCID.ArmsDealer,       NPCID.Stylist,
+            NPCID.Painter,       NPCID.Angler,           NPCID.GoblinTinkerer,
+            NPCID.WitchDoctor,   NPCID.Clothier,         NPCID.Mechanic,
+            NPCID.PartyGirl,     NPCID.Wizard,           NPCID.TaxCollector,
+            NPCID.Truffle,       NPCID.Pirate,           NPCID.Steampunker,
+            NPCID.Cyborg,        NPCID.SkeletonMerchant, NPCID.TravellingMerchant
         };
         public static readonly Dictionary<short, Vector2> npcHeadOffset = new Dictionary<short, Vector2>() {
             { NPCID.Guide,              new Vector2(0, 0) },
@@ -48,7 +48,7 @@ namespace CustomNPCNames
             { NPCID.Pirate,             new Vector2(0, 0) },
             { NPCID.Steampunker,        new Vector2(0, 0) },
             { NPCID.Cyborg,             new Vector2(0, 0) },
-            { NPCID.SantaClaus,         new Vector2(0, 0) },
+            { NPCID.SkeletonMerchant,   new Vector2(0, 0) },
             { NPCID.TravellingMerchant, new Vector2(2, -3)},
             { 1000,                     new Vector2(0, 0) }, // male
             { 1001,                     new Vector2(0, 0) }, // female
@@ -258,8 +258,8 @@ namespace CustomNPCNames
                     return "Goblin Tinkerer";
                 case NPCID.Wizard:
                     return "Wizard";
-                case NPCID.SantaClaus:
-                    return "Santa Claus";
+                case NPCID.SkeletonMerchant:
+                    return "Skeleton Merchant";
                 case NPCID.Truffle:
                     return "Truffle";
                 case NPCID.Steampunker:

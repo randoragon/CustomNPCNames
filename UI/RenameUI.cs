@@ -684,9 +684,8 @@ namespace CustomNPCNames.UI
                 case NPCID.Wizard:
                     textureId = 10;
                     break;
-                case NPCID.SantaClaus:
-                    textureId = 11;
-                    break;
+                case NPCID.SkeletonMerchant:
+                    return ModContent.GetTexture("CustomNPCNames/NPCs/skeleton_merchant_head");
                 case NPCID.Truffle:
                     textureId = 12;
                     break;

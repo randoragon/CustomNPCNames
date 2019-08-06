@@ -40,7 +40,7 @@ namespace CustomNPCNames.NPCs
             vanillaNames.Add(NPCID.Pirate,             new List<StringWrapper>() { "Black Beard", "Captain Bullywort", "Captain Morgan", "Captain Stoney Dirt", "David", "Gunpowder Garry", "Jack", "Jake", "James T. Beard", "Red Beard", "Wet Beard" });
             vanillaNames.Add(NPCID.Steampunker,        new List<StringWrapper>() { "Ada", "Cornelia", "Cynthia", "Emeline", "Fidelia", "Hope", "Isabella", "Judith", "Leila", "Lilly", "Lydia", "Minerva", "Phoebe", "Savannah", "Selina", "Verity", "Vivian", "Whitney", "Zelda", "Zylphia" });
             vanillaNames.Add(NPCID.Cyborg,             new List<StringWrapper>() { "Alpha", "Beta", "Gamma", "Delta", "Zeta", "Theta", "Kappa", "Lambda", "Mu", "Nu", "Omicron", "Rho", "Sigma", "Upsilon", "Phi", "Ci", "Omega", "Fender", "T-3E0", "Niner-7", "A.N.D.Y", "Syn-X" });
-            vanillaNames.Add(NPCID.SantaClaus,         new List<StringWrapper>() { "Santa Claus" });
+            vanillaNames.Add(NPCID.SkeletonMerchant,   new List<StringWrapper>() { "Skellington", "Bones McGee", "Gloomy Mays", "Jack Sellington", "Billy Marrows", "Tom", "Rattles Magoo", "Mandible Calavera", "Mika", "No-Eyed Wiley" });
             vanillaNames.Add(NPCID.TravellingMerchant, new List<StringWrapper>() { "Abraham", "Aedan", "Aphraim", "Bohemas", "Eladon", "Gallius", "Llewellyn", "Mercer", "Rawleigh", "Riley", "Romeo", "Shipton", "Willy" });
         }
 
@@ -94,7 +94,7 @@ namespace CustomNPCNames.NPCs
             isMale.Add(NPCID.Pirate,             true);
             isMale.Add(NPCID.Steampunker,        false);
             isMale.Add(NPCID.Cyborg,             true);
-            isMale.Add(NPCID.SantaClaus,         true);
+            isMale.Add(NPCID.SkeletonMerchant,   true);
             isMale.Add(NPCID.TravellingMerchant, true);
         }
 
