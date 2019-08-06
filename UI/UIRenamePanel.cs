@@ -112,7 +112,7 @@ namespace CustomNPCNames.UI
         public override void Deselect(bool save = true)
         {
             HasFocus = false;
-            if (lastName != focusVariant.Text && save) {
+            if (state == State.ACTIVE && lastName != focusVariant.Text && save) {
                 idleVariant.SetText(focusVariant.Text);
                 if (RenameUI.IsNPCSelected && RenameUI.SelectedNPC != 1000 && RenameUI.SelectedNPC != 1001 && RenameUI.SelectedNPC != 1002) {
                     NPCs.CustomNPC.FindFirstNPC(RenameUI.SelectedNPC).GivenName = idleVariant.Text;

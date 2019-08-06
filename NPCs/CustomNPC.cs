@@ -16,7 +16,7 @@ namespace CustomNPCNames.NPCs
             isMale        = new Dictionary<short, bool>();
             ResetCurrentGender();
 
-            // vanilla names need to be added manually for randomization, because it's otherwise impossible to "force" a name change via Randomize Button
+            // vanilla names need to be added manually to allow unique name randomization
             vanillaNames = new Dictionary<short, List<StringWrapper>>();
             vanillaNames.Add(NPCID.Guide,              new List<StringWrapper>() { "Andrew", "Asher", "Bradley", "Brandon", "Brett", "Brian", "Cody", "Cole", "Colin", "Connor", "Daniel", "Dylan", "Garrett", "Harley", "Jack", "Jacob", "Jake", "Jeff", "Jeffrey", "Joe", "Kevin", "Kyle", "Levi", "Logan", "Luke", "Marty", "Maxwell", "Ryan", "Scott", "Seth", "Steve", "Tanner", "Trent", "Wyatt", "Zach" });
             vanillaNames.Add(NPCID.Merchant,           new List<StringWrapper>() { "Alfred", "Barney", "Calvin", "Edmund", "Edwin", "Eugene", "Finn", "Frank", "Frederick", "Gilbert", "Gus", "Harold", "Howard", "Humphrey", "Isaac", "Joseph", "Louis", "Milton", "Mortimer", "Ralph", "Seymour" });
@@ -53,6 +53,7 @@ namespace CustomNPCNames.NPCs
 
         private string HookGetNewNPCName(On.Terraria.NPC.orig_getNewNPCName orig, int npcType)
         {
+
             foreach (short i in CustomNPCNames.TownNPCs) {
                 if (i == npcType) {
                     return GetRandomName(i);
@@ -99,12 +100,9 @@ namespace CustomNPCNames.NPCs
 
         public static string GetRandomName(short type)
         {
-            var list = new List<StringWrapper>();
+            List<StringWrapper> list;
 
             switch (CustomWorld.mode) {
-                case 0: // Vanilla names mode
-                    list = new List<StringWrapper>(vanillaNames[type]);
-                    break;
                 case 1: // Custom Names mode
                     list = (CustomWorld.CustomNames[type].Count != 0) ? new List<StringWrapper>(CustomWorld.CustomNames[type]) : new List<StringWrapper>(vanillaNames[type]);
                     break;
@@ -113,6 +111,9 @@ namespace CustomNPCNames.NPCs
                     break;
                 case 3: // Global Names mode
                     list = (CustomWorld.CustomNames[1002].Count != 0) ? new List<StringWrapper>(CustomWorld.CustomNames[1002]) : new List<StringWrapper>(vanillaNames[type]);
+                    break;
+                default: // Vanilla names mode
+                    list = new List<StringWrapper>(vanillaNames[type]);
                     break;
             }
 
@@ -184,29 +185,5 @@ namespace CustomNPCNames.NPCs
             }
             return null;
         }
-
-        //public override void SetDefaults(NPC npc)
-        //{
-        //    if (currentNames.ContainsKey((short)npc.type) && currentNames[(short)npc.type] == "\0") {
-        //        npcJustJoined[(short)npc.type] = true;
-        //        bool noNames = (CustomWorld.CustomNames != null
-        //        && ((CustomWorld.mode == 1 && CustomWorld.CustomNames[(short)npc.type].Count == 0)
-        //         || (CustomWorld.mode == 2 && CustomWorld.CustomNames[(short)(isMale[(short)npc.type] ? 1000 : 1001)].Count == 0)
-        //         || (CustomWorld.mode == 3 && CustomWorld.CustomNames[1002].Count == 0)));
-
-        //        if (!noNames) {
-        //            UpdateNPCCount();
-        //            foreach (short i in CustomNPCNames.TownNPCs) {
-        //                if (npc.type == i && HasNewSpawned(i)) {
-        //                    Main.NewText(string.Format("ERROR, {0}", CustomWorld.mode));
-        //                    RandomizeName(i);
-        //                    npc.GivenName = currentNames[i];
-        //                }
-        //            }
-        //        } else {
-        //            currentNames[(short)npc.type] = "\0";
-        //        }
-        //    }
-        //}
     }
 }
