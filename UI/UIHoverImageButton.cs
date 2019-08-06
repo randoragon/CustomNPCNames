@@ -6,7 +6,7 @@ using Microsoft.Xna.Framework;
 
 namespace CustomNPCNames.UI
 {
-    internal class UIHoverImageButton : UIImageButton, IDragableUIPanelChild
+    public class UIHoverImageButton : UIImageButton, IDragableUIPanelChild
     {
         internal string HoverText;
         bool IDragableUIPanelChild.Hover

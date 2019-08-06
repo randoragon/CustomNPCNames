@@ -8,7 +8,7 @@ namespace CustomNPCNames.UI
     /// <summary>
     /// Customized class for the unique names checkbox at the bottom of the menu.
     /// </summary>
-    class UIToggleUniqueButton : UITextPanel, IDragableUIPanelChild
+    public class UIToggleUniqueButton : UITextPanel, IDragableUIPanelChild
     {
         public bool State
         {

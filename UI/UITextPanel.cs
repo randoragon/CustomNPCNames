@@ -8,7 +8,7 @@ namespace CustomNPCNames.UI
     /// <summary>
     /// This class is an extension of UIPanel with added caption and hover text functionality.
     /// </summary>
-    class UITextPanel : UIPanel
+    public class UITextPanel : UIPanel
     {
         public UIText Caption { get; protected set; }
         public string Text { get { return Caption.Text; } }

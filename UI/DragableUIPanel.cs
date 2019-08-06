@@ -8,7 +8,7 @@ namespace CustomNPCNames.UI
     // To prevent dragging when a DragableUIPanel's children are being interacted with, we do simple checks for each of the children,
     // e.g. we will enter drag state only when the dragable panel is clicked AND its children are not. For that reason every single child
     // must be derived from a custom "IDragableUIPanelChild" interface class which has a property for evaluating whether or not it's being hovered over.
-    class DragableUIPanel : UIPanel
+    public class DragableUIPanel : UIPanel
     {
         private Vector2 offset;
         public bool dragging;

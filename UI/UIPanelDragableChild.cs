@@ -7,7 +7,7 @@ namespace CustomNPCNames.UI
     /// <summary>
     /// Simple wrapper for IDragableUIPanelChild implementation. Read more in DragableUIPanel.cs
     /// </summary>
-    class UIPanelDragableChild : UIPanel, IDragableUIPanelChild
+    public class UIPanelDragableChild : UIPanel, IDragableUIPanelChild
     {
         bool IDragableUIPanelChild.Hover
         {

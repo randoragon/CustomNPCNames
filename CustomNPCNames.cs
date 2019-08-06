@@ -12,7 +12,7 @@ using CustomNPCNames.Network;
 
 namespace CustomNPCNames
 {
-    class CustomNPCNames : Mod
+    public class CustomNPCNames : Mod
     {
         public static CustomNPCNames instance;
         public static readonly short[] TownNPCs = {

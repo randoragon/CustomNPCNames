@@ -10,7 +10,7 @@ using Microsoft.Xna.Framework.Input;
 
 namespace CustomNPCNames.UI
 {
-    internal class RenameUI : UIState
+    public class RenameUI : UIState
     {
         public static DragableUIPanel menuPanel;      // main window, parent for all the other UI objects
         public static List<UINPCButton> menuNPCList;  // the left stripe with NPC heads
@@ -734,7 +734,7 @@ namespace CustomNPCNames.UI
     /// <summary>
     /// This struct is a container for all lists data, it is used to make copying and pasting data between worlds easier.
     /// </summary>
-    internal struct ListData
+    public struct ListData
     {
         public byte mode;
         public bool tryUnique;

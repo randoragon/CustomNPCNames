@@ -9,7 +9,7 @@ namespace CustomNPCNames.UI
     /// <summary>
     /// Customized class for the cycle text button at the bottom of the menu.
     /// </summary>
-    class UIModeCycleButton : UITextPanel, IDragableUIPanelChild
+    public class UIModeCycleButton : UITextPanel, IDragableUIPanelChild
     {
         public byte State
         {

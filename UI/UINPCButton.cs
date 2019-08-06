@@ -7,7 +7,7 @@ using Terraria;
 
 namespace CustomNPCNames.UI
 {
-    class UINPCButton : UIHoverImageButton, IDragableUIPanelChild
+    public class UINPCButton : UIHoverImageButton, IDragableUIPanelChild
     {
         public UIImage NpcHead { get; private set; }
         public static UINPCButton Selection { get; protected set; }

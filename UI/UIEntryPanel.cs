@@ -11,7 +11,7 @@ namespace CustomNPCNames.UI
     /// <summary>
     /// This class behaves like a UITextPanel, but you can also edit its caption by typing.
     /// </summary>
-    class UIEntryPanel : UIElement
+    public class UIEntryPanel : UIElement
     {
         protected readonly UITextPanel focusVariant;    // this panel will have additional text input functionality
         protected readonly UITextPanel idleVariant;     // this panel will be used when EntryBox goes out of text focus

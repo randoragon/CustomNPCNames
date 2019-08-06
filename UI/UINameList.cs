@@ -11,7 +11,7 @@ namespace CustomNPCNames.UI
     /// <summary>
     /// This class is exclusively for displaying the custom names in rows on the menu (after selecting an NPC).
     /// </summary>
-    class UINameList : UIList, IDragableUIPanelChild
+    public class UINameList : UIList, IDragableUIPanelChild
     {
         bool IDragableUIPanelChild.Hover
         {

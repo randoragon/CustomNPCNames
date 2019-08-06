@@ -7,7 +7,7 @@ namespace CustomNPCNames.UI
     /// <summary>
     /// Dead simple wrapper for UIText with added toggle functionality, e.g. turn visibility on and off.
     /// </summary>
-    class UIToggleText : UIText
+    public class UIToggleText : UIText
     {
         protected bool _visible = true;
 

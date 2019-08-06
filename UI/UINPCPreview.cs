@@ -6,7 +6,7 @@ using Microsoft.Xna.Framework;
 
 namespace CustomNPCNames.UI
 {
-    class UINPCPreview : UIElement
+    public class UINPCPreview : UIElement
     {
         public UIImage npcHeadPreview;
         public UIImage npcGenderPreview;

@@ -240,7 +240,6 @@ namespace CustomNPCNames
             }
             
         }
-
         public override void NetReceive(BinaryReader reader)
         {
             byte syncType = reader.ReadByte();

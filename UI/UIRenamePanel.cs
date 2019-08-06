@@ -8,7 +8,7 @@ namespace CustomNPCNames.UI
     /// <summary>
     /// This class modifies and extends UIEntryPanel's functionality to specifically be the top rename panel on RenameUI menu.
     /// </summary>
-    class UIRenamePanel : UIEntryPanel, IDragableUIPanelChild
+    public class UIRenamePanel : UIEntryPanel, IDragableUIPanelChild
     {
         protected State state { get; set; }
         protected enum State : byte

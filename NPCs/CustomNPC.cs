@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace CustomNPCNames.NPCs
 {
-    class CustomNPC : GlobalNPC
+    public class CustomNPC : GlobalNPC
     {
         public  static Dictionary<short, bool>   isMale;
         public  static Dictionary<short, List<StringWrapper>> vanillaNames;
@@ -42,6 +42,24 @@ namespace CustomNPCNames.NPCs
             vanillaNames.Add(NPCID.Cyborg,             new List<StringWrapper>() { "Alpha", "Beta", "Gamma", "Delta", "Zeta", "Theta", "Kappa", "Lambda", "Mu", "Nu", "Omicron", "Rho", "Sigma", "Upsilon", "Phi", "Ci", "Omega", "Fender", "T-3E0", "Niner-7", "A.N.D.Y", "Syn-X" });
             vanillaNames.Add(NPCID.SantaClaus,         new List<StringWrapper>() { "Santa Claus" });
             vanillaNames.Add(NPCID.TravellingMerchant, new List<StringWrapper>() { "Abraham", "Aedan", "Aphraim", "Bohemas", "Eladon", "Gallius", "Llewellyn", "Mercer", "Rawleigh", "Riley", "Romeo", "Shipton", "Willy" });
+        }
+
+        public override bool Autoload(ref string name)
+        {
+            // Replace the way Vanilla assigns NPC names with the HookGetNewNPCName method
+            On.Terraria.NPC.getNewNPCName += HookGetNewNPCName;
+            return base.Autoload(ref name);
+        }
+
+        private string HookGetNewNPCName(On.Terraria.NPC.orig_getNewNPCName orig, int npcType)
+        {
+            foreach (short i in CustomNPCNames.TownNPCs) {
+                if (i == npcType) {
+                    return GetRandomName(i);
+                }
+            }
+
+            return orig(npcType);
         }
 
         public static void Unload()
@@ -88,13 +106,13 @@ namespace CustomNPCNames.NPCs
                     list = new List<StringWrapper>(vanillaNames[type]);
                     break;
                 case 1: // Custom Names mode
-                    list = new List<StringWrapper>(CustomWorld.CustomNames[type]);
+                    list = (CustomWorld.CustomNames[type].Count != 0) ? new List<StringWrapper>(CustomWorld.CustomNames[type]) : new List<StringWrapper>(vanillaNames[type]);
                     break;
                 case 2: // Gender Names mode
-                    list = new List<StringWrapper>(CustomWorld.CustomNames[(short)(isMale[type] ? 1000 : 1001)]);
+                    list = (CustomWorld.CustomNames[(short)(isMale[type] ? 1000 : 1001)].Count != 0) ? new List<StringWrapper>(CustomWorld.CustomNames[(short)(isMale[type] ? 1000 : 1001)]) : new List<StringWrapper>(vanillaNames[type]);
                     break;
                 case 3: // Global Names mode
-                    list = new List<StringWrapper>(CustomWorld.CustomNames[1002]);
+                    list = (CustomWorld.CustomNames[1002].Count != 0) ? new List<StringWrapper>(CustomWorld.CustomNames[1002]) : new List<StringWrapper>(vanillaNames[type]);
                     break;
             }
 

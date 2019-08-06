@@ -4,7 +4,7 @@ using Terraria.ID;
 
 namespace CustomNPCNames.UI
 {
-    class UINameField : UIEntryPanel
+    public class UINameField : UIEntryPanel
     {
         private StringWrapper name;
         public string Name
