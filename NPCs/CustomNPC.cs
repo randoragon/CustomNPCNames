@@ -116,24 +116,20 @@ namespace CustomNPCNames.NPCs
                     list = new List<StringWrapper>(vanillaNames[type]);
                     break;
             }
-
             if (CustomWorld.tryUnique) {
                 var currentNames = new List<string>();
                 foreach (NPC i in Main.npc) {
-                    if (i.type != NPCID.None && CustomNPCNames.TownNPCs.Contains((short)i.type)) {
+                    if (i.type != type && CustomNPCNames.TownNPCs.Contains((short)i.type)) {
                         currentNames.Add(i.GivenName);
+                        if (currentNames.Count == 24) { break; } // 24 is how many elements CustomNPCNames.TownNPCs has
                     }
                 }
                 var listsIntersection = new List<StringWrapper>();
                 foreach (StringWrapper i in list) {
-                    foreach (string j in currentNames) {
-                        if (i.ToString() == j) {
-                            listsIntersection.Add(i);
-                            break;
-                        }
+                    if (currentNames.Contains(i.ToString())) {
+                        listsIntersection.Add(i);
                     }
                 }
-
                 foreach (StringWrapper i in listsIntersection) {
                     list.Remove(i);
                 }
@@ -148,28 +144,50 @@ namespace CustomNPCNames.NPCs
         {
             if (Main.netMode == NetmodeID.SinglePlayer || Main.netMode == NetmodeID.Server) {
                 if (type == 1000) {
+                    foreach (NPC i in Main.npc) {
+                        foreach (KeyValuePair<short, bool> j in isMale) {
+                            if (j.Key == (short)i.type) {
+                                if (j.Value && HasCustomNames(j.Key)) { i.GivenName = "\0"; }
+                                break;
+                            }
+                        }
+                    }
                     foreach (int i in Enumerable.Range(0, CustomNPCNames.TownNPCs.Length).OrderBy(x => Main.rand.Next())) {
                         short id = CustomNPCNames.TownNPCs[i];
-                        if (isMale[id] && NPC.CountNPCS(id) != 0) { RandomizeName(id); }
+                        if (isMale[id] && NPC.AnyNPCs(id) && HasCustomNames(id)) { RandomizeName(id); }
                     }
                     return;
                 } else if (type == 1001) {
+                    foreach (NPC i in Main.npc) {
+                        foreach (KeyValuePair<short, bool> j in isMale) {
+                            if (j.Key == (short)i.type) {
+                                if (!j.Value && HasCustomNames(j.Key)) { i.GivenName = "\0"; }
+                                break;
+                            }
+                        }
+                    }
                     foreach (int i in Enumerable.Range(0, CustomNPCNames.TownNPCs.Length).OrderBy(x => Main.rand.Next())) {
                         short id = CustomNPCNames.TownNPCs[i];
-                        if (!isMale[id] && NPC.CountNPCS(id) != 0) { RandomizeName(id); }
+                        if (!isMale[id] && NPC.AnyNPCs(id) && HasCustomNames(id)) { RandomizeName(id); }
                     }
                     return;
                 } else if (type == 1002) {
+                    foreach (NPC i in Main.npc) {
+                        if (CustomNPCNames.TownNPCs.Contains((short)i.type) && HasCustomNames((short)i.type)) { i.GivenName = "\0"; }
+                    }
                     foreach (int i in Enumerable.Range(0, CustomNPCNames.TownNPCs.Length).OrderBy(x => Main.rand.Next())) {
                         short id = CustomNPCNames.TownNPCs[i];
-                        if (NPC.CountNPCS(id) != 0) { RandomizeName(id); }
+                        if (NPC.AnyNPCs(id) && HasCustomNames(id)) { RandomizeName(id); }
                     }
                     return;
                 } else {
                     foreach (NPC i in Main.npc) {
                         if (i.type == type) {
-                            i.GivenName = GetRandomName((short)i.type);
-                            return;
+                            string oldName = i.GivenName;
+                            i.GivenName = GetRandomName(type);
+                            if (oldName != i.GivenName) {
+                                Network.ModSync.SyncWorldData(Network.SyncType.NAME, type);
+                            }
                         }
                     }
                 }
@@ -184,6 +202,20 @@ namespace CustomNPCNames.NPCs
                 if (i.type == type) { return i; }
             }
             return null;
+        }
+
+        /// <summary>
+        /// Checks whether or not an NPC has custom names to choose from prior to attempting randomization.
+        /// </summary>
+        /// <param name="type">NPCID of the Town NPC. Must be one of the values in CustomNPCNames.TownNPCs</param>
+        /// <returns></returns>
+        public static bool HasCustomNames(short type)
+        {
+            return (CustomWorld.mode == 0 
+                || (CustomWorld.mode == 1 && CustomWorld.CustomNames[type].Count != 0)
+                || (CustomWorld.mode == 2 && CustomWorld.CustomNames[(short)(isMale[type] ? 1000 : 1001)].Count != 0)
+                || (CustomWorld.mode == 3 && CustomWorld.CustomNames[1002].Count != 0)
+                );
         }
     }
 }

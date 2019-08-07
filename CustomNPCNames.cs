@@ -144,7 +144,7 @@ namespace CustomNPCNames
                 case PacketType.RANDOMIZE: {
                         short id = reader.ReadInt16();
                         NPCs.CustomNPC.RandomizeName(id);
-                        ModSync.SyncWorldData(SyncType.NAME, id);
+                        // world sync is called from the RandomizeName method
                     }
                     break;
                 case PacketType.ADD_NAME: {

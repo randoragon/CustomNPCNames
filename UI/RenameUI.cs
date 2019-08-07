@@ -526,7 +526,7 @@ namespace CustomNPCNames.UI
                     if (id == 1000) {
                         bool noMaleNPCs = true;
                         foreach (short i in CustomNPCNames.TownNPCs) {
-                            if (NPCs.CustomNPC.isMale[i] && NPC.CountNPCS(i) != 0) { noMaleNPCs = false; break; }
+                            if (NPCs.CustomNPC.isMale[i] && NPC.AnyNPCs(i)) { noMaleNPCs = false; break; }
                         }
 
                         if (CustomWorld.mode == 1) {
@@ -552,7 +552,7 @@ namespace CustomNPCNames.UI
                     } else if (id == 1001) {
                         bool noFemaleNPCs = true;
                         foreach (short i in CustomNPCNames.TownNPCs) {
-                            if (!NPCs.CustomNPC.isMale[i] && NPC.CountNPCS(i) != 0) { noFemaleNPCs = false; break; }
+                            if (!NPCs.CustomNPC.isMale[i] && NPC.AnyNPCs(i)) { noFemaleNPCs = false; break; }
                         }
 
                         if (CustomWorld.mode == 1) {
@@ -578,7 +578,7 @@ namespace CustomNPCNames.UI
                     } else if (id == 1002) {
                         bool noNPCs = true;
                         foreach (short i in CustomNPCNames.TownNPCs) {
-                            if (NPC.CountNPCS(i) != 0) { noNPCs = false; break; }
+                            if (NPC.AnyNPCs(i)) { noNPCs = false; break; }
                         }
 
                         if (CustomWorld.mode == 1) {
@@ -608,7 +608,7 @@ namespace CustomNPCNames.UI
                     namesPanel.RemoveChild(switchGenderButtonInactive);
                     namesPanel.Append(switchGenderButton);
 
-                    if (NPC.CountNPCS(id) == 0) {
+                    if (!NPC.AnyNPCs(id)) {
                         namesPanel.RemoveChild(randomizeButton);
                         namesPanel.Append(randomizeButtonInactive);
                         randomizeButtonInactive.HoverText = "This NPC is not alive\nand cannot be renamed!";
