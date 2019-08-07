@@ -139,6 +139,7 @@ namespace CustomNPCNames.UI
                 }
 
                 if (reassignEditName) {
+                    RenameUI.panelListReady = false;
                     Recalculate(); // this also calls RecalculateChildren(), where the actual reassignment will take place
                 }
             }
