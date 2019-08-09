@@ -45,14 +45,6 @@ namespace CustomNPCNames.UI
             Selection = null;
         }
 
-        public static void Refresh()
-        {
-            if (Selection != null) {
-                var evt = new UIMouseEvent(Selection, Vector2.Zero);
-                Selection.Click(evt);
-            }
-        }
-
         public static void Deselect()
         {
             Selection = null;

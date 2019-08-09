@@ -429,14 +429,14 @@ namespace CustomNPCNames.UI
                 uniqueNameButton.State = true;
                 CustomWorld.ResetCustomNames();
                 NPCs.CustomNPC.ResetCurrentGender();
-                UINPCButton.Refresh();
+                panelList.PrintContent();
             }
         }
 
         private void PasteButtonClicked(UIMouseEvent evt, UIElement listeningElement)
         {
             copyData.Paste();
-            UINPCButton.Refresh();
+            panelList.PrintContent();
         }
 
         private void CarryButtonClicked(UIMouseEvent evt, UIElement listeningElement)
@@ -737,18 +737,18 @@ namespace CustomNPCNames.UI
     {
         public byte mode;
         public bool tryUnique;
-        public Dictionary<short, List<string>> customNames;
+        public Dictionary<short, List<StringWrapper>> customNames;
         public Dictionary<short, bool> isMale;
 
         public void Copy()
         {
             mode = CustomWorld.mode;
             tryUnique = CustomWorld.tryUnique;
-            customNames = new Dictionary<short, List<string>>();
+            customNames = new Dictionary<short, List<StringWrapper>>();
             foreach (KeyValuePair<short, List<StringWrapper>> i in CustomWorld.CustomNames) {
-                var list = new List<string>();
+                var list = new List<StringWrapper>();
                 foreach (StringWrapper j in i.Value) {
-                    list.Add(j.ToString());
+                    list.Add(j.Clone());
                 }
                 customNames.Add(i.Key, list);
             }
@@ -764,8 +764,12 @@ namespace CustomNPCNames.UI
                 RenameUI.modeCycleButton.State = mode;
                 RenameUI.uniqueNameButton.State = tryUnique;
                 if (customNames != null) {
-                    foreach (KeyValuePair<short, List<string>> i in customNames) {
-                        CustomWorld.CustomNames[i.Key] = StringWrapper.ConvertList(i.Value);
+                    foreach (KeyValuePair<short, List<StringWrapper>> i in customNames) {
+                        var list = new List<StringWrapper>();
+                        foreach (StringWrapper j in i.Value) {
+                            list.Add(j.Clone());
+                        }
+                        CustomWorld.CustomNames[i.Key] = list;
                     }
                 }
                 if (isMale != null) {
@@ -774,7 +778,7 @@ namespace CustomNPCNames.UI
                     }
                 }
             } else if (Main.netMode == NetmodeID.MultiplayerClient) {
-                Network.PacketSender.SendPacketToServer(Network.PacketType.SEND_EVERYTHING);
+                Network.PacketSender.SendPacketToServer(Network.PacketType.SEND_COPY_DATA);
             }
         }
     }

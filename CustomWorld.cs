@@ -225,7 +225,9 @@ namespace CustomNPCNames
                     break;
                 case SyncType.EVERYTHING:
                     packet.Write(mode);
+                    NetMessage.BroadcastChatMessage(Terraria.Localization.NetworkText.FromLiteral(string.Format("Sending To Client mode={0}", mode)), Microsoft.Xna.Framework.Color.Gray);
                     packet.Write(tryUnique);
+                    NetMessage.BroadcastChatMessage(Terraria.Localization.NetworkText.FromLiteral(string.Format("Sending To Client tryUnique={0}", tryUnique)), Microsoft.Xna.Framework.Color.Gray);
                     foreach (KeyValuePair<short, List<StringWrapper>> i in CustomNames) {
                         packet.Write(i.Value.Count);
                         foreach (StringWrapper j in i.Value) {

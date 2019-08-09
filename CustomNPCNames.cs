@@ -75,6 +75,11 @@ namespace CustomNPCNames
         {
             byte type = reader.ReadByte();
             switch (type) {
+                case 100:
+                    foreach (var i in CustomWorld.CustomNames[reader.ReadInt16()]) {
+                        NetMessage.BroadcastChatMessage(Terraria.Localization.NetworkText.FromLiteral(string.Format("\"{0}\": {1}", i.str, i.ID)), Color.Gray);
+                    }
+                    break;
                 case PacketType.NEXT_MODE:
                     CustomWorld.mode = (byte)(++CustomWorld.mode % 4);
                     ModSync.SyncWorldData(SyncType.MODE);
@@ -103,7 +108,8 @@ namespace CustomNPCNames
                         ModSync.SyncWorldData(SyncType.NAME, id);
                     }
                     break;
-                case PacketType.SEND_CUSTOM_NAMES: {
+                case PacketType.SEND_CUSTOM_NAMES: // fallthrough
+                case PacketType.SEND_COPY_NAMES: {
                         short id = reader.ReadInt16();
                         int index = reader.ReadInt32();
                         if (index != -1) {
@@ -119,7 +125,9 @@ namespace CustomNPCNames
                                 }
                             }
                             for (int i = index; i < index + offset; i++) {
-                                CustomWorld.CustomNames[id][i] = reader.ReadString();
+                                string name = reader.ReadString();
+                                ulong nameId = reader.ReadUInt64();
+                                CustomWorld.CustomNames[id][i] = new StringWrapper(ref name, nameId);
                             }
 
                             if (lastPacket) { ModSync.SyncWorldData(SyncType.CUSTOM_NAMES, id); }
@@ -129,9 +137,11 @@ namespace CustomNPCNames
                         }
                     }
                     break;
-                case PacketType.SEND_EVERYTHING: {
+                case PacketType.SEND_COPY_DATA: {
                         CustomWorld.mode = reader.ReadByte();
+                        NetMessage.BroadcastChatMessage(Terraria.Localization.NetworkText.FromLiteral(string.Format("Server Received mode={0}", CustomWorld.mode)), Color.Gray);
                         CustomWorld.tryUnique = reader.ReadBoolean();
+                        NetMessage.BroadcastChatMessage(Terraria.Localization.NetworkText.FromLiteral(string.Format("Server Received tryUnique={0}", CustomWorld.tryUnique)), Color.Gray);
                         for (int i = 0; i < 3; i++) {
                             BitsByte b = reader.ReadByte();
                             for (int j = 0; j < 8; j++) {
@@ -321,10 +331,23 @@ namespace CustomNPCNames
                     newId |= (ulong)random.Next() >> 8; // rand.Next() generates an Int32, we have 24 bits left on the buffer, so we fill the remaining space by shifting it 32-24=8 places to the right.
                     // the random value exists because why not, there's 24 bits of data left on the buffer, so this adds an extra layer of security.
                     ID = newId;
+                } else if (Main.netMode == NetmodeID.Server) {
+                    if (CustomNPCNames.instance != null) {
+                        CustomNPCNames.instance.Logger.Error("Tried generating CustomNPCNames.StringWrapper.ID on the server.");
+                        NetMessage.BroadcastChatMessage(Terraria.Localization.NetworkText.FromLiteral("CustomNPCNames Error: Tried generating StringWrapper.ID on the server. Please report this issue on the Mod's Homepage."), Color.Orange);
+                    }
+                    ID = 0;
                 }
             } else {
                 ID = id;
             }
+        }
+
+        /// <summary>Creates a deep copy of the calling StringWrapper object and returns it.</summary>
+        public StringWrapper Clone()
+        {
+            string newName = str;
+            return new StringWrapper(ref newName, ID);
         }
 
         public static explicit operator string(StringWrapper wr)

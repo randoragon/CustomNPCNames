@@ -53,33 +53,60 @@ namespace CustomNPCNames.Network
                                 packet.Write(i + 8 >= CustomWorld.CustomNames[id].Count);
                                 for (int j = i; j < i + count; j++) {
                                     packet.Write(CustomWorld.CustomNames[id][j].ToString());
+                                    packet.Write(CustomWorld.CustomNames[id][j].ID);
                                 }
                                 packet.Send();
                             }
                         }
                         break;
-                    case SEND_EVERYTHING: {
+                    case SEND_COPY_DATA: {
                             // mode and tryUnique
                             packet = CustomNPCNames.instance.GetPacket();
-                            packet.Write(SEND_EVERYTHING);
-                            packet.Write(CustomWorld.mode);
-                            packet.Write(CustomWorld.tryUnique);
+                            packet.Write(SEND_COPY_DATA);
+                            packet.Write(UI.RenameUI.copyData.mode);
+                            packet.Write(UI.RenameUI.copyData.tryUnique);
                             var bits = new BitsByte();
                             for (int i = 0; i < 3; i++) {
                                 for (int j = 0; j < 8; j++) {
-                                    bits[j] = NPCs.CustomNPC.isMale[CustomNPCNames.TownNPCs[(short)((i * 8) + j)]];
+                                    bits[j] = UI.RenameUI.copyData.isMale[CustomNPCNames.TownNPCs[(short)((i * 8) + j)]];
                                 }
+                                Main.NewText(string.Format("Writing byte{0}={1}...", i + 1, bits.ToString()));
                                 packet.Write(bits);
                             }
+                            Main.NewText("Sending!");
                             packet.Send();
 
                             // CustomNames
                             foreach (short i in CustomNPCNames.TownNPCs) {
-                                SendPacketToServer(SEND_CUSTOM_NAMES, i);
+                                SendPacketToServer(SEND_COPY_NAMES, i);
                             }
-                            SendPacketToServer(SEND_CUSTOM_NAMES, 1000); // male
-                            SendPacketToServer(SEND_CUSTOM_NAMES, 1001); // female
-                            SendPacketToServer(SEND_CUSTOM_NAMES, 1002); // global
+                            SendPacketToServer(SEND_COPY_NAMES, 1000); // male
+                            SendPacketToServer(SEND_COPY_NAMES, 1001); // female
+                            SendPacketToServer(SEND_COPY_NAMES, 1002); // global
+                        }
+                        break;
+                    case SEND_COPY_NAMES: // a maximum of 8 names will be sent per packet, see explanation starting at line 15
+                        if (UI.RenameUI.copyData.customNames[id].Count == 0) {
+                            packet = CustomNPCNames.instance.GetPacket();
+                            packet.Write(SEND_COPY_NAMES);
+                            packet.Write(id);
+                            packet.Write(-1);
+                            packet.Send();
+                        } else {
+                            for (int i = 0; i < UI.RenameUI.copyData.customNames[id].Count; i += 8) {
+                                packet = CustomNPCNames.instance.GetPacket();
+                                packet.Write(SEND_COPY_NAMES);
+                                packet.Write(id);
+                                packet.Write(i);
+                                int count = System.Math.Min(8, UI.RenameUI.copyData.customNames[id].Count - i);
+                                packet.Write((byte)count);
+                                packet.Write(i + 8 >= UI.RenameUI.copyData.customNames[id].Count);
+                                for (int j = i; j < i + count; j++) {
+                                    packet.Write(UI.RenameUI.copyData.customNames[id][j].ToString());
+                                    packet.Write(UI.RenameUI.copyData.customNames[id][j].ID);
+                                }
+                                packet.Send();
+                            }
                         }
                         break;
                     case ADD_NAME:
@@ -114,6 +141,8 @@ namespace CustomNPCNames.Network
                         break;
                 }
                 Main.NewText(string.Format("Sending Packets({0})! ", type) + Main.time);
+            } else {
+                NetMessage.BroadcastChatMessage(Terraria.Localization.NetworkText.FromLiteral("Trying to send packages from server to server!"), Microsoft.Xna.Framework.Color.White);
             }
         }
     }
@@ -126,12 +155,13 @@ namespace CustomNPCNames.Network
         public const byte TOGGLE_TRY_UNIQUE  = 2;  // used when Toggle Unique Names button is pressed
         public const byte SEND_NAME          = 3;  // used when a client updates an NPC's name
         public const byte SWITCH_GENDER      = 4;  // used when Switch Gender button is pressed
-        public const byte SEND_CUSTOM_NAMES  = 5;  // used in SEND_EVERYTHING
-        public const byte SEND_EVERYTHING    = 6;  // used when pasting everything
-        public const byte RANDOMIZE          = 7;  // used when clicking the Randomize button
-        public const byte ADD_NAME           = 8;  // used when adding a name field
-        public const byte REMOVE_NAME        = 9;  // used when removing a name field
-        public const byte EDIT_NAME          = 10; // used when editing a name field
-        public const byte REQUEST_WORLD_SYNC = 11; // used for syncing from the MultiplayerClient (see ModSync class)
+        public const byte SEND_CUSTOM_NAMES  = 5;  // used in SEND_COPY_DATA
+        public const byte SEND_COPY_DATA     = 6;  // used when pasting everything
+        public const byte SEND_COPY_NAMES    = 7;  // used when pasting everything
+        public const byte RANDOMIZE          = 8;  // used when clicking the Randomize button
+        public const byte ADD_NAME           = 9;  // used when adding a name field
+        public const byte REMOVE_NAME        = 10;  // used when removing a name field
+        public const byte EDIT_NAME          = 11; // used when editing a name field
+        public const byte REQUEST_WORLD_SYNC = 12; // used for syncing from the MultiplayerClient (see ModSync class)
     }
 }

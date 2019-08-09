@@ -38,7 +38,7 @@ namespace CustomNPCNames
                 }
 
                 if (Main.keyState.IsKeyDown(Keys.I) && !Main.oldKeyState.IsKeyDown(Keys.I)) {
-                    
+                    Network.PacketSender.SendPacketToServer(100, RenameUI.SelectedNPC);
                 }
 
                 if (Main.keyState.IsKeyDown(Keys.L) && !Main.oldKeyState.IsKeyDown(Keys.L)) {
