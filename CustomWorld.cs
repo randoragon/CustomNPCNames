@@ -15,6 +15,8 @@ namespace CustomNPCNames
         public static bool tryUnique;
         public static bool saveAndExit = false; // this is turned to true in CustomNPCNames.PreSaveAndExit() to distinguish autosave from save&exit
         public static bool updateNameList = false; // this is turned to true in NetReceive() to print renameUI's panelList's contents to the screen
+        public static int receivedPackets = 0;  // these two are used exclusively with SEND_COPY_DATA (i.e. pasting everything) so that the world sync occurs only once
+        public static int packetsTillSync = 0;  // after all the packets have arrived, as opposed to syncing a bunch of times every single packet. Just for optimization.
 
         public CustomWorld()
         {
@@ -225,9 +227,7 @@ namespace CustomNPCNames
                     break;
                 case SyncType.EVERYTHING:
                     packet.Write(mode);
-                    NetMessage.BroadcastChatMessage(Terraria.Localization.NetworkText.FromLiteral(string.Format("Sending To Client mode={0}", mode)), Microsoft.Xna.Framework.Color.Gray);
                     packet.Write(tryUnique);
-                    NetMessage.BroadcastChatMessage(Terraria.Localization.NetworkText.FromLiteral(string.Format("Sending To Client tryUnique={0}", tryUnique)), Microsoft.Xna.Framework.Color.Gray);
                     foreach (KeyValuePair<short, List<StringWrapper>> i in CustomNames) {
                         packet.Write(i.Value.Count);
                         foreach (StringWrapper j in i.Value) {
@@ -247,15 +247,24 @@ namespace CustomNPCNames
             byte syncType = reader.ReadByte();
             Main.NewText("Receiving (" + syncType + ")! " + Main.time);
             switch (syncType) {
-                case SyncType.MODE:
-                    mode = reader.ReadByte();
+                case SyncType.MODE: {
+                        var readMode = reader.ReadByte();
+                        if (CustomNPCNames.WaitForServerResponse) { return; }
+                        mode = readMode;
+                    }
                     break;
-                case SyncType.TRY_UNIQUE:
-                    tryUnique = reader.ReadBoolean();
+                case SyncType.TRY_UNIQUE: {
+                        var readTryUnique = reader.ReadBoolean();
+                        if (CustomNPCNames.WaitForServerResponse) { return; }
+                        tryUnique = readTryUnique;
+                    }
                     break;
                 case SyncType.NAME: {
-                        short id = reader.ReadInt16();
-                        string name = reader.ReadString();
+                        var readId = reader.ReadInt16();
+                        var readName = reader.ReadString();
+                        if (CustomNPCNames.WaitForServerResponse) { return; }
+                        short id = readId;
+                        string name = readName;
                         if (name != null) {
                             NPC npc = NPCs.CustomNPC.FindFirstNPC(id);
                             if (npc != null) {
@@ -265,19 +274,29 @@ namespace CustomNPCNames
                     }
                     break;
                 case SyncType.GENDER: {
-                        short id = reader.ReadInt16();
-                        NPCs.CustomNPC.isMale[id] = reader.ReadBoolean();
+                        var readId = reader.ReadInt16();
+                        var readIsMale = reader.ReadBoolean();
+                        if (CustomNPCNames.WaitForServerResponse) { return; }
+                        short id = readId;
+                        NPCs.CustomNPC.isMale[id] = readIsMale;
                     }
                     break;
                 case SyncType.CUSTOM_NAMES: {
-                        short id = reader.ReadInt16();
-                        int count = reader.ReadInt32();
+                        var readId = reader.ReadInt16();
+                        var readCount = reader.ReadInt32();
+                        string[] readNames = new string[readCount];
+                        ulong[] readIDs = new ulong[readCount];
+                        for (int i = 0; i < readCount; i++) {
+                            readNames[i] = reader.ReadString();
+                            readIDs[i] = reader.ReadUInt64();
+                        }
+                        if (CustomNPCNames.WaitForServerResponse) { return; }
+                        short id = readId;
+                        int count = readCount;
                         while (CustomNames[id].Count < count) { CustomNames[id].Add(""); }
                         while (CustomNames[id].Count > count) { CustomNames[id].RemoveAt(0); }
                         for (int i = 0; i < count; i++) {
-                            string name = reader.ReadString();
-                            ulong nameID = reader.ReadUInt64();
-                            CustomNames[id][i] = new StringWrapper(ref name, nameID);
+                            CustomNames[id][i] = new StringWrapper(ref readNames[i], readIDs[i]);
                         }
 
                         if (Main.netMode == NetmodeID.MultiplayerClient) {
@@ -285,24 +304,50 @@ namespace CustomNPCNames
                         }
                     }
                     break;
-                case SyncType.EVERYTHING:
-                    mode = reader.ReadByte();
-                    tryUnique = reader.ReadBoolean();
-                    foreach (KeyValuePair<short, List<StringWrapper>> i in CustomNames) {
-                        int size = reader.ReadInt32();
-                        while (i.Value.Count < size) { i.Value.Add(""); }
-                        while (i.Value.Count > size) { i.Value.RemoveAt(0); }
-                        for (int j = 0; j < size; j++) {
-                            string name = reader.ReadString();
-                            ulong id = reader.ReadUInt64();
-                            i.Value[j] = new StringWrapper(ref name, id);
+                case SyncType.EVERYTHING: {
+                        var readMode = reader.ReadByte();
+                        var readTryUnique = reader.ReadBoolean();
+                        int[] readSize = new int[27];
+                        StringWrapper[][] readWrappers = new StringWrapper[27][];
+                        {
+                            int j = 0;
+                            foreach (KeyValuePair<short, List<StringWrapper>> i in CustomNames) {
+                                readSize[j] = reader.ReadInt32();
+                                readWrappers[j] = new StringWrapper[readSize[j]];
+                                for (int k = 0; k < readSize[j]; k++) {
+                                    string name = reader.ReadString();
+                                    ulong id = reader.ReadUInt64();
+                                    readWrappers[j][k] = new StringWrapper(ref name, id);
+                                }
+                                j++;
+                            }
                         }
-                    }
-                    if (Main.netMode == NetmodeID.MultiplayerClient) {
-                        updateNameList = true;
-                    }
-                    foreach (short i in CustomNPCNames.TownNPCs) {
-                        NPCs.CustomNPC.isMale[i] = reader.ReadBoolean();
+                        bool[] readIsMale = new bool[24];
+                        for (int i = 0; i < 24; i++) {
+                            readIsMale[i] = reader.ReadBoolean();
+                        }
+                        if (CustomNPCNames.WaitForServerResponse) { return; }
+                        mode = readMode;
+                        tryUnique = readTryUnique;
+                        {
+                            int j = 0;
+                            foreach (KeyValuePair<short, List<StringWrapper>> i in CustomNames) {
+                                while (i.Value.Count < readSize[j]) { i.Value.Add(""); }
+                                while (i.Value.Count > readSize[j]) { i.Value.RemoveAt(0); }
+                                for (int k = 0; k < readSize[j]; k++) {
+                                    i.Value[k] = new StringWrapper(ref readWrappers[j][k].str, readWrappers[j][k].ID);
+                                }
+                                j++;
+                            }
+
+                            j = 0;
+                            foreach (short i in CustomNPCNames.TownNPCs) {
+                                NPCs.CustomNPC.isMale[i] = readIsMale[j++];
+                            }
+                        }
+                        if (Main.netMode == NetmodeID.MultiplayerClient) {
+                            updateNameList = true;
+                        }
                     }
                     break;
             }

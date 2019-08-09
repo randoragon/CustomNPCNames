@@ -127,6 +127,11 @@ namespace CustomNPCNames.UI
         {
             base.Update(gameTime);
             
+            if (CustomNPCNames.WaitForServerResponse) {
+                if (HasFocus) { Deselect(false); }
+                return;
+            }
+
             oldMouse = curMouse;
             curMouse = Mouse.GetState();
             

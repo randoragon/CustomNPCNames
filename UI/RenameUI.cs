@@ -361,9 +361,11 @@ namespace CustomNPCNames.UI
 
         private void AddButtonClicked(UIMouseEvent evt, UIElement listeningElement)
         {
-            SetRemoveMode(false);
-            panelListScrollbar.ViewPosition = 0;
-            panelList.AddNew();
+            if (!CustomNPCNames.WaitForServerResponse) {
+                SetRemoveMode(false);
+                panelListScrollbar.ViewPosition = 0;
+                panelList.AddNew();
+            }
         }
 
         private void RemoveButtonClicked(UIMouseEvent evt, UIElement listeningElement)
@@ -389,28 +391,34 @@ namespace CustomNPCNames.UI
 
         private void ClearButtonClicked(UIMouseEvent evt, UIElement listeningElement)
         {
-            if (Main.keyState.IsKeyDown(Keys.LeftAlt) || Main.keyState.IsKeyDown(Keys.RightAlt)) {
-                CustomWorld.CustomNames[SelectedNPC].Clear();
-                foreach (UINameField i in panelList._items) {
-                    panelList.RemoveName(i);
+            if (!CustomNPCNames.WaitForServerResponse) {
+                if (Main.keyState.IsKeyDown(Keys.LeftAlt) || Main.keyState.IsKeyDown(Keys.RightAlt)) {
+                    CustomWorld.CustomNames[SelectedNPC].Clear();
+                    foreach (UINameField i in panelList._items) {
+                        panelList.RemoveName(i);
+                    }
+                    Network.PacketSender.SendPacketToServer(Network.PacketType.SEND_CUSTOM_NAMES, SelectedNPC);
                 }
-                Network.PacketSender.SendPacketToServer(Network.PacketType.SEND_CUSTOM_NAMES, SelectedNPC);
             }
         }
 
         private void SwitchGenderButtonClicked(UIMouseEvent evt, UIElement listeningElement)
         {
-            npcPreview.UpdateNPC(SelectedNPC);
-            if (Main.netMode == NetmodeID.SinglePlayer) {
-                NPCs.CustomNPC.isMale[SelectedNPC] = !NPCs.CustomNPC.isMale[SelectedNPC];
-            } else if (Main.netMode == NetmodeID.MultiplayerClient) {
-                Network.PacketSender.SendPacketToServer(Network.PacketType.SWITCH_GENDER, SelectedNPC);
+            if (!CustomNPCNames.WaitForServerResponse) {
+                npcPreview.UpdateNPC(SelectedNPC);
+                if (Main.netMode == NetmodeID.SinglePlayer) {
+                    NPCs.CustomNPC.isMale[SelectedNPC] = !NPCs.CustomNPC.isMale[SelectedNPC];
+                } else if (Main.netMode == NetmodeID.MultiplayerClient) {
+                    Network.PacketSender.SendPacketToServer(Network.PacketType.SWITCH_GENDER, SelectedNPC);
+                }
             }
         }
 
         private void RandomizeButtonClicked(UIMouseEvent evt, UIElement listeningElement)
         {
-            NPCs.CustomNPC.RandomizeName(SelectedNPC);
+            if (!CustomNPCNames.WaitForServerResponse) {
+                NPCs.CustomNPC.RandomizeName(SelectedNPC);
+            }
         }
 
         public void DeselectAllEntries()
@@ -421,22 +429,25 @@ namespace CustomNPCNames.UI
 
         private void CopyButtonClicked(UIMouseEvent evt, UIElement listeningElement)
         {
-            copyData.Copy();
-            menuPanel.RemoveChild(pasteButtonInactive);
-            menuPanel.Append(pasteButton);
-            if (Main.keyState.IsKeyDown(Keys.LeftAlt) || Main.keyState.IsKeyDown(Keys.RightAlt)) {
-                modeCycleButton.State = 0;
-                uniqueNameButton.State = true;
-                CustomWorld.ResetCustomNames();
-                NPCs.CustomNPC.ResetCurrentGender();
-                panelList.PrintContent();
+            if (!CustomNPCNames.WaitForServerResponse) {
+                copyData.Copy();
+                menuPanel.RemoveChild(pasteButtonInactive);
+                menuPanel.Append(pasteButton);
+                if (Main.keyState.IsKeyDown(Keys.LeftAlt) || Main.keyState.IsKeyDown(Keys.RightAlt)) {
+                    modeCycleButton.State = 0;
+                    uniqueNameButton.State = true;
+                    CustomWorld.ResetCustomNames();
+                    NPCs.CustomNPC.ResetCurrentGender();
+                    panelList.PrintContent();
+                }
             }
         }
 
         private void PasteButtonClicked(UIMouseEvent evt, UIElement listeningElement)
         {
-            copyData.Paste();
-            panelList.PrintContent();
+            if (!CustomNPCNames.WaitForServerResponse) {
+                copyData.Paste();
+            }
         }
 
         private void CarryButtonClicked(UIMouseEvent evt, UIElement listeningElement)
@@ -777,6 +788,7 @@ namespace CustomNPCNames.UI
                         NPCs.CustomNPC.isMale[i.Key] = i.Value;
                     }
                 }
+                RenameUI.panelList.PrintContent();
             } else if (Main.netMode == NetmodeID.MultiplayerClient) {
                 Network.PacketSender.SendPacketToServer(Network.PacketType.SEND_COPY_DATA);
             }

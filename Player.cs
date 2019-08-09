@@ -42,7 +42,7 @@ namespace CustomNPCNames
                 }
 
                 if (Main.keyState.IsKeyDown(Keys.L) && !Main.oldKeyState.IsKeyDown(Keys.L)) {
-                    RenameUI.panelList.PrintContent();
+                    CustomNPCNames.WaitForServerResponse = !CustomNPCNames.WaitForServerResponse;
                 }
 
                 if (Main.keyState.IsKeyDown(Keys.O) && !Main.oldKeyState.IsKeyDown(Keys.O)) {

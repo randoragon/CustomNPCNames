@@ -57,6 +57,12 @@ namespace CustomNPCNames
         public static ModHotKey RenameMenuHotkey;
         public static RenameUI renameUI;
         private static UserInterface renameInterface;
+        private static bool waitForServerResponse = false; // used in situations when it's critical not to change any mod data on the client until some server response comes
+        public static bool WaitForServerResponse
+        {
+            get { return Main.netMode == NetmodeID.MultiplayerClient ? waitForServerResponse : false; }
+            set { waitForServerResponse = value; }
+        }
 
         public override void Load()
         {
@@ -74,129 +80,200 @@ namespace CustomNPCNames
         public override void HandlePacket(BinaryReader reader, int whoAmI)
         {
             byte type = reader.ReadByte();
-            switch (type) {
-                case 100:
-                    foreach (var i in CustomWorld.CustomNames[reader.ReadInt16()]) {
-                        NetMessage.BroadcastChatMessage(Terraria.Localization.NetworkText.FromLiteral(string.Format("\"{0}\": {1}", i.str, i.ID)), Color.Gray);
-                    }
-                    break;
-                case PacketType.NEXT_MODE:
-                    CustomWorld.mode = (byte)(++CustomWorld.mode % 4);
-                    ModSync.SyncWorldData(SyncType.MODE);
-                    break;
-                case PacketType.PREV_MODE:
-                    CustomWorld.mode = (byte)(--CustomWorld.mode % 4);
-                    ModSync.SyncWorldData(SyncType.MODE);
-                    break;
-                case PacketType.TOGGLE_TRY_UNIQUE:
-                    CustomWorld.tryUnique = !CustomWorld.tryUnique;
-                    ModSync.SyncWorldData(SyncType.TRY_UNIQUE);
-                    break;
-                case PacketType.SWITCH_GENDER: {
-                        short id = reader.ReadInt16();
-                        NPCs.CustomNPC.isMale[id] = !NPCs.CustomNPC.isMale[id];
-                        ModSync.SyncWorldData(SyncType.GENDER, id);
-                    }
-                    break;
-                case PacketType.SEND_NAME: {
-                        short id = reader.ReadInt16();
-                        string name = reader.ReadString();
-                        NPC npc = NPCs.CustomNPC.FindFirstNPC(id);
-                        if (npc != null) {
-                            npc.GivenName = name;
+            if (Main.myPlayer == 255) { // if the server is the recipient
+                switch (type) {
+                    case 100:
+                        foreach (var i in CustomWorld.CustomNames[reader.ReadInt16()]) {
+                            NetMessage.BroadcastChatMessage(Terraria.Localization.NetworkText.FromLiteral(string.Format("\"{0}\": {1}", i.str, i.ID)), Color.Gray);
                         }
-                        ModSync.SyncWorldData(SyncType.NAME, id);
-                    }
-                    break;
-                case PacketType.SEND_CUSTOM_NAMES: // fallthrough
-                case PacketType.SEND_COPY_NAMES: {
-                        short id = reader.ReadInt16();
-                        int index = reader.ReadInt32();
-                        if (index != -1) {
-                            byte offset = reader.ReadByte();
-                            bool lastPacket = reader.ReadBoolean();
-                            while (CustomWorld.CustomNames[id].Count < index + offset) {
-                                CustomWorld.CustomNames[id].Add("");
+                        break;
+                    case PacketType.NEXT_MODE:
+                        CustomWorld.mode = (byte)(++CustomWorld.mode % 4);
+                        ModSync.SyncWorldData(SyncType.MODE);
+                        break;
+                    case PacketType.PREV_MODE:
+                        CustomWorld.mode = (byte)(--CustomWorld.mode % 4);
+                        ModSync.SyncWorldData(SyncType.MODE);
+                        break;
+                    case PacketType.TOGGLE_TRY_UNIQUE:
+                        CustomWorld.tryUnique = !CustomWorld.tryUnique;
+                        ModSync.SyncWorldData(SyncType.TRY_UNIQUE);
+                        break;
+                    case PacketType.SWITCH_GENDER: {
+                            short id = reader.ReadInt16();
+                            NPCs.CustomNPC.isMale[id] = !NPCs.CustomNPC.isMale[id];
+                            ModSync.SyncWorldData(SyncType.GENDER, id);
+                        }
+                        break;
+                    case PacketType.SEND_NAME: {
+                            short id = reader.ReadInt16();
+                            string name = reader.ReadString();
+                            NPC npc = NPCs.CustomNPC.FindFirstNPC(id);
+                            if (npc != null) {
+                                npc.GivenName = name;
                             }
-                            if (lastPacket) {
-                                int overshoot = CustomWorld.CustomNames[id].Count - (index + offset);
-                                if (overshoot > 0) {
-                                    CustomWorld.CustomNames[id].RemoveRange(index + offset, overshoot);
+                            ModSync.SyncWorldData(SyncType.NAME, id);
+                        }
+                        break;
+                    case PacketType.SEND_CUSTOM_NAMES: {
+                            short id = reader.ReadInt16();
+                            int index = reader.ReadInt32();
+                            if (index != -1) {
+                                byte offset = reader.ReadByte();
+                                bool lastPacket = reader.ReadBoolean();
+                                while (CustomWorld.CustomNames[id].Count < index + offset) {
+                                    CustomWorld.CustomNames[id].Add("");
+                                }
+                                if (lastPacket) {
+                                    int overshoot = CustomWorld.CustomNames[id].Count - (index + offset);
+                                    if (overshoot > 0) {
+                                        CustomWorld.CustomNames[id].RemoveRange(index + offset, overshoot);
+                                    }
+                                }
+                                for (int i = index; i < index + offset; i++) {
+                                    string name = reader.ReadString();
+                                    ulong nameId = reader.ReadUInt64();
+                                    CustomWorld.CustomNames[id][i] = new StringWrapper(ref name, nameId);
+                                }
+
+                                if (lastPacket) { ModSync.SyncWorldData(SyncType.CUSTOM_NAMES, id); }
+                            } else {
+                                CustomWorld.CustomNames[id].Clear();
+                                ModSync.SyncWorldData(SyncType.CUSTOM_NAMES, id);
+                            }
+                        }
+                        break;
+                    case PacketType.SEND_COPY_DATA: {
+                            if (CustomWorld.packetsTillSync == 0) {
+                                int packetCount = reader.ReadInt32();
+                                CustomWorld.receivedPackets = 0;
+                                CustomWorld.packetsTillSync = packetCount;
+                                var packet = instance.GetPacket();
+                                packet.Write(PacketType.SERVER_AWAITING_COPY_DATA);
+                                packet.Send(whoAmI);
+                            }
+                        }
+                        break;
+                    case PacketType.SEND_COPY_MODE_TRYUNIQUE_ISMALE: {
+                            CustomWorld.mode = reader.ReadByte();
+                            CustomWorld.tryUnique = reader.ReadBoolean();
+                            for (int i = 0; i < 3; i++) {
+                                BitsByte b = reader.ReadByte();
+                                for (int j = 0; j < 8; j++) {
+                                    NPCs.CustomNPC.isMale[TownNPCs[(short)((8 * i) + j)]] = b[j];
                                 }
                             }
-                            for (int i = index; i < index + offset; i++) {
-                                string name = reader.ReadString();
-                                ulong nameId = reader.ReadUInt64();
-                                CustomWorld.CustomNames[id][i] = new StringWrapper(ref name, nameId);
+                            if (++CustomWorld.receivedPackets == CustomWorld.packetsTillSync) {
+                                CustomWorld.packetsTillSync = 0;
+                                ModSync.SyncWorldData(SyncType.EVERYTHING);
                             }
-
-                            if (lastPacket) { ModSync.SyncWorldData(SyncType.CUSTOM_NAMES, id); }
-                        } else {
-                            CustomWorld.CustomNames[id].Clear();
+                        }
+                        break;
+                    case PacketType.SEND_COPY_NAMES: {
+                            short id = reader.ReadInt16();
+                            int index = reader.ReadInt32();
+                            if (index != -1) {
+                                byte offset = reader.ReadByte();
+                                bool lastPacket = reader.ReadBoolean();
+                                while (CustomWorld.CustomNames[id].Count < index + offset) {
+                                    CustomWorld.CustomNames[id].Add("");
+                                }
+                                if (lastPacket) {
+                                    int overshoot = CustomWorld.CustomNames[id].Count - (index + offset);
+                                    if (overshoot > 0) {
+                                        CustomWorld.CustomNames[id].RemoveRange(index + offset, overshoot);
+                                    }
+                                }
+                                for (int i = index; i < index + offset; i++) {
+                                    string name = reader.ReadString();
+                                    ulong nameId = reader.ReadUInt64();
+                                    CustomWorld.CustomNames[id][i] = new StringWrapper(ref name, nameId);
+                                }
+                            } else {
+                                CustomWorld.CustomNames[id].Clear();
+                            }
+                            if (++CustomWorld.receivedPackets == CustomWorld.packetsTillSync) {
+                                CustomWorld.packetsTillSync = 0;
+                                ModSync.SyncWorldData(SyncType.EVERYTHING);
+                            }
+                        }
+                        break;
+                    case PacketType.RANDOMIZE: {
+                            short id = reader.ReadInt16();
+                            NPCs.CustomNPC.RandomizeName(id);
+                            // world sync is called from the RandomizeName method
+                        }
+                        break;
+                    case PacketType.ADD_NAME: {
+                            short id = reader.ReadInt16();
+                            string name = reader.ReadString();
+                            ulong nameID = reader.ReadUInt64();
+                            var newWrapper = new StringWrapper(ref name, nameID);
+                            CustomWorld.CustomNames[id].Add(newWrapper);
                             ModSync.SyncWorldData(SyncType.CUSTOM_NAMES, id);
                         }
-                    }
-                    break;
-                case PacketType.SEND_COPY_DATA: {
-                        CustomWorld.mode = reader.ReadByte();
-                        NetMessage.BroadcastChatMessage(Terraria.Localization.NetworkText.FromLiteral(string.Format("Server Received mode={0}", CustomWorld.mode)), Color.Gray);
-                        CustomWorld.tryUnique = reader.ReadBoolean();
-                        NetMessage.BroadcastChatMessage(Terraria.Localization.NetworkText.FromLiteral(string.Format("Server Received tryUnique={0}", CustomWorld.tryUnique)), Color.Gray);
-                        for (int i = 0; i < 3; i++) {
-                            BitsByte b = reader.ReadByte();
-                            for (int j = 0; j < 8; j++) {
-                                NPCs.CustomNPC.isMale[TownNPCs[(short)((8 * i) + j)]] = b[j];
+                        break;
+                    case PacketType.EDIT_NAME: {
+                            short id = reader.ReadInt16();
+                            string name = reader.ReadString();
+                            ulong nameID = reader.ReadUInt64();
+                            foreach (StringWrapper i in CustomWorld.CustomNames[id]) {
+                                if (i.ID == nameID) {
+                                    i.str = name;
+                                    break;
+                                }
                             }
+                            ModSync.SyncWorldData(SyncType.CUSTOM_NAMES, id);
                         }
-                        ModSync.SyncWorldData(SyncType.EVERYTHING);
-                    }
-                    break;
-                case PacketType.RANDOMIZE: {
-                        short id = reader.ReadInt16();
-                        NPCs.CustomNPC.RandomizeName(id);
-                        // world sync is called from the RandomizeName method
-                    }
-                    break;
-                case PacketType.ADD_NAME: {
-                        short id = reader.ReadInt16();
-                        string name = reader.ReadString();
-                        ulong nameID = reader.ReadUInt64();
-                        var newWrapper = new StringWrapper(ref name, nameID);
-                        CustomWorld.CustomNames[id].Add(newWrapper);
-                        ModSync.SyncWorldData(SyncType.CUSTOM_NAMES, id);
-                    }
-                    break;
-                case PacketType.EDIT_NAME: {
-                        short id = reader.ReadInt16();
-                        string name = reader.ReadString();
-                        ulong nameID = reader.ReadUInt64();
-                        foreach (StringWrapper i in CustomWorld.CustomNames[id]) {
-                            if (i.ID == nameID) {
-                                i.str = name;
-                                break;
+                        break;
+                    case PacketType.REMOVE_NAME: {
+                            short id = reader.ReadInt16();
+                            ulong nameID = reader.ReadUInt64();
+                            for (int i = 0; i < CustomWorld.CustomNames[id].Count; i++) {
+                                if (CustomWorld.CustomNames[id][i].ID == nameID) {
+                                    CustomWorld.CustomNames[id].RemoveAt(i);
+                                    break;
+                                }
                             }
+                            ModSync.SyncWorldData(SyncType.CUSTOM_NAMES, id);
                         }
-                        ModSync.SyncWorldData(SyncType.CUSTOM_NAMES, id);
-                    }
-                    break;
-                case PacketType.REMOVE_NAME: {
-                        short id = reader.ReadInt16();
-                        ulong nameID = reader.ReadUInt64();
-                        for (int i = 0; i < CustomWorld.CustomNames[id].Count; i++) {
-                            if (CustomWorld.CustomNames[id][i].ID == nameID) {
-                                CustomWorld.CustomNames[id].RemoveAt(i);
-                                break;
+                        break;
+                    case PacketType.REQUEST_WORLD_SYNC: {
+                            byte syncType = (byte)reader.ReadInt16();
+                            short syncId = (short)reader.ReadUInt64();
+                            ModSync.SyncWorldData(syncType, syncId);
+                        }
+                        break;
+                }
+            } else { // if a client is the recipient
+                switch (type) {
+                    case PacketType.SERVER_AWAITING_COPY_DATA: {
+                            // Initiate sending copy data, because the server is ready and waiting
+                            var packet = instance.GetPacket();
+                            packet.Write(PacketType.SEND_COPY_MODE_TRYUNIQUE_ISMALE);
+                            packet.Write(RenameUI.copyData.mode);
+                            packet.Write(RenameUI.copyData.tryUnique);
+                            var bits = new BitsByte();
+                            for (int i = 0; i < 3; i++) {
+                                for (int j = 0; j < 8; j++) {
+                                    bits[j] = RenameUI.copyData.isMale[TownNPCs[(short)((i * 8) + j)]];
+                                }
+                                packet.Write(bits);
                             }
+                            packet.Send();
+
+                            // CustomNames
+                            foreach (short i in TownNPCs) {
+                                PacketSender.SendPacketToServer(PacketType.SEND_COPY_NAMES, i);
+                            }
+                            PacketSender.SendPacketToServer(PacketType.SEND_COPY_NAMES, 1000); // male
+                            PacketSender.SendPacketToServer(PacketType.SEND_COPY_NAMES, 1001); // female
+                            PacketSender.SendPacketToServer(PacketType.SEND_COPY_NAMES, 1002); // global
+
+                            WaitForServerResponse = false;
                         }
-                        ModSync.SyncWorldData(SyncType.CUSTOM_NAMES, id);
-                    }
-                    break;
-                case PacketType.REQUEST_WORLD_SYNC: {
-                        byte syncType = (byte)reader.ReadInt16();
-                        short syncId = (short)reader.ReadUInt64();
-                        ModSync.SyncWorldData(syncType, syncId);
-                    }
-                    break;
+                        break;
+                }
             }
         }
 

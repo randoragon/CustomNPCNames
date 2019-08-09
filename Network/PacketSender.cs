@@ -60,29 +60,16 @@ namespace CustomNPCNames.Network
                         }
                         break;
                     case SEND_COPY_DATA: {
-                            // mode and tryUnique
                             packet = CustomNPCNames.instance.GetPacket();
                             packet.Write(SEND_COPY_DATA);
-                            packet.Write(UI.RenameUI.copyData.mode);
-                            packet.Write(UI.RenameUI.copyData.tryUnique);
-                            var bits = new BitsByte();
-                            for (int i = 0; i < 3; i++) {
-                                for (int j = 0; j < 8; j++) {
-                                    bits[j] = UI.RenameUI.copyData.isMale[CustomNPCNames.TownNPCs[(short)((i * 8) + j)]];
-                                }
-                                Main.NewText(string.Format("Writing byte{0}={1}...", i + 1, bits.ToString()));
-                                packet.Write(bits);
+                            // Evaluate the number of packets the entire data will take and send that to the server
+                            uint packetCount = 1;
+                            foreach (KeyValuePair<short, List<StringWrapper>> i in CustomWorld.CustomNames) {
+                                packetCount += System.Math.Max(1, (uint)System.Math.Ceiling(i.Value.Count / 8f));
                             }
-                            Main.NewText("Sending!");
+                            packet.Write(packetCount);
                             packet.Send();
-
-                            // CustomNames
-                            foreach (short i in CustomNPCNames.TownNPCs) {
-                                SendPacketToServer(SEND_COPY_NAMES, i);
-                            }
-                            SendPacketToServer(SEND_COPY_NAMES, 1000); // male
-                            SendPacketToServer(SEND_COPY_NAMES, 1001); // female
-                            SendPacketToServer(SEND_COPY_NAMES, 1002); // global
+                            CustomNPCNames.WaitForServerResponse = true;
                         }
                         break;
                     case SEND_COPY_NAMES: // a maximum of 8 names will be sent per packet, see explanation starting at line 15
@@ -150,6 +137,7 @@ namespace CustomNPCNames.Network
     // Each packet will be preceded with an ID number which represents what type of packet it is. Without an ID, the server wouldn't know what to do with the received packets, wouldn't it?
     class PacketType
     {
+        // CLIENT -> SERVER PACKETS:
         public const byte NEXT_MODE          = 0;  // used when left-clicking the Mode button
         public const byte PREV_MODE          = 1;  // used when right-clicking the Mode button
         public const byte TOGGLE_TRY_UNIQUE  = 2;  // used when Toggle Unique Names button is pressed
@@ -163,5 +151,12 @@ namespace CustomNPCNames.Network
         public const byte REMOVE_NAME        = 10;  // used when removing a name field
         public const byte EDIT_NAME          = 11; // used when editing a name field
         public const byte REQUEST_WORLD_SYNC = 12; // used for syncing from the MultiplayerClient (see ModSync class)
+        public const byte SEND_COPY_MODE_TRYUNIQUE_ISMALE = 13; // used implicitly after server declares readiness with SERVER_AWAITING_COPY_DATA packet
+
+        // SERVER -> CLIENT PACKETS:
+        public const byte SERVER_AWAITING_COPY_DATA = 255; // used to prompt the client to send copy data after the server has successfully received the packetCount
+
+        // THESE PACKETS ARE SENT IMPLICITLY BY THE MOD, PROGRAMMERS SHOULDN'T TOUCH
+        
     }
 }
