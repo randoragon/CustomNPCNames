@@ -311,6 +311,13 @@ namespace CustomNPCNames
         {
             base.PreSaveAndQuit();
             CustomWorld.saveAndExit = true;
+            if (Main.netMode == NetmodeID.MultiplayerClient && !UI.RenameUI.carry) {
+                CustomWorld.ResetCustomNames();
+                NPCs.CustomNPC.ResetCurrentGender();
+                RenameUI.modeCycleButton.State = 0;
+                RenameUI.uniqueNameButton.State = true;
+
+            }
         }
 
         private bool DrawRenameMenuUI()
