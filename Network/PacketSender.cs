@@ -129,7 +129,7 @@ namespace CustomNPCNames.Network
                     packet = packet = CustomNPCNames.instance.GetPacket();
                     packet.Write(SEND_BUSY_FIELD);
                     packet.Write(id1);
-                    packet.Write((byte)id);
+                    packet.Write(id != 0);
                     packet.Send();
                     break;
             }
@@ -158,6 +158,7 @@ namespace CustomNPCNames.Network
         public const byte SEND_COPY_MODE_TRYUNIQUE_ISMALE = 13; // used implicitly after server declares readiness with SERVER_AWAITING_COPY_DATA packet
         public const byte SEND_BUSY_FIELD    = 14; // used when a multiplayer client enters editing of an entry which only one player should be allowed to at a time
         public const byte RESET_EVERYTHING   = 15; // used when a multiplayer client cuts everything
+        public const byte RESET_BUSY_PLAYER  = 16; // used when a player leaves the world in case they've had some entry selected
 
         // SERVER -> CLIENT PACKETS:
         public const byte SERVER_AWAITING_COPY_DATA = 255; // used to prompt the client to send copy data after the server has successfully received the packetCount

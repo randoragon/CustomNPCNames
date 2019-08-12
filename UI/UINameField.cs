@@ -85,7 +85,7 @@ namespace CustomNPCNames.UI
         {
             if (CustomWorld.busyFields != null) {
                 foreach (BusyField i in CustomWorld.busyFields) {
-                    if (NameWrapper.ID == i.ID) {
+                    if (NameWrapper.ID == i.ID && i.player != Main.myPlayer) {
                         return i.player;
                     }
                 }
@@ -116,6 +116,18 @@ namespace CustomNPCNames.UI
                     Network.PacketSender.SendPacketToServer(Network.PacketType.EDIT_NAME, RenameUI.SelectedNPC, name.ID, Name);
                 }
             }
+        }
+
+        public override void Select()
+        {
+            base.Select();
+            Network.PacketSender.SendPacketToServer(Network.PacketType.SEND_BUSY_FIELD, 1, NameWrapper.ID);
+        }
+
+        public override void Deselect(bool save = true)
+        {
+            base.Deselect(save);
+            Network.PacketSender.SendPacketToServer(Network.PacketType.SEND_BUSY_FIELD, 0, NameWrapper.ID);
         }
 
         public override void Update(GameTime gameTime)

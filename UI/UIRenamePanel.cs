@@ -96,10 +96,7 @@ namespace CustomNPCNames.UI
             bool hover = curMouse.X > dim.X && curMouse.X < dim.X + dim.Width && curMouse.Y > dim.Y && curMouse.Y < dim.Y + dim.Height;
 
             if (hover && MouseButtonPressed(this) && state == State.ACTIVE && !HasFocus) {
-                HasFocus = true;
-                RemoveChild(idleVariant);
-                Append(focusVariant);
-                cursorClock = 0;
+                Select();
                 lastName = Text;
             } else if (!hover && MouseButtonPressed(this) && HasFocus) {
                 Deselect();
@@ -130,21 +127,17 @@ namespace CustomNPCNames.UI
                     }
 
                     if (KeyPressed(Keys.Enter) || KeyPressed(Keys.Escape)) {
-                        if (KeyPressed(Keys.Escape)) {
-                            SetText(idleVariant.Text);
-                            HasFocus = false;
-                            cursorPosition = idleVariant.Text.Length;
-                        } else {
-                            HasFocus = false;
-                            SetText(focusVariant.Text);
-                        }
-                        RemoveChild(focusVariant);
-                        NPCs.CustomNPC.FindFirstNPC(RenameUI.SelectedNPC).GivenName = idleVariant.Text;
-                        Network.PacketSender.SendPacketToServer(Network.PacketType.SEND_NAME, id: RenameUI.SelectedNPC, name: idleVariant.Text);
-                        Append(idleVariant);
+                        SetText(KeyPressed(Keys.Escape) ? idleVariant.Text : focusVariant.Text);
+                        Deselect();
                     }
                 }
             }
+        }
+
+        public override void Select()
+        {
+            base.Select();
+            Network.PacketSender.SendPacketToServer(Network.PacketType.SEND_BUSY_FIELD, 1, (ulong)RenameUI.SelectedNPC);
         }
 
         public override void Deselect(bool save = true)
@@ -160,6 +153,7 @@ namespace CustomNPCNames.UI
             }
             RemoveChild(focusVariant);
             Append(idleVariant);
+            Network.PacketSender.SendPacketToServer(Network.PacketType.SEND_BUSY_FIELD, 0, (ulong)RenameUI.SelectedNPC);
         }
 
         public void UpdateState()
@@ -226,7 +220,7 @@ namespace CustomNPCNames.UI
         {
             if (CustomWorld.busyFields != null) {
                 foreach (BusyField i in CustomWorld.busyFields) {
-                    if (i.ID == (ulong)RenameUI.SelectedNPC) {
+                    if (i.ID == (ulong)RenameUI.SelectedNPC && i.player != Main.myPlayer) {
                         return i.player;
                     }
                 }

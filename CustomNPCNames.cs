@@ -434,13 +434,13 @@ namespace CustomNPCNames
                         break;
                     case PacketType.SEND_BUSY_FIELD: {
                             ulong id = reader.ReadUInt64();
-                            byte player = reader.ReadByte();
-                            BusyField busyField = new BusyField(id, player);
-                            BusyField onList = new BusyField(0, 0); // ID=0 represents an empty BusyField object, because it's impossible to achieve under normal circumstances
+                            bool isBusy = reader.ReadBoolean();
+                            BusyField busyField = new BusyField(id, (byte)whoAmI);
+                            BusyField onList = new BusyField(0, 0); // ID = 0 represents an empty BusyField object, because it's impossible to achieve under normal circumstances
                             foreach (BusyField i in CustomWorld.busyFields) {
                                 if (i.ID == id) { onList = i; break; }
                             }
-                            if (player != 255) {
+                            if (isBusy) {
                                 if (onList.ID == 0) {
                                     CustomWorld.busyFields.Add(busyField);
                                     ModSync.SyncWorldData(SyncType.BUSY_FIELDS);
@@ -472,6 +472,16 @@ namespace CustomNPCNames
                                 var packet = instance.GetPacket();
                                 packet.Write(PacketType.SERVER_REJECT_CUT);
                                 packet.Send(whoAmI);
+                            }
+                        }
+                        break;
+                    case PacketType.RESET_BUSY_PLAYER: {
+                            int prevCount = CustomWorld.busyFields.Count;
+                            for (int i = 0; i < CustomWorld.busyFields.Count; i++) {
+                                if (CustomWorld.busyFields[i].player == whoAmI) { CustomWorld.busyFields.RemoveAt(i); }
+                            }
+                            if (CustomWorld.busyFields.Count < prevCount) {
+                                ModSync.SyncWorldData(SyncType.BUSY_FIELDS);
                             }
                         }
                         break;
@@ -559,6 +569,7 @@ namespace CustomNPCNames
             CustomWorld.saveAndExit = true;
 
             if (Main.netMode == NetmodeID.MultiplayerClient) {
+                PacketSender.SendPacketToServer(PacketType.RESET_BUSY_PLAYER);
                 RenameUI.Visible = false;
                 UINPCButton.Deselect();
                 RenameUI.panelList.Clear();

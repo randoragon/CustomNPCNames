@@ -212,17 +212,8 @@ namespace CustomNPCNames.UI
 
                 if (KeyPressed(Keys.Enter) || KeyPressed(Keys.Escape))
                 {
-                    if (KeyPressed(Keys.Escape)) {
-                        SetText(idleVariant.Text);
-                        HasFocus = false;
-                        cursorPosition = idleVariant.Text.Length;
-                    } else
-                    {
-                        HasFocus = false;
-                        SetText(focusVariant.Text);
-                    }
-                    RemoveChild(focusVariant);
-                    Append(idleVariant);
+                    SetText(KeyPressed(Keys.Escape) ? idleVariant.Text : focusVariant.Text);
+                    Deselect();
                 }
                 AdjustWidth();
             }

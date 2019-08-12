@@ -566,11 +566,11 @@ namespace CustomNPCNames.UI
                         bool someBusyNames = false;
                         foreach (BusyField i in CustomWorld.busyFields) {
                             foreach (short j in CustomNPCNames.TownNPCs) {
-                                if (NPCs.CustomNPC.isMale[j] && i.ID == (ulong)j) { someBusyNames = true; goto Break; }
+                                if (NPCs.CustomNPC.isMale[j] && i.ID == (ulong)j && i.player != Main.myPlayer) { someBusyNames = true; goto Break1; }
                             }
                         }
 
-                        Break:
+                        Break1:
                         if (noMaleNPCs) {
                             namesPanel.RemoveChild(randomizeButton);
                             namesPanel.Append(randomizeButtonInactive);
@@ -604,11 +604,11 @@ namespace CustomNPCNames.UI
                         bool someBusyNames = false;
                         foreach (BusyField i in CustomWorld.busyFields) {
                             foreach (short j in CustomNPCNames.TownNPCs) {
-                                if (!NPCs.CustomNPC.isMale[j] && i.ID == (ulong)j) { someBusyNames = true; goto Break; }
+                                if (!NPCs.CustomNPC.isMale[j] && i.ID == (ulong)j && i.player != Main.myPlayer) { someBusyNames = true; goto Break2; }
                             }
                         }
 
-                        Break:
+                        Break2:
                         if (noFemaleNPCs) {
                             namesPanel.RemoveChild(randomizeButton);
                             namesPanel.Append(randomizeButtonInactive);
@@ -642,11 +642,11 @@ namespace CustomNPCNames.UI
                         bool someBusyNames = false;
                         foreach (BusyField i in CustomWorld.busyFields) {
                             foreach (short j in CustomNPCNames.TownNPCs) {
-                                if (i.ID == (ulong)j) { someBusyNames = true; goto Break; }
+                                if (i.ID == (ulong)j && i.player != Main.myPlayer) { someBusyNames = true; goto Break3; }
                             }
                         }
 
-                        Break:
+                        Break3:
                         if (noNPCs) {
                             namesPanel.RemoveChild(randomizeButton);
                             namesPanel.Append(randomizeButtonInactive);
@@ -673,7 +673,7 @@ namespace CustomNPCNames.UI
 
                     bool busyName = false;
                     foreach (BusyField i in CustomWorld.busyFields) {
-                        if (i.ID == (ulong)id) { busyName = true; break; }
+                        if (i.ID == (ulong)id && i.player != Main.myPlayer) { busyName = true; break; }
                     }
 
                     if (!NPC.AnyNPCs(id)) {
@@ -714,23 +714,39 @@ namespace CustomNPCNames.UI
                 randomizeButtonInactive.HoverText = "No NPC Selected";
             }
 
-            if (CustomWorld.busyFields.Count != 0) {
+            bool anyBusyCustomNames = false;
+            bool anyBusyEntriesInCurrentTab = false;
+            if (IsNPCSelected) {
+                foreach (BusyField i in CustomWorld.busyFields) {
+                    if (!anyBusyEntriesInCurrentTab) {
+                        foreach (UINameField j in panelList._items) {
+                            if (j.NameWrapper.ID == i.ID && i.player != Main.myPlayer) { anyBusyEntriesInCurrentTab = true; break; }
+                        }
+                    }
+                    if (!anyBusyCustomNames) {
+                        foreach (short j in CustomNPCNames.TownNPCs) {
+                            if (i.ID == (ulong)j && i.player != Main.myPlayer) { anyBusyCustomNames = true; break; }
+                        }
+                    }
+                    if (anyBusyEntriesInCurrentTab && anyBusyCustomNames) { break; }
+                }
+            } else {
+                foreach (BusyField i in CustomWorld.busyFields) {
+                    foreach (short j in CustomNPCNames.TownNPCs) {
+                        if (i.ID == (ulong)j && i.player != Main.myPlayer) { anyBusyCustomNames = true; goto Break; }
+                    }
+                }
+            }
+
+            Break:
+            if (anyBusyCustomNames) {
                 if (menuPanel.HasChild(pasteButton)) {
                     menuPanel.RemoveChild(pasteButton);
                     menuPanel.Append(pasteButtonInactive);
                     pasteButtonInactive.HoverText = "Cannot paste everything, because\nsome users are editing entries!";
                 }
 
-                bool anyBusyEntriesInCurrentTab = false;
-                if (IsNPCSelected) {
-                    foreach (BusyField i in CustomWorld.busyFields) {
-                        foreach (UINameField j in panelList._items) {
-                            if (j.NameWrapper.ID == i.ID) { anyBusyEntriesInCurrentTab = true; goto Break1; }
-                        }
-                    }
-                }
-
-                Break1:
+                
                 if (anyBusyEntriesInCurrentTab) {
                     if (namesPanel.HasChild(clearButton)) {
                         namesPanel.RemoveChild(clearButton);
@@ -743,14 +759,6 @@ namespace CustomNPCNames.UI
                 menuPanel.Append(pasteButton);
             }
 
-            bool anyBusyCustomNames = false;
-            foreach (BusyField i in CustomWorld.busyFields) {
-                foreach (short j in CustomNPCNames.TownNPCs) {
-                    if (i.ID == (ulong)j) { anyBusyCustomNames = true; goto Break2; }
-                }
-            }
-
-            Break2:
             if (!Main.keyState.IsKeyDown(Keys.LeftAlt) && !Main.keyState.IsKeyDown(Keys.RightAlt)) {
                 menuPanel.RemoveChild(cutButtonInactive);
                 menuPanel.Append(copyButton);

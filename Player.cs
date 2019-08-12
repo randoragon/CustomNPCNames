@@ -38,7 +38,7 @@ namespace CustomNPCNames
                 }
 
                 if (Main.keyState.IsKeyDown(Keys.I) && !Main.oldKeyState.IsKeyDown(Keys.I)) {
-                    Network.PacketSender.SendPacketToServer(Network.PacketType.SEND_BUSY_FIELD, (short)Main.myPlayer, 22); //39950537469429693
+                    Network.PacketSender.SendPacketToServer(Network.PacketType.SEND_BUSY_FIELD, 254, 22); //39950537469429693
                 }
 
                 if (Main.keyState.IsKeyDown(Keys.U) && !Main.oldKeyState.IsKeyDown(Keys.U)) {
