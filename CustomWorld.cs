@@ -17,6 +17,7 @@ namespace CustomNPCNames
         public static bool updateNameList = false; // this is turned to true in NetReceive() to print renameUI's panelList's contents to the screen
         public static int receivedPackets = 0;  // these two are used exclusively with SEND_COPY_DATA (i.e. pasting everything) so that the world sync occurs only once
         public static int packetsTillSync = 0;  // after all the packets have arrived, as opposed to syncing a bunch of times every single packet. Just for optimization.
+        public static List<BusyField> busyFields;       // this list contains references to fields which are being edited by other players, and therefore locked from access
 
         public CustomWorld()
         {
@@ -25,9 +26,16 @@ namespace CustomNPCNames
             tryUnique = true;
         }
 
+        public override void Initialize()
+        {
+            base.Initialize();
+            busyFields = new List<BusyField>();
+        }
+
         public static void Unload()
         {
             CustomNames = null;
+            busyFields = null;
         }
 
         public static void ResetCustomNames()
@@ -118,6 +126,7 @@ namespace CustomNPCNames
                 UI.UINPCButton.Deselect();
                 UI.RenameUI.panelList.Clear();
                 UI.RenameUI.removeMode = false;
+                busyFields.Clear();
 
                 if (!UI.RenameUI.carry) {
                     ResetCustomNames();
@@ -239,6 +248,13 @@ namespace CustomNPCNames
                         packet.Write(NPCs.CustomNPC.isMale[i]);
                     }
                     break;
+                case SyncType.BUSY_FIELDS:
+                    packet.Write(busyFields.Count);
+                    foreach(BusyField i in busyFields) {
+                        packet.Write(i.ID);
+                        packet.Write(i.player);
+                    }
+                    break;
             }
             
         }
@@ -350,7 +366,35 @@ namespace CustomNPCNames
                         }
                     }
                     break;
+                case SyncType.BUSY_FIELDS: {
+                        var fieldCount = reader.ReadInt32();
+                        BusyField[] busy = new BusyField[fieldCount];
+                        for (int i = 0; i < fieldCount; i++) {
+                            ulong id = reader.ReadUInt64();
+                            byte player = reader.ReadByte();
+                            busy[i] = new BusyField(id, player);
+                        }
+                        if (CustomNPCNames.WaitForServerResponse) { return; }
+                        busyFields.Clear();
+                        busyFields.AddRange(busy);
+                    }
+                    break;
             }
+        }
+    }
+
+    /// <summary>
+    /// Small container for ulong ID of a StringWrapper and player indice. Used to determine which entries are occupied and by whom.
+    /// </summary>
+    public struct BusyField
+    {
+        public readonly ulong ID;      // StringWrapper.ID for UINameFields, values from 1-24 for UIRenamePanel
+        public readonly byte player;   // 255 for no one, 0-254 for player indices
+
+        public BusyField(ulong ID, byte player)
+        {
+            this.ID = ID;
+            this.player = player;
         }
     }
 }

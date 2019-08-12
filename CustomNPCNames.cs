@@ -57,11 +57,12 @@ namespace CustomNPCNames
         public static ModHotKey RenameMenuHotkey;
         public static RenameUI renameUI;
         private static UserInterface renameInterface;
-        private static bool waitForServerResponse = false; // used in situations when it's critical not to change any mod data on the client until some server response comes
+        private static bool _waitForServerResponse = false; // used in situations when it's critical not to change any mod data on the client until some server response comes
+        private static int _serverResponseTimeout = -1;
         public static bool WaitForServerResponse
         {
-            get { return Main.netMode == NetmodeID.MultiplayerClient ? waitForServerResponse : false; }
-            set { waitForServerResponse = value; }
+            get { return Main.netMode == NetmodeID.MultiplayerClient ? _waitForServerResponse : false; }
+            set { _waitForServerResponse = value; _serverResponseTimeout = value ? 600 : -1; } // if no response comes within 10 seconds, assume the packets are lost
         }
 
         public override void Load()
@@ -74,6 +75,15 @@ namespace CustomNPCNames
                 renameUI.Initialize();
                 renameInterface = new UserInterface();
                 renameInterface.SetState(renameUI);
+            }
+        }
+
+        public override void PostUpdateEverything()
+        {
+            base.PostUpdateEverything();
+            if (_serverResponseTimeout != -1 && --_serverResponseTimeout == 0) {
+                _waitForServerResponse = false;
+                Main.NewText("Server Response Timeout. Either your internet connection is insufficient, or this is a bug.", Color.OrangeRed);
             }
         }
 
@@ -138,18 +148,36 @@ namespace CustomNPCNames
 
                                 if (lastPacket) { ModSync.SyncWorldData(SyncType.CUSTOM_NAMES, id); }
                             } else {
-                                CustomWorld.CustomNames[id].Clear();
-                                ModSync.SyncWorldData(SyncType.CUSTOM_NAMES, id);
+                                // only clear if there are no busy entries in the current tab
+                                bool noBusyEntries = true;
+                                foreach (UINameField i in RenameUI.panelList._items) {
+                                    foreach (BusyField j in CustomWorld.busyFields) {
+                                        if (i.NameWrapper.ID == j.ID) { noBusyEntries = false; break; }
+                                    }
+                                }
+                                if (noBusyEntries) {
+                                    CustomWorld.CustomNames[id].Clear();
+                                    ModSync.SyncWorldData(SyncType.CUSTOM_NAMES, id);
+                                } else {
+                                    var packet = instance.GetPacket();
+                                    packet.Write(PacketType.SERVER_REJECT_CLEAR_ALL);
+                                    packet.Send();
+                                }
                             }
                         }
                         break;
                     case PacketType.SEND_COPY_DATA: {
-                            if (CustomWorld.packetsTillSync == 0) {
+                            // Only accept a paste if no entires are busy and no other paste operations are happening
+                            if (CustomWorld.packetsTillSync == 0 && CustomWorld.busyFields.Count == 0) {
                                 int packetCount = reader.ReadInt32();
                                 CustomWorld.receivedPackets = 0;
                                 CustomWorld.packetsTillSync = packetCount;
                                 var packet = instance.GetPacket();
                                 packet.Write(PacketType.SERVER_AWAITING_COPY_DATA);
+                                packet.Send(whoAmI);
+                            } else {
+                                var packet = instance.GetPacket();
+                                packet.Write(PacketType.SERVER_REJECT_COPY_DATA);
                                 packet.Send(whoAmI);
                             }
                         }
@@ -200,8 +228,45 @@ namespace CustomNPCNames
                         break;
                     case PacketType.RANDOMIZE: {
                             short id = reader.ReadInt16();
-                            NPCs.CustomNPC.RandomizeName(id);
-                            // world sync is called from the RandomizeName method
+                            // Only randomize if no one else is editing the name
+                            bool isOnBusyList = false;
+                            if (id != 1000 && id != 1001 && id != 1002) {
+                                foreach (BusyField i in CustomWorld.busyFields) {
+                                    if (i.ID == (ulong)id) { isOnBusyList = true; }
+                                }
+                            } else if (id == 1000) {
+                                foreach (short i in TownNPCs) {
+                                    if (NPCs.CustomNPC.isMale[i]) {
+                                        foreach (BusyField j in CustomWorld.busyFields) {
+                                            if (j.ID == (ulong)i) { isOnBusyList = true; goto Break; }
+                                        }
+                                    }
+                                }
+                            } else if (id == 1001) {
+                                foreach (short i in TownNPCs) {
+                                    if (!NPCs.CustomNPC.isMale[i]) {
+                                        foreach (BusyField j in CustomWorld.busyFields) {
+                                            if (j.ID == (ulong)i) { isOnBusyList = true; goto Break; }
+                                        }
+                                    }
+                                }
+                            } else if (id == 1000) {
+                                foreach (short i in TownNPCs) {
+                                    foreach (BusyField j in CustomWorld.busyFields) {
+                                        if (j.ID == (ulong)i) { isOnBusyList = true; goto Break; }
+                                    }
+                                }
+                            }
+
+                            Break:
+                            if (!isOnBusyList) {
+                                NPCs.CustomNPC.RandomizeName(id);
+                                // world sync is called from the RandomizeName method
+                            } else {
+                                var packet = instance.GetPacket();
+                                packet.Write(PacketType.SERVER_REJECT_RANDOMIZE);
+                                packet.Send(whoAmI);
+                            }
                         }
                         break;
                     case PacketType.ADD_NAME: {
@@ -217,13 +282,24 @@ namespace CustomNPCNames
                             short id = reader.ReadInt16();
                             string name = reader.ReadString();
                             ulong nameID = reader.ReadUInt64();
-                            foreach (StringWrapper i in CustomWorld.CustomNames[id]) {
-                                if (i.ID == nameID) {
-                                    i.str = name;
-                                    break;
-                                }
+                            // Only edit if either the entry is not being edited by anyone, or if the request to edit it came from the player editing the entry
+                            byte editingPlayer = 255;
+                            foreach (BusyField j in CustomWorld.busyFields) {
+                                if (j.ID == nameID) { editingPlayer = j.player; break; }
                             }
-                            ModSync.SyncWorldData(SyncType.CUSTOM_NAMES, id);
+                            if (editingPlayer == 255 || whoAmI == editingPlayer) {
+                                foreach (StringWrapper i in CustomWorld.CustomNames[id]) {
+                                    if (i.ID == nameID) {
+                                        i.str = name;
+                                        ModSync.SyncWorldData(SyncType.CUSTOM_NAMES, id);
+                                        break;
+                                    }
+                                }
+                            } else {
+                                var packet = instance.GetPacket();
+                                packet.Write(PacketType.SERVER_REJECT_EDIT_NAME);
+                                packet.Send(whoAmI);
+                            }
                         }
                         break;
                     case PacketType.REMOVE_NAME: {
@@ -231,17 +307,47 @@ namespace CustomNPCNames
                             ulong nameID = reader.ReadUInt64();
                             for (int i = 0; i < CustomWorld.CustomNames[id].Count; i++) {
                                 if (CustomWorld.CustomNames[id][i].ID == nameID) {
-                                    CustomWorld.CustomNames[id].RemoveAt(i);
+                                    // Only remove if either the entry is not being edited by anyone, or if the request to remove it came from the player editing the entry
+                                    byte editingPlayer = 255;
+                                    foreach (BusyField j in CustomWorld.busyFields) {
+                                        if (j.ID == nameID) { editingPlayer = j.player; break; }
+                                    }
+                                    if (editingPlayer == 255 || whoAmI == editingPlayer) {
+                                        CustomWorld.CustomNames[id].RemoveAt(i);
+                                        ModSync.SyncWorldData(SyncType.CUSTOM_NAMES, id);
+                                    } else {
+                                        var packet = instance.GetPacket();
+                                        packet.Write(PacketType.SERVER_REJECT_REMOVE_NAME);
+                                        packet.Send(whoAmI);
+                                    }
                                     break;
                                 }
                             }
-                            ModSync.SyncWorldData(SyncType.CUSTOM_NAMES, id);
                         }
                         break;
                     case PacketType.REQUEST_WORLD_SYNC: {
                             byte syncType = (byte)reader.ReadInt16();
                             short syncId = (short)reader.ReadUInt64();
                             ModSync.SyncWorldData(syncType, syncId);
+                        }
+                        break;
+                    case PacketType.SEND_BUSY_FIELD: {
+                            ulong id = reader.ReadUInt64();
+                            byte player = reader.ReadByte();
+                            BusyField busyField = new BusyField(id, player);
+                            BusyField onList = new BusyField(0, 0); // ID=0 represents an empty BusyField object, because it's impossible to achieve under normal circumstances
+                            foreach (BusyField i in CustomWorld.busyFields) {
+                                if (i.ID == id) { onList = i; break; }
+                            }
+                            if (player != 255) {
+                                if (onList.ID == 0) {
+                                    CustomWorld.busyFields.Add(busyField);
+                                    ModSync.SyncWorldData(SyncType.BUSY_FIELDS);
+                                }
+                            } else {
+                                CustomWorld.busyFields.Remove(onList);
+                                ModSync.SyncWorldData(SyncType.BUSY_FIELDS);
+                            }
                         }
                         break;
                 }
@@ -272,6 +378,21 @@ namespace CustomNPCNames
 
                             WaitForServerResponse = false;
                         }
+                        break;
+                    case PacketType.SERVER_REJECT_COPY_DATA:
+                        Main.NewText("Server rejected your paste data. This can be because other users are editing entries, or because another user is pasting their data.", Color.OrangeRed);
+                        break;
+                    case PacketType.SERVER_REJECT_REMOVE_NAME:
+                        Main.NewText("Server rejected your removal request, because the name you're trying to remove is being edited.", Color.OrangeRed);
+                        break;
+                    case PacketType.SERVER_REJECT_EDIT_NAME:
+                        Main.NewText("Server rejected your edit request, because the name you're trying to change is already being edited.", Color.OrangeRed);
+                        break;
+                    case PacketType.SERVER_REJECT_RANDOMIZE:
+                        Main.NewText("Server rejected your randomization request, because some of the names you're trying to randomize are being edited.", Color.OrangeRed);
+                        break;
+                    case PacketType.SERVER_REJECT_CLEAR_ALL:
+                        Main.NewText("Server rejected your clear request, because some names in the current list are being edited.", Color.OrangeRed);
                         break;
                 }
             }
@@ -311,12 +432,19 @@ namespace CustomNPCNames
         {
             base.PreSaveAndQuit();
             CustomWorld.saveAndExit = true;
-            if (Main.netMode == NetmodeID.MultiplayerClient && !UI.RenameUI.carry) {
-                CustomWorld.ResetCustomNames();
-                NPCs.CustomNPC.ResetCurrentGender();
-                RenameUI.modeCycleButton.State = 0;
-                RenameUI.uniqueNameButton.State = true;
 
+            if (Main.netMode == NetmodeID.MultiplayerClient) {
+                RenameUI.Visible = false;
+                UINPCButton.Deselect();
+                RenameUI.panelList.Clear();
+                RenameUI.removeMode = false;
+                CustomWorld.busyFields.Clear();
+                if (!RenameUI.carry) {
+                    CustomWorld.ResetCustomNames();
+                    NPCs.CustomNPC.ResetCurrentGender();
+                    RenameUI.modeCycleButton.State = 0;
+                    RenameUI.uniqueNameButton.State = true;
+                }
             }
         }
 

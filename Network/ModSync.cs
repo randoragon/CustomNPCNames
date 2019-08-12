@@ -51,5 +51,6 @@ namespace CustomNPCNames.Network
         public const byte GENDER        = 3;
         public const byte CUSTOM_NAMES  = 4;
         public const byte EVERYTHING    = 5;
+        public const byte BUSY_FIELDS   = 6;
     }
 }

@@ -11,7 +11,7 @@ namespace CustomNPCNames.UI
     /// <summary>
     /// This class behaves like a UITextPanel, but you can also edit its caption by typing.
     /// </summary>
-    public class UIEntryPanel : UIElement
+    public abstract class UIEntryPanel : UIElement
     {
         protected readonly UITextPanel focusVariant;    // this panel will have additional text input functionality
         protected readonly UITextPanel idleVariant;     // this panel will be used when EntryBox goes out of text focus
@@ -41,6 +41,29 @@ namespace CustomNPCNames.UI
                 focusVariant.ContainCaption = value;
             }
         }
+        public int busyFlicker;
+        protected string busyPrevText;
+        protected byte _busy = 255;
+        public byte Busy
+        {
+            get { return _busy; }
+            set
+            {
+                if (_busy == 255 && value != 255) {
+                    Main.NewText("Assigning \"" + idleVariant.Text + "\"", Color.Red);
+                    busyPrevText = idleVariant.Text;
+                    CaptionMaxLength = -1;
+                    idleVariant.Caption.TextColor = new Color(255, 200, 150);
+                } else if (_busy != 255 && value == 255) {
+                    Main.NewText("Resetting to \"" + busyPrevText + "\"", Color.IndianRed);
+                    if (busyPrevText != null) { SetText(busyPrevText); }
+                    busyPrevText = null;
+                    CaptionMaxLength = 25;
+                    idleVariant.Caption.TextColor = Color.White;
+                }
+                _busy = value;
+            }
+        }
 
         public UIEntryPanel(string caption = "")
         {
@@ -62,6 +85,8 @@ namespace CustomNPCNames.UI
             ContainCaption = true;
             SetText(caption);
             Append(idleVariant);
+
+            busyFlicker = 45;
         }
 
         public virtual void SetText(string text)
@@ -126,9 +151,29 @@ namespace CustomNPCNames.UI
         public override void Update(GameTime gameTime)
         {
             base.Update(gameTime);
+
+            if (RenameUI.IsNPCSelected) {
+                byte getBusy = GetBusy();
+                if (getBusy != 255 && Busy == 255) {
+                    Busy = getBusy;
+                    string typingMsg = "                             [c/FFFF00:" + Main.player[Busy].name + "] [c/FFFFAA:is typing...]";
+                    SetText(typingMsg);
+                    idleVariant.SetText(typingMsg);
+                } else if (getBusy == 255 && Busy != 255) {
+                    Busy = 255;
+                    busyFlicker = 45;
+                }
+            }
             
-            if (CustomNPCNames.WaitForServerResponse) {
+            if (CustomNPCNames.WaitForServerResponse || Busy != 255) {
                 if (HasFocus) { Deselect(false); }
+                if (Busy != 255) {
+                    if (--busyFlicker == 0) {
+                        string typingMsg = "                             [c/FFFF00:" + Main.player[Busy].name + "] [c/FFFFAA:is typing...]";
+                        SetText(idleVariant.Text == typingMsg ? busyPrevText : typingMsg);
+                        busyFlicker = 45;
+                    }
+                }
                 return;
             }
 
@@ -198,6 +243,8 @@ namespace CustomNPCNames.UI
             RemoveChild(focusVariant);
             Append(idleVariant);
         }
+
+        protected abstract byte GetBusy();
 
         protected override void DrawChildren(SpriteBatch spriteBatch)
         {

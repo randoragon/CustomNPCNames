@@ -38,22 +38,39 @@ namespace CustomNPCNames
                 }
 
                 if (Main.keyState.IsKeyDown(Keys.I) && !Main.oldKeyState.IsKeyDown(Keys.I)) {
-                    Network.PacketSender.SendPacketToServer(100, RenameUI.SelectedNPC);
+                    Network.PacketSender.SendPacketToServer(Network.PacketType.SEND_BUSY_FIELD, (short)Main.myPlayer, 22); //39950537469429693
+                }
+
+                if (Main.keyState.IsKeyDown(Keys.U) && !Main.oldKeyState.IsKeyDown(Keys.U)) {
+                    Network.PacketSender.SendPacketToServer(Network.PacketType.SEND_BUSY_FIELD, 255, 22); //39950537469429693
                 }
 
                 if (Main.keyState.IsKeyDown(Keys.L) && !Main.oldKeyState.IsKeyDown(Keys.L)) {
-                    CustomNPCNames.WaitForServerResponse = !CustomNPCNames.WaitForServerResponse;
+                    Network.PacketSender.SendPacketToServer(Network.PacketType.RANDOMIZE, RenameUI.SelectedNPC);
                 }
 
                 if (Main.keyState.IsKeyDown(Keys.O) && !Main.oldKeyState.IsKeyDown(Keys.O)) {
-                    foreach (var i in CustomWorld.CustomNames) {
-                        string line = i.Key + "(" + i.Value.Count + "): {";
-                        foreach (var j in i.Value) {
-                            if (j != null) { line += "\"" + j.ToString() + "\", "; } else { line += "NULL, "; }
-                        }
-                        line += "}";
-                        Main.NewText(line);
+                    PrintBusyFields();
+                }
+            }
+
+            void PrintBusyFields()
+            {
+                Main.NewText("myPlayer: " + Main.myPlayer);
+                foreach (var i in CustomWorld.busyFields) {
+                    Main.NewText(string.Format("ID: {0}; player: {1};", i.ID, i.player));
+                }
+            }
+
+            void PrintCustomNames()
+            {
+                foreach (var i in CustomWorld.CustomNames) {
+                    string line = i.Key + "(" + i.Value.Count + "): {";
+                    foreach (var j in i.Value) {
+                        if (j != null) { line += "\"" + j.ToString() + "\", "; } else { line += "NULL, "; }
                     }
+                    line += "}";
+                    Main.NewText(line);
                 }
             }
         }

@@ -547,6 +547,14 @@ namespace CustomNPCNames.UI
                             }
                         }
 
+                        bool someBusyNames = false;
+                        foreach (BusyField i in CustomWorld.busyFields) {
+                            foreach (short j in CustomNPCNames.TownNPCs) {
+                                if (NPCs.CustomNPC.isMale[j] && i.ID == (ulong)j) { someBusyNames = true; goto Break; }
+                            }
+                        }
+
+                        Break:
                         if (noMaleNPCs) {
                             namesPanel.RemoveChild(randomizeButton);
                             namesPanel.Append(randomizeButtonInactive);
@@ -555,6 +563,10 @@ namespace CustomNPCNames.UI
                             namesPanel.RemoveChild(randomizeButton);
                             namesPanel.Append(randomizeButtonInactive);
                             randomizeButtonInactive.HoverText = "There are no names\non the list to choose from!";
+                        } else if (someBusyNames) {
+                            namesPanel.RemoveChild(randomizeButton);
+                            namesPanel.Append(randomizeButtonInactive);
+                            randomizeButtonInactive.HoverText = "Some male NPCs' names\nare being edited!";
                         } else {
                             namesPanel.RemoveChild(randomizeButtonInactive);
                             namesPanel.Append(randomizeButton);
@@ -573,6 +585,14 @@ namespace CustomNPCNames.UI
                             }
                         }
 
+                        bool someBusyNames = false;
+                        foreach (BusyField i in CustomWorld.busyFields) {
+                            foreach (short j in CustomNPCNames.TownNPCs) {
+                                if (!NPCs.CustomNPC.isMale[j] && i.ID == (ulong)j) { someBusyNames = true; goto Break; }
+                            }
+                        }
+
+                        Break:
                         if (noFemaleNPCs) {
                             namesPanel.RemoveChild(randomizeButton);
                             namesPanel.Append(randomizeButtonInactive);
@@ -581,6 +601,10 @@ namespace CustomNPCNames.UI
                             namesPanel.RemoveChild(randomizeButton);
                             namesPanel.Append(randomizeButtonInactive);
                             randomizeButtonInactive.HoverText = "There are no names\non the list to choose from!";
+                        } else if (someBusyNames) {
+                            namesPanel.RemoveChild(randomizeButton);
+                            namesPanel.Append(randomizeButtonInactive);
+                            randomizeButtonInactive.HoverText = "Some female NPCs' names\nare being edited!";
                         } else {
                             namesPanel.RemoveChild(randomizeButtonInactive);
                             namesPanel.Append(randomizeButton);
@@ -599,6 +623,14 @@ namespace CustomNPCNames.UI
                             }
                         }
 
+                        bool someBusyNames = false;
+                        foreach (BusyField i in CustomWorld.busyFields) {
+                            foreach (short j in CustomNPCNames.TownNPCs) {
+                                if (i.ID == (ulong)j) { someBusyNames = true; goto Break; }
+                            }
+                        }
+
+                        Break:
                         if (noNPCs) {
                             namesPanel.RemoveChild(randomizeButton);
                             namesPanel.Append(randomizeButtonInactive);
@@ -607,6 +639,10 @@ namespace CustomNPCNames.UI
                             namesPanel.RemoveChild(randomizeButton);
                             namesPanel.Append(randomizeButtonInactive);
                             randomizeButtonInactive.HoverText = "There are no names\non the list to choose from!";
+                        } else if (someBusyNames) {
+                            namesPanel.RemoveChild(randomizeButton);
+                            namesPanel.Append(randomizeButtonInactive);
+                            randomizeButtonInactive.HoverText = "Some NPCs' names\nare being edited!";
                         } else {
                             namesPanel.RemoveChild(randomizeButtonInactive);
                             namesPanel.Append(randomizeButton);
@@ -619,6 +655,11 @@ namespace CustomNPCNames.UI
                     namesPanel.RemoveChild(switchGenderButtonInactive);
                     namesPanel.Append(switchGenderButton);
 
+                    bool busyName = false;
+                    foreach (BusyField i in CustomWorld.busyFields) {
+                        if (i.ID == (ulong)id) { busyName = true; break; }
+                    }
+
                     if (!NPC.AnyNPCs(id)) {
                         namesPanel.RemoveChild(randomizeButton);
                         namesPanel.Append(randomizeButtonInactive);
@@ -628,6 +669,10 @@ namespace CustomNPCNames.UI
                             namesPanel.RemoveChild(randomizeButton);
                             namesPanel.Append(randomizeButtonInactive);
                             randomizeButtonInactive.HoverText = "There are no names\non the list to choose from!";
+                        } else if (busyName) {
+                            namesPanel.RemoveChild(randomizeButton);
+                            namesPanel.Append(randomizeButtonInactive);
+                            randomizeButtonInactive.HoverText = "This NPC's name\nis being edited!";
                         } else {
                             namesPanel.RemoveChild(randomizeButtonInactive);
                             namesPanel.Append(randomizeButton);
@@ -650,6 +695,36 @@ namespace CustomNPCNames.UI
                 namesPanel.RemoveChild(randomizeButton);
                 namesPanel.Append(randomizeButtonInactive);
                 randomizeButtonInactive.HoverText = "No NPC Selected";
+            }
+
+            if (CustomWorld.busyFields.Count != 0) {
+                if (menuPanel.HasChild(pasteButton)) {
+                    menuPanel.RemoveChild(pasteButton);
+                    menuPanel.Append(pasteButtonInactive);
+                    pasteButtonInactive.HoverText = "Cannot paste everything, because\nsome users are editing entries!";
+                }
+
+                bool anyBusyEntriesInCurrentTab = false;
+                if (IsNPCSelected) {
+                    foreach (BusyField i in CustomWorld.busyFields) {
+                        foreach (UINameField j in panelList._items) {
+                            if (j.NameWrapper.ID == i.ID) {
+                                anyBusyEntriesInCurrentTab = true;
+                            }
+                        }
+                    }
+                }
+                
+                if (anyBusyEntriesInCurrentTab) {
+                    if (namesPanel.HasChild(clearButton)) {
+                        namesPanel.RemoveChild(clearButton);
+                        namesPanel.Append(clearButtonInactive);
+                        clearButtonInactive.HoverText = "Cannot delete all entries,\nbecause some are being edited!";
+                    }
+                }
+            } else if (menuPanel.HasChild(pasteButtonInactive) && pasteButtonInactive.HoverText == "Cannot paste everything, because\nsome users are editing entries!") {
+                menuPanel.RemoveChild(pasteButtonInactive);
+                menuPanel.Append(pasteButton);
             }
 
             if (!Main.keyState.IsKeyDown(Keys.LeftAlt) && !Main.keyState.IsKeyDown(Keys.RightAlt)) {

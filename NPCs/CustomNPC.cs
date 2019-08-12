@@ -8,12 +8,13 @@ namespace CustomNPCNames.NPCs
 {
     public class CustomNPC : GlobalNPC
     {
-        public  static Dictionary<short, bool>   isMale;
+        public  static Dictionary<short, bool> isMale;
         public  static Dictionary<short, List<StringWrapper>> vanillaNames;
+        
 
         public CustomNPC()
         {
-            isMale        = new Dictionary<short, bool>();
+            isMale = new Dictionary<short, bool>();
             ResetCurrentGender();
 
             // vanilla names need to be added manually to allow unique name randomization

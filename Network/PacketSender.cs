@@ -125,6 +125,13 @@ namespace CustomNPCNames.Network
                     packet.Write(id1);
                     packet.Send();
                     break;
+                case SEND_BUSY_FIELD:
+                    packet = packet = CustomNPCNames.instance.GetPacket();
+                    packet.Write(SEND_BUSY_FIELD);
+                    packet.Write(id1);
+                    packet.Write((byte)id);
+                    packet.Send();
+                    break;
             }
             Main.NewText(string.Format("Sending Packets({0})! ", type) + Main.time);
         }
@@ -149,8 +156,14 @@ namespace CustomNPCNames.Network
         public const byte EDIT_NAME          = 11; // used when editing a name field
         public const byte REQUEST_WORLD_SYNC = 12; // used for syncing from the MultiplayerClient (see ModSync class)
         public const byte SEND_COPY_MODE_TRYUNIQUE_ISMALE = 13; // used implicitly after server declares readiness with SERVER_AWAITING_COPY_DATA packet
+        public const byte SEND_BUSY_FIELD    = 14; // used when a multiplayer client enters editing of an entry which only one player should be allowed to at a time
 
         // SERVER -> CLIENT PACKETS:
         public const byte SERVER_AWAITING_COPY_DATA = 255; // used to prompt the client to send copy data after the server has successfully received the packetCount
+        public const byte SERVER_REJECT_COPY_DATA   = 254; // used to wake the client from its waitForServerResponse state, but prevent it from sending the copy data
+        public const byte SERVER_REJECT_REMOVE_NAME = 253; // used to message the client that their operation failed
+        public const byte SERVER_REJECT_EDIT_NAME   = 252; // used to message the client that their operation failed
+        public const byte SERVER_REJECT_RANDOMIZE   = 251; // used to message the client that their operation failed
+        public const byte SERVER_REJECT_CLEAR_ALL   = 250; // used to message the client that their operation failed
     }
 }

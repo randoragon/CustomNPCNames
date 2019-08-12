@@ -81,6 +81,18 @@ namespace CustomNPCNames.UI
             }
         }
 
+        protected override byte GetBusy()
+        {
+            if (CustomWorld.busyFields != null) {
+                foreach (BusyField i in CustomWorld.busyFields) {
+                    if (NameWrapper.ID == i.ID) {
+                        return i.player;
+                    }
+                }
+            }
+            return 255;
+        }
+
         public void RemoveFromList()
         {
             CustomWorld.CustomNames[RenameUI.SelectedNPC].Remove(name);
@@ -112,29 +124,31 @@ namespace CustomNPCNames.UI
 
             base.Update(gameTime);
 
-            if (!IsNew) {
-                if (HasFocus && !RenameUI.panelListReady) {
-                    Deselect(false);
-                } else if (HasFocus && !HadFocus && !RenameUI.removeMode && RenameUI.panelListReady) {
-                    BeginEdit();
-                }
+            if (!CustomNPCNames.WaitForServerResponse && Busy == 255) {
+                if (!IsNew) {
+                    if (HasFocus && !RenameUI.panelListReady) {
+                        Deselect(false);
+                    } else if (HasFocus && !HadFocus && !RenameUI.removeMode && RenameUI.panelListReady) {
+                        BeginEdit();
+                    }
 
-                // Sync world data when necessary - only if the entry was exited from, and only if its contents have been altered. This is to minimize overhead
-                if (HadFocus && !HasFocus) {
-                    FinishEdit();
-                } else if (HasFocus && !HadFocus && RenameUI.removeMode && RenameUI.panelListReady) {
-                    RemoveFromList();
-                }
-            } else if (!HasFocus) {
-                if (HadFocus && KeyPressed(Microsoft.Xna.Framework.Input.Keys.Escape)) {
-                    IsNew = false;
-                    RenameUI.panelList.RemoveName(this);
-                    Deselect(false);
-                } else {
-                    IsNew = false;
-                    CustomWorld.CustomNames[RenameUI.SelectedNPC].Add(name);
-                    if (Main.netMode == NetmodeID.MultiplayerClient) {
-                        Network.PacketSender.SendPacketToServer(Network.PacketType.ADD_NAME, RenameUI.SelectedNPC, name.ID, editName);
+                    // Sync world data when necessary - only if the entry was exited from, and only if its contents have been altered. This is to minimize overhead
+                    if (HadFocus && !HasFocus) {
+                        FinishEdit();
+                    } else if (HasFocus && !HadFocus && RenameUI.removeMode && RenameUI.panelListReady) {
+                        RemoveFromList();
+                    }
+                } else if (!HasFocus) {
+                    if (HadFocus && KeyPressed(Microsoft.Xna.Framework.Input.Keys.Escape)) {
+                        IsNew = false;
+                        RenameUI.panelList.RemoveName(this);
+                        Deselect(false);
+                    } else {
+                        IsNew = false;
+                        CustomWorld.CustomNames[RenameUI.SelectedNPC].Add(name);
+                        if (Main.netMode == NetmodeID.MultiplayerClient) {
+                            Network.PacketSender.SendPacketToServer(Network.PacketType.ADD_NAME, RenameUI.SelectedNPC, name.ID, editName);
+                        }
                     }
                 }
             }

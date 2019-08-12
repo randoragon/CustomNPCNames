@@ -47,6 +47,44 @@ namespace CustomNPCNames.UI
 
         public override void Update(GameTime gameTime)
         {
+            if (RenameUI.IsNPCSelected) {
+                byte getBusy = GetBusy();
+                if (getBusy != 255 && Busy == 255) {
+                    Busy = getBusy;
+                    SetIdleHoverText("");
+                    // Set new width, the wider out of two messages that will be flickering
+                    string typingMsg = "                             [c/FFFF00:" + Main.player[Busy].name + "][c/FFFFAA: is typing...]";
+                    string realTypingMsg = Main.player[Busy].name + " is typing...";
+                    bool isTypingMsgWider = (Main.fontMouseText.MeasureString(realTypingMsg).X > Main.fontMouseText.MeasureString(busyPrevText).X);
+                    if (isTypingMsgWider) {
+                        idleVariant.SetText(realTypingMsg);
+                    }
+                    AdjustWidth();
+                    idleVariant.SetText(typingMsg);
+                } else if (getBusy == 255 && Busy != 255) {
+                    Busy = 255;
+                    busyFlicker = 45;
+                    SetIdleHoverText("Edit");
+                }
+            }
+
+            if (CustomNPCNames.WaitForServerResponse || Busy != 255) {
+                if (HasFocus) { Deselect(false); }
+                if (Busy != 255) {
+                    if (--busyFlicker == 0) {
+                        string typingMsg = "                             [c/FFFF00:" + Main.player[Busy].name + "][c/FFFFAA: is typing...]";
+                        if (idleVariant.Text == typingMsg) {
+                            idleVariant.Caption.SetText(busyPrevText);
+                        } else {
+                            idleVariant.Caption.SetText(typingMsg);
+                        }
+                        
+                        busyFlicker = 45;
+                    }
+                }
+                return;
+            }
+
             oldMouse = curMouse;
             curMouse = Mouse.GetState();
 
@@ -182,6 +220,18 @@ namespace CustomNPCNames.UI
                 idleVariant.SetColor(new Color(169, 169, 69), new Color(50, 50, 20));
                 if (!HasChild(idleVariant)) { Append(idleVariant); }
             }
+        }
+
+        protected override byte GetBusy()
+        {
+            if (CustomWorld.busyFields != null) {
+                foreach (BusyField i in CustomWorld.busyFields) {
+                    if (i.ID == (ulong)RenameUI.SelectedNPC) {
+                        return i.player;
+                    }
+                }
+            }
+            return 255;
         }
     }
 }
