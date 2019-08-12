@@ -34,6 +34,7 @@ namespace CustomNPCNames.UI
         public static UIModeCycleButton modeCycleButton;
         public static UIToggleUniqueButton uniqueNameButton;
         public static UIHoverImageButton copyButton;
+        public static UIHoverImage cutButtonInactive;
         public static UIHoverImageButton pasteButton;
         public static UIHoverImage pasteButtonInactive;
         public static UIHoverImageButton carryButton;
@@ -249,6 +250,9 @@ namespace CustomNPCNames.UI
             copyButton.Top.Set(596 - 41, 0);
             copyButton.Left.Set(86 + 206 + 182, 0);
             copyButton.OnClick += new MouseEvent(CopyButtonClicked);
+            cutButtonInactive = new UIHoverImage(ModContent.GetTexture("CustomNPCNames/UI/cut_button_inactive"), "Cannot cut everything, because\nsome names are being edited!");
+            cutButtonInactive.Top.Set(596 - 41, 0);
+            cutButtonInactive.Left.Set(86 + 206 + 182, 0);
             pasteButton = new UIHoverImageButton(ModContent.GetTexture("CustomNPCNames/UI/paste_button"), "Paste Everything");
             pasteButton.Top.Set(596 - 41, 0);
             pasteButton.Left.Set(86 + 206 + 182 + 30, 0);
@@ -294,6 +298,7 @@ namespace CustomNPCNames.UI
             modeCycleButton = null;
             uniqueNameButton = null;
             copyButton = null;
+            cutButtonInactive = null;
             pasteButton = null;
             pasteButtonInactive = null;
             carryButton = null;
@@ -433,12 +438,16 @@ namespace CustomNPCNames.UI
                 copyData.Copy();
                 menuPanel.RemoveChild(pasteButtonInactive);
                 menuPanel.Append(pasteButton);
-                if (Main.keyState.IsKeyDown(Keys.LeftAlt) || Main.keyState.IsKeyDown(Keys.RightAlt)) {
-                    modeCycleButton.State = 0;
-                    uniqueNameButton.State = true;
-                    CustomWorld.ResetCustomNames();
-                    NPCs.CustomNPC.ResetCurrentGender();
-                    panelList.PrintContent();
+                if (copyButton.HoverText.Substring(0, 3) == "Cut") {
+                    if (Main.netMode == NetmodeID.SinglePlayer) {
+                        modeCycleButton.State = 0;
+                        uniqueNameButton.State = true;
+                        CustomWorld.ResetCustomNames();
+                        NPCs.CustomNPC.ResetCurrentGender();
+                        panelList.PrintContent();
+                    } else {
+                        Network.PacketSender.SendPacketToServer(Network.PacketType.RESET_EVERYTHING);
+                    }
                 }
             }
         }
@@ -527,8 +536,15 @@ namespace CustomNPCNames.UI
                 namesPanel.Append(addButton);
                 namesPanel.RemoveChild(removeButtonInactive);
                 namesPanel.Append(removeButton);
-                namesPanel.RemoveChild(clearButtonInactive);
-                namesPanel.Append(clearButton);
+                if (CustomWorld.CustomNames[id].Count != 0) {
+                    namesPanel.RemoveChild(clearButtonInactive);
+                    namesPanel.Append(clearButton);
+                } else {
+                    namesPanel.RemoveChild(clearButton);
+                    namesPanel.Append(clearButtonInactive);
+                    clearButtonInactive.HoverText = "The list is\nalready empty!";
+                }
+                
 
                 if (id == 1000 || id == 1001 || id == 1002) {
                     namesPanel.RemoveChild(npcPreview);
@@ -687,6 +703,7 @@ namespace CustomNPCNames.UI
                 namesPanel.Append(removeButtonInactive);
                 namesPanel.RemoveChild(clearButton);
                 namesPanel.Append(clearButtonInactive);
+                clearButtonInactive.HoverText = "No NPC Selected";
 
                 namesPanel.RemoveChild(npcPreview);
                 namesPanel.RemoveChild(switchGenderButton);
@@ -708,13 +725,12 @@ namespace CustomNPCNames.UI
                 if (IsNPCSelected) {
                     foreach (BusyField i in CustomWorld.busyFields) {
                         foreach (UINameField j in panelList._items) {
-                            if (j.NameWrapper.ID == i.ID) {
-                                anyBusyEntriesInCurrentTab = true;
-                            }
+                            if (j.NameWrapper.ID == i.ID) { anyBusyEntriesInCurrentTab = true; goto Break1; }
                         }
                     }
                 }
-                
+
+                Break1:
                 if (anyBusyEntriesInCurrentTab) {
                     if (namesPanel.HasChild(clearButton)) {
                         namesPanel.RemoveChild(clearButton);
@@ -727,10 +743,25 @@ namespace CustomNPCNames.UI
                 menuPanel.Append(pasteButton);
             }
 
+            bool anyBusyCustomNames = false;
+            foreach (BusyField i in CustomWorld.busyFields) {
+                foreach (short j in CustomNPCNames.TownNPCs) {
+                    if (i.ID == (ulong)j) { anyBusyCustomNames = true; goto Break2; }
+                }
+            }
+
+            Break2:
             if (!Main.keyState.IsKeyDown(Keys.LeftAlt) && !Main.keyState.IsKeyDown(Keys.RightAlt)) {
+                menuPanel.RemoveChild(cutButtonInactive);
+                menuPanel.Append(copyButton);
                 copyButton.SetImage(ModContent.GetTexture("CustomNPCNames/UI/copy_button"));
                 copyButton.HoverText = "Copy Everything\n(Hold Alt to Cut)";
+            } else if (anyBusyCustomNames) {
+                menuPanel.RemoveChild(copyButton);
+                menuPanel.Append(cutButtonInactive);
             } else {
+                menuPanel.RemoveChild(cutButtonInactive);
+                menuPanel.Append(copyButton);
                 copyButton.SetImage(ModContent.GetTexture("CustomNPCNames/UI/cut_button"));
                 copyButton.HoverText = "Cut Everything";
             }

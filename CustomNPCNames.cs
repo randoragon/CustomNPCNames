@@ -8,6 +8,7 @@ using Terraria.UI;
 using Microsoft.Xna.Framework;
 using CustomNPCNames.UI;
 using CustomNPCNames.Network;
+using Terraria.Localization;
 
 
 namespace CustomNPCNames
@@ -92,26 +93,43 @@ namespace CustomNPCNames
             byte type = reader.ReadByte();
             if (Main.myPlayer == 255) { // if the server is the recipient
                 switch (type) {
-                    case 100:
-                        foreach (var i in CustomWorld.CustomNames[reader.ReadInt16()]) {
-                            NetMessage.BroadcastChatMessage(Terraria.Localization.NetworkText.FromLiteral(string.Format("\"{0}\": {1}", i.str, i.ID)), Color.Gray);
+                    case PacketType.NEXT_MODE: {
+                            CustomWorld.mode = (byte)(++CustomWorld.mode % 4);
+                            string curModeName;
+                            switch (CustomWorld.mode) {
+                                case 0: curModeName = "Vanilla"; break;
+                                case 1: curModeName = "Custom"; break;
+                                case 2: curModeName = "Gender"; break;
+                                case 3: curModeName = "Global"; break;
+                                default: curModeName = "ERROR! Please report this!"; break;
+                            }
+                            Broadcaster.SendGlobalMessage(Broadcaster.MessageType.SWITCH_MODE, string.Format("[c/9DFF66:{0}] changed Mode to {1}", Main.player[whoAmI].name, curModeName));
+                            ModSync.SyncWorldData(SyncType.MODE);
                         }
                         break;
-                    case PacketType.NEXT_MODE:
-                        CustomWorld.mode = (byte)(++CustomWorld.mode % 4);
-                        ModSync.SyncWorldData(SyncType.MODE);
-                        break;
-                    case PacketType.PREV_MODE:
-                        CustomWorld.mode = (byte)(--CustomWorld.mode % 4);
-                        ModSync.SyncWorldData(SyncType.MODE);
+                    case PacketType.PREV_MODE: {
+                            CustomWorld.mode = (byte)(--CustomWorld.mode % 4);
+                            string curModeName;
+                            switch (CustomWorld.mode) {
+                                case 0: curModeName = "Vanilla"; break;
+                                case 1: curModeName = "Custom"; break;
+                                case 2: curModeName = "Gender"; break;
+                                case 3: curModeName = "Global"; break;
+                                default: curModeName = "ERROR! Please report this!"; break;
+                            }
+                            Broadcaster.SendGlobalMessage(Broadcaster.MessageType.SWITCH_MODE, string.Format("[c/9DFF66:{0}] changed Mode to {1}", Main.player[whoAmI].name, curModeName));
+                            ModSync.SyncWorldData(SyncType.MODE);
+                        }
                         break;
                     case PacketType.TOGGLE_TRY_UNIQUE:
                         CustomWorld.tryUnique = !CustomWorld.tryUnique;
+                        Broadcaster.SendGlobalMessage(Broadcaster.MessageType.TOGGLE_UNIQUE, string.Format("[c/9DFF66:{0}] {1} Unique Names", Main.player[whoAmI].name, CustomWorld.tryUnique ? "enabled" : "disabled"));
                         ModSync.SyncWorldData(SyncType.TRY_UNIQUE);
                         break;
                     case PacketType.SWITCH_GENDER: {
                             short id = reader.ReadInt16();
                             NPCs.CustomNPC.isMale[id] = !NPCs.CustomNPC.isMale[id];
+                            Broadcaster.SendGlobalMessage(Broadcaster.MessageType.SWITCH_GENDER, string.Format("[c/9DFF66:{0}] changed the {1}'s gender to {2}", Main.player[whoAmI].name, GetNPCName(id), NPCs.CustomNPC.isMale[id] ? "male" : "female"));
                             ModSync.SyncWorldData(SyncType.GENDER, id);
                         }
                         break;
@@ -121,8 +139,9 @@ namespace CustomNPCNames
                             NPC npc = NPCs.CustomNPC.FindFirstNPC(id);
                             if (npc != null) {
                                 npc.GivenName = name;
+                                Broadcaster.SendGlobalMessage(Broadcaster.MessageType.EDIT_NAME, string.Format("[c/9DFF66:{0}] changed the {1}'s name to [c/FFFF00:\"{2}\"]", Main.player[whoAmI].name, GetNPCName(id), name));
+                                ModSync.SyncWorldData(SyncType.NAME, id);
                             }
-                            ModSync.SyncWorldData(SyncType.NAME, id);
                         }
                         break;
                     case PacketType.SEND_CUSTOM_NAMES: {
@@ -132,7 +151,7 @@ namespace CustomNPCNames
                                 byte offset = reader.ReadByte();
                                 bool lastPacket = reader.ReadBoolean();
                                 while (CustomWorld.CustomNames[id].Count < index + offset) {
-                                    CustomWorld.CustomNames[id].Add("");
+                                    CustomWorld.CustomNames[id].Add(null);
                                 }
                                 if (lastPacket) {
                                     int overshoot = CustomWorld.CustomNames[id].Count - (index + offset);
@@ -150,25 +169,49 @@ namespace CustomNPCNames
                             } else {
                                 // only clear if there are no busy entries in the current tab
                                 bool noBusyEntries = true;
-                                foreach (UINameField i in RenameUI.panelList._items) {
+                                foreach (StringWrapper i in CustomWorld.CustomNames[id]) {
                                     foreach (BusyField j in CustomWorld.busyFields) {
-                                        if (i.NameWrapper.ID == j.ID) { noBusyEntries = false; break; }
+                                        if (i.ID == j.ID) { noBusyEntries = false; goto Break; }
                                     }
                                 }
+
+                                Break:
                                 if (noBusyEntries) {
                                     CustomWorld.CustomNames[id].Clear();
+                                    switch (id) {
+                                        case 1000:
+                                            Broadcaster.SendGlobalMessage(Broadcaster.MessageType.CLEAR_NAME_LIST, string.Format("[c/9DFF66:{0}] cleared the Male name list!", Main.player[whoAmI].name));
+                                            break;
+                                        case 1001:
+                                            Broadcaster.SendGlobalMessage(Broadcaster.MessageType.CLEAR_NAME_LIST, string.Format("[c/9DFF66:{0}] cleared the Female name list!", Main.player[whoAmI].name));
+                                            break;
+                                        case 1002:
+                                            Broadcaster.SendGlobalMessage(Broadcaster.MessageType.CLEAR_NAME_LIST, string.Format("[c/9DFF66:{0}] cleared the Global name list!", Main.player[whoAmI].name));
+                                            break;
+                                        default:
+                                            Broadcaster.SendGlobalMessage(Broadcaster.MessageType.CLEAR_NAME_LIST, string.Format("[c/9DFF66:{0}] cleared the {1}'s name list!", Main.player[whoAmI].name, GetNPCName(id)));
+                                            break;
+                                    }
                                     ModSync.SyncWorldData(SyncType.CUSTOM_NAMES, id);
                                 } else {
                                     var packet = instance.GetPacket();
                                     packet.Write(PacketType.SERVER_REJECT_CLEAR_ALL);
-                                    packet.Send();
+                                    packet.Send(whoAmI);
                                 }
                             }
                         }
                         break;
                     case PacketType.SEND_COPY_DATA: {
-                            // Only accept a paste if no entires are busy and no other paste operations are happening
-                            if (CustomWorld.packetsTillSync == 0 && CustomWorld.busyFields.Count == 0) {
+                            // Only accept a paste if no custom names entries are busy and no other paste operations are happenings
+                            bool anyBusyCustomNames = false;
+                            foreach (BusyField i in CustomWorld.busyFields) {
+                                foreach (short j in TownNPCs) {
+                                    if (i.ID == (ulong)j) { anyBusyCustomNames = true; goto Break; }
+                                }
+                            }
+
+                            Break:
+                            if (CustomWorld.packetsTillSync == 0 && !anyBusyCustomNames) {
                                 int packetCount = reader.ReadInt32();
                                 CustomWorld.receivedPackets = 0;
                                 CustomWorld.packetsTillSync = packetCount;
@@ -193,6 +236,7 @@ namespace CustomNPCNames
                             }
                             if (++CustomWorld.receivedPackets == CustomWorld.packetsTillSync) {
                                 CustomWorld.packetsTillSync = 0;
+                                Broadcaster.SendGlobalMessage(Broadcaster.MessageType.PASTE_EVERYTHING, string.Format("[c/9DFF66:{0}] pasted everything into the world!", Main.player[whoAmI].name));
                                 ModSync.SyncWorldData(SyncType.EVERYTHING);
                             }
                         }
@@ -204,7 +248,7 @@ namespace CustomNPCNames
                                 byte offset = reader.ReadByte();
                                 bool lastPacket = reader.ReadBoolean();
                                 while (CustomWorld.CustomNames[id].Count < index + offset) {
-                                    CustomWorld.CustomNames[id].Add("");
+                                    CustomWorld.CustomNames[id].Add(null);
                                 }
                                 if (lastPacket) {
                                     int overshoot = CustomWorld.CustomNames[id].Count - (index + offset);
@@ -222,6 +266,7 @@ namespace CustomNPCNames
                             }
                             if (++CustomWorld.receivedPackets == CustomWorld.packetsTillSync) {
                                 CustomWorld.packetsTillSync = 0;
+                                Broadcaster.SendGlobalMessage(Broadcaster.MessageType.PASTE_EVERYTHING, string.Format("[c/9DFF66:{0}] pasted everything into the world!", Main.player[whoAmI].name));
                                 ModSync.SyncWorldData(SyncType.EVERYTHING);
                             }
                         }
@@ -262,6 +307,20 @@ namespace CustomNPCNames
                             if (!isOnBusyList) {
                                 NPCs.CustomNPC.RandomizeName(id);
                                 // world sync is called from the RandomizeName method
+                                switch (id) {
+                                    case 1000:
+                                        Broadcaster.SendGlobalMessage(Broadcaster.MessageType.RANDOMIZE_GROUP, string.Format("[c/9DFF66:{0}] randomized male NPCs' names!", Main.player[whoAmI].name));
+                                        break;
+                                    case 1001:
+                                        Broadcaster.SendGlobalMessage(Broadcaster.MessageType.RANDOMIZE_GROUP, string.Format("[c/9DFF66:{0}] randomized female NPCs' names!", Main.player[whoAmI].name));
+                                        break;
+                                    case 1002:
+                                        Broadcaster.SendGlobalMessage(Broadcaster.MessageType.RANDOMIZE_GROUP, string.Format("[c/9DFF66:{0}] randomized all NPCs' names!", Main.player[whoAmI].name));
+                                        break;
+                                    default:
+                                        Broadcaster.SendGlobalMessage(Broadcaster.MessageType.RANDOMIZE_NPC, string.Format("[c/9DFF66:{0}] randomized the {1}'s name", Main.player[whoAmI].name, GetNPCName(id)));
+                                        break;
+                                }
                             } else {
                                 var packet = instance.GetPacket();
                                 packet.Write(PacketType.SERVER_REJECT_RANDOMIZE);
@@ -275,6 +334,20 @@ namespace CustomNPCNames
                             ulong nameID = reader.ReadUInt64();
                             var newWrapper = new StringWrapper(ref name, nameID);
                             CustomWorld.CustomNames[id].Add(newWrapper);
+                            switch (id) {
+                                case 1000:
+                                    Broadcaster.SendGlobalMessage(Broadcaster.MessageType.ADD_CUSTOM_NAME, string.Format("[c/9DFF66:{0}] added [c/FFFF00:\"{1}\"] to the Masculine Names list.", Main.player[whoAmI], name));
+                                    break;
+                                case 1001:
+                                    Broadcaster.SendGlobalMessage(Broadcaster.MessageType.ADD_CUSTOM_NAME, string.Format("[c/9DFF66:{0}] added [c/FFFF00:\"{1}\"] to the Feminine Names list.", Main.player[whoAmI], name));
+                                    break;
+                                case 1002:
+                                    Broadcaster.SendGlobalMessage(Broadcaster.MessageType.ADD_CUSTOM_NAME, string.Format("[c/9DFF66:{0}] added [c/FFFF00:\"{1}\"] to the Global Names list.", Main.player[whoAmI], name));
+                                    break;
+                                default:
+                                    Broadcaster.SendGlobalMessage(Broadcaster.MessageType.ADD_CUSTOM_NAME, string.Format("[c/9DFF66:{0}] added [c/FFFF00:\"{1}\"] to the {2}'s name list.", Main.player[whoAmI], name, GetNPCName(id)));
+                                    break;
+                            }
                             ModSync.SyncWorldData(SyncType.CUSTOM_NAMES, id);
                         }
                         break;
@@ -290,6 +363,20 @@ namespace CustomNPCNames
                             if (editingPlayer == 255 || whoAmI == editingPlayer) {
                                 foreach (StringWrapper i in CustomWorld.CustomNames[id]) {
                                     if (i.ID == nameID) {
+                                        switch (id) {
+                                            case 1000:
+                                                Broadcaster.SendGlobalMessage(Broadcaster.MessageType.EDIT_CUSTOM_NAME, string.Format("[c/9DFF66:{0}] edited [c/FFFF00:\"{1}\"] into [c/FFFF00:\"{2}\"] on the Masculine Names list.", Main.player[whoAmI], i.str, name));
+                                                break;
+                                            case 1001:
+                                                Broadcaster.SendGlobalMessage(Broadcaster.MessageType.EDIT_CUSTOM_NAME, string.Format("[c/9DFF66:{0}] edited [c/FFFF00:\"{1}\"] into [c/FFFF00:\"{2}\"] on the Feminine Names list.", Main.player[whoAmI], i.str, name));
+                                                break;
+                                            case 1002:
+                                                Broadcaster.SendGlobalMessage(Broadcaster.MessageType.EDIT_CUSTOM_NAME, string.Format("[c/9DFF66:{0}] edited [c/FFFF00:\"{1}\"] into [c/FFFF00:\"{2}\"] on the Global Names list.", Main.player[whoAmI].name, i.str, name));
+                                                break;
+                                            default:
+                                                Broadcaster.SendGlobalMessage(Broadcaster.MessageType.EDIT_CUSTOM_NAME, string.Format("[c/9DFF66:{0}] edited [c/FFFF00:\"{1}\"] into [c/FFFF00:\"{2}\"] on the {3}'s name list.", Main.player[whoAmI].name, i.str, name, GetNPCName(id)));
+                                                break;
+                                        }
                                         i.str = name;
                                         ModSync.SyncWorldData(SyncType.CUSTOM_NAMES, id);
                                         break;
@@ -313,6 +400,20 @@ namespace CustomNPCNames
                                         if (j.ID == nameID) { editingPlayer = j.player; break; }
                                     }
                                     if (editingPlayer == 255 || whoAmI == editingPlayer) {
+                                        switch (id) {
+                                            case 1000:
+                                                Broadcaster.SendGlobalMessage(Broadcaster.MessageType.REMOVE_CUSTOM_NAME, string.Format("[c/9DFF66:{0}] removed [c/FFFF00:\"{1}\"] from the Masculine Names list.", Main.player[whoAmI].name, CustomWorld.CustomNames[id][i].str));
+                                                break;
+                                            case 1001:
+                                                Broadcaster.SendGlobalMessage(Broadcaster.MessageType.REMOVE_CUSTOM_NAME, string.Format("[c/9DFF66:{0}] removed [c/FFFF00:\"{1}\"] from the Feminine Names list.", Main.player[whoAmI].name, CustomWorld.CustomNames[id][i].str));
+                                                break;
+                                            case 1002:
+                                                Broadcaster.SendGlobalMessage(Broadcaster.MessageType.REMOVE_CUSTOM_NAME, string.Format("[c/9DFF66:{0}] removed [c/FFFF00:\"{1}\"] from the Global Names list.", Main.player[whoAmI], CustomWorld.CustomNames[id][i].str));
+                                                break;
+                                            default:
+                                                Broadcaster.SendGlobalMessage(Broadcaster.MessageType.REMOVE_CUSTOM_NAME, string.Format("[c/9DFF66:{0}] removed [c/FFFF00:\"{1}\"] from the {2}'s name list.", Main.player[whoAmI], CustomWorld.CustomNames[id][i].str, GetNPCName(id)));
+                                                break;
+                                        }
                                         CustomWorld.CustomNames[id].RemoveAt(i);
                                         ModSync.SyncWorldData(SyncType.CUSTOM_NAMES, id);
                                     } else {
@@ -347,6 +448,30 @@ namespace CustomNPCNames
                             } else {
                                 CustomWorld.busyFields.Remove(onList);
                                 ModSync.SyncWorldData(SyncType.BUSY_FIELDS);
+                            }
+                        }
+                        break;
+                    case PacketType.RESET_EVERYTHING: {
+                            // Only do it if no custom name entries are being edited
+                            bool anyBusyCustomNames = false;
+                            foreach (BusyField i in CustomWorld.busyFields) {
+                                foreach (short j in TownNPCs) {
+                                    if (i.ID == (ulong)j) { anyBusyCustomNames = true; goto Break; }
+                                }
+                            }
+
+                            Break:
+                            if (!anyBusyCustomNames) {
+                                CustomWorld.mode = 0;
+                                CustomWorld.tryUnique = true;
+                                CustomWorld.ResetCustomNames();
+                                NPCs.CustomNPC.ResetCurrentGender();
+                                Broadcaster.SendGlobalMessage(Broadcaster.MessageType.CUT_EVERYTHING, string.Format("[c/9DFF66:{0}] cut everything from the world!", Main.player[whoAmI].name));
+                                ModSync.SyncWorldData(SyncType.EVERYTHING);
+                            } else {
+                                var packet = instance.GetPacket();
+                                packet.Write(PacketType.SERVER_REJECT_CUT);
+                                packet.Send(whoAmI);
                             }
                         }
                         break;
@@ -546,7 +671,7 @@ namespace CustomNPCNames
                 } else if (Main.netMode == NetmodeID.Server) {
                     if (CustomNPCNames.instance != null) {
                         CustomNPCNames.instance.Logger.Error("Tried generating CustomNPCNames.StringWrapper.ID on the server.");
-                        NetMessage.BroadcastChatMessage(Terraria.Localization.NetworkText.FromLiteral("CustomNPCNames Error: Tried generating StringWrapper.ID on the server. Please report this issue on the Mod's Homepage."), Color.Orange);
+                        NetMessage.BroadcastChatMessage(NetworkText.FromLiteral("CustomNPCNames Error: Tried generating StringWrapper.ID on the server. Please report this issue on the Mod's Homepage."), Color.Orange);
                     }
                     ID = 0;
                 }

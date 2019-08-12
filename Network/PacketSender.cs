@@ -157,6 +157,7 @@ namespace CustomNPCNames.Network
         public const byte REQUEST_WORLD_SYNC = 12; // used for syncing from the MultiplayerClient (see ModSync class)
         public const byte SEND_COPY_MODE_TRYUNIQUE_ISMALE = 13; // used implicitly after server declares readiness with SERVER_AWAITING_COPY_DATA packet
         public const byte SEND_BUSY_FIELD    = 14; // used when a multiplayer client enters editing of an entry which only one player should be allowed to at a time
+        public const byte RESET_EVERYTHING   = 15; // used when a multiplayer client cuts everything
 
         // SERVER -> CLIENT PACKETS:
         public const byte SERVER_AWAITING_COPY_DATA = 255; // used to prompt the client to send copy data after the server has successfully received the packetCount
@@ -165,5 +166,6 @@ namespace CustomNPCNames.Network
         public const byte SERVER_REJECT_EDIT_NAME   = 252; // used to message the client that their operation failed
         public const byte SERVER_REJECT_RANDOMIZE   = 251; // used to message the client that their operation failed
         public const byte SERVER_REJECT_CLEAR_ALL   = 250; // used to message the client that their operation failed
+        public const byte SERVER_REJECT_CUT         = 249; // used to message the client that their operation failed
     }
 }
