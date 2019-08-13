@@ -461,13 +461,8 @@ namespace CustomNPCNames.UI
 
         private void CarryButtonClicked(UIMouseEvent evt, UIElement listeningElement)
         {
-            if (carry) {
-                carryButton.SetImage(ModContent.GetTexture("CustomNPCNames/UI/carry_button_off"));
-                carry = false;
-            } else {
-                carryButton.SetImage(ModContent.GetTexture("CustomNPCNames/UI/carry_button_on"));
-                carry = true;
-            }
+            carry = !carry;
+            Config.SetValue("Carry", carry);
         }
 
         public override void Update(GameTime gameTime)
@@ -773,6 +768,8 @@ namespace CustomNPCNames.UI
                 copyButton.SetImage(ModContent.GetTexture("CustomNPCNames/UI/cut_button"));
                 copyButton.HoverText = "Cut Everything";
             }
+
+            carryButton.SetImage(ModContent.GetTexture("CustomNPCNames/UI/carry_button_" + (carry ? "on" : "off")));
         }
 
         public static Texture2D GetNPCHeadTexture(short id)

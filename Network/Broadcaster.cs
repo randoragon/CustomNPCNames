@@ -12,7 +12,7 @@ namespace CustomNPCNames.Network
 
         static Broadcaster()
         {
-            SendVerbose = true;
+            SendVerbose = false;
             SendNone = false;
         }
 

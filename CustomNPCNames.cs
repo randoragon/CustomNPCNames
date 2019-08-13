@@ -69,6 +69,7 @@ namespace CustomNPCNames
         public override void Load()
         {
             instance = this;
+            Config.Load();
             // this makes sure that the UI doesn't get opened on the server console
             if (!Main.dedServ) {
                 RenameMenuHotkey = RegisterHotKey("Toggle Menu", "K");
