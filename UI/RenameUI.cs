@@ -718,22 +718,12 @@ namespace CustomNPCNames.UI
             }
 
             bool anyBusyNameFields = CustomWorld.AnyNameFieldBusy();
-            bool anyBusyNameFieldsInCurrentTab = CustomWorld.AnyNameFieldBusyInCurrentTab();
 
             if (anyBusyNameFields) {
                 if (menuPanel.HasChild(pasteButton)) {
                     menuPanel.RemoveChild(pasteButton);
                     menuPanel.Append(pasteButtonInactive);
                     pasteButtonInactive.HoverText = "Cannot paste everything, because\nsome users are editing entries!";
-                }
-
-                
-                if (anyBusyNameFieldsInCurrentTab) {
-                    if (namesPanel.HasChild(clearButton)) {
-                        namesPanel.RemoveChild(clearButton);
-                        namesPanel.Append(clearButtonInactive);
-                        clearButtonInactive.HoverText = "Cannot delete all entries,\nbecause some are being edited!";
-                    }
                 }
             } else if (menuPanel.HasChild(pasteButtonInactive) && pasteButtonInactive.HoverText == "Cannot paste everything, because\nsome users are editing entries!") {
                 menuPanel.RemoveChild(pasteButtonInactive);

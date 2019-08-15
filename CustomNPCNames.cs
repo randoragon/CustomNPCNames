@@ -168,29 +168,27 @@ namespace CustomNPCNames
 
                                 if (lastPacket) { ModSync.SyncWorldData(SyncType.CUSTOM_NAMES, id); }
                             } else {
-                                // only clear if there are no busy entries in the current tab
-                                if (!CustomWorld.AnyNameFieldBusyInCurrentTab()) {
-                                    CustomWorld.CustomNames[id].Clear();
-                                    switch (id) {
-                                        case 1000:
-                                            Broadcaster.SendGlobalMessage(Broadcaster.MessageType.CLEAR_NAME_LIST, string.Format("[c/9DFF66:{0}] cleared the Male name list!", Main.player[whoAmI].name));
-                                            break;
-                                        case 1001:
-                                            Broadcaster.SendGlobalMessage(Broadcaster.MessageType.CLEAR_NAME_LIST, string.Format("[c/9DFF66:{0}] cleared the Female name list!", Main.player[whoAmI].name));
-                                            break;
-                                        case 1002:
-                                            Broadcaster.SendGlobalMessage(Broadcaster.MessageType.CLEAR_NAME_LIST, string.Format("[c/9DFF66:{0}] cleared the Global name list!", Main.player[whoAmI].name));
-                                            break;
-                                        default:
-                                            Broadcaster.SendGlobalMessage(Broadcaster.MessageType.CLEAR_NAME_LIST, string.Format("[c/9DFF66:{0}] cleared the {1}'s name list!", Main.player[whoAmI].name, GetNPCName(id)));
-                                            break;
+                                // only delete the non-busy entries
+                                for (int i = 0; i < CustomWorld.CustomNames[id].Count; i++) {
+                                    if (CustomWorld.GetBusyField(CustomWorld.CustomNames[id][i].ID).Equals(BusyField.Empty)) {
+                                        CustomWorld.CustomNames[id].RemoveAt(i--);
                                     }
-                                    ModSync.SyncWorldData(SyncType.CUSTOM_NAMES, id);
-                                } else {
-                                    var packet = instance.GetPacket();
-                                    packet.Write(PacketType.SERVER_REJECT_CLEAR_ALL);
-                                    packet.Send(whoAmI);
                                 }
+                                switch (id) {
+                                    case 1000:
+                                        Broadcaster.SendGlobalMessage(Broadcaster.MessageType.CLEAR_NAME_LIST, string.Format("[c/9DFF66:{0}] cleared the Male name list!", Main.player[whoAmI].name));
+                                        break;
+                                    case 1001:
+                                        Broadcaster.SendGlobalMessage(Broadcaster.MessageType.CLEAR_NAME_LIST, string.Format("[c/9DFF66:{0}] cleared the Female name list!", Main.player[whoAmI].name));
+                                        break;
+                                    case 1002:
+                                        Broadcaster.SendGlobalMessage(Broadcaster.MessageType.CLEAR_NAME_LIST, string.Format("[c/9DFF66:{0}] cleared the Global name list!", Main.player[whoAmI].name));
+                                        break;
+                                    default:
+                                        Broadcaster.SendGlobalMessage(Broadcaster.MessageType.CLEAR_NAME_LIST, string.Format("[c/9DFF66:{0}] cleared the {1}'s name list!", Main.player[whoAmI].name, GetNPCName(id)));
+                                        break;
+                                }
+                                ModSync.SyncWorldData(SyncType.CUSTOM_NAMES, id);
                             }
                         }
                         break;
@@ -416,7 +414,7 @@ namespace CustomNPCNames
                     case PacketType.RESET_BUSY_PLAYER: {
                             int prevCount = CustomWorld.busyFields.Count;
                             for (int i = 0; i < CustomWorld.busyFields.Count; i++) {
-                                if (CustomWorld.busyFields[i].player == whoAmI) { CustomWorld.busyFields.RemoveAt(i); }
+                                if (CustomWorld.busyFields[i].player == whoAmI) { CustomWorld.busyFields.RemoveAt(i--); }
                             }
                             if (CustomWorld.busyFields.Count < prevCount) {
                                 ModSync.SyncWorldData(SyncType.BUSY_FIELDS);
@@ -463,9 +461,6 @@ namespace CustomNPCNames
                         break;
                     case PacketType.SERVER_REJECT_RANDOMIZE:
                         Main.NewText("Server rejected your randomization request, because some of the names you're trying to randomize are being edited.", Color.OrangeRed);
-                        break;
-                    case PacketType.SERVER_REJECT_CLEAR_ALL:
-                        Main.NewText("Server rejected your clear request, because some names in the current list are being edited.", Color.OrangeRed);
                         break;
                 }
             }

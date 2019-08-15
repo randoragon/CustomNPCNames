@@ -166,7 +166,6 @@ namespace CustomNPCNames.Network
         public const byte SERVER_REJECT_REMOVE_NAME = 253; // used to message the client that their operation failed
         public const byte SERVER_REJECT_EDIT_NAME   = 252; // used to message the client that their operation failed
         public const byte SERVER_REJECT_RANDOMIZE   = 251; // used to message the client that their operation failed
-        public const byte SERVER_REJECT_CLEAR_ALL   = 250; // used to message the client that their operation failed
-        public const byte SERVER_REJECT_CUT         = 249; // used to message the client that their operation failed
+        public const byte SERVER_REJECT_CUT         = 250; // used to message the client that their operation failed
     }
 }
