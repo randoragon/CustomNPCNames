@@ -169,15 +169,7 @@ namespace CustomNPCNames
                                 if (lastPacket) { ModSync.SyncWorldData(SyncType.CUSTOM_NAMES, id); }
                             } else {
                                 // only clear if there are no busy entries in the current tab
-                                bool noBusyEntries = true;
-                                foreach (StringWrapper i in CustomWorld.CustomNames[id]) {
-                                    foreach (BusyField j in CustomWorld.busyFields) {
-                                        if (i.ID == j.ID) { noBusyEntries = false; goto Break; }
-                                    }
-                                }
-
-                                Break:
-                                if (noBusyEntries) {
+                                if (!CustomWorld.AnyNameFieldBusyInCurrentTab()) {
                                     CustomWorld.CustomNames[id].Clear();
                                     switch (id) {
                                         case 1000:
@@ -204,15 +196,7 @@ namespace CustomNPCNames
                         break;
                     case PacketType.SEND_COPY_DATA: {
                             // Only accept a paste if no custom names entries are busy and no other paste operations are happenings
-                            bool anyBusyCustomNames = false;
-                            foreach (BusyField i in CustomWorld.busyFields) {
-                                foreach (short j in TownNPCs) {
-                                    if (i.ID == (ulong)j) { anyBusyCustomNames = true; goto Break; }
-                                }
-                            }
-
-                            Break:
-                            if (CustomWorld.packetsTillSync == 0 && !anyBusyCustomNames) {
+                            if (CustomWorld.packetsTillSync == 0 && !CustomWorld.AnyNameFieldBusy()) {
                                 int packetCount = reader.ReadInt32();
                                 CustomWorld.receivedPackets = 0;
                                 CustomWorld.packetsTillSync = packetCount;
@@ -275,37 +259,7 @@ namespace CustomNPCNames
                     case PacketType.RANDOMIZE: {
                             short id = reader.ReadInt16();
                             // Only randomize if no one else is editing the name
-                            bool isOnBusyList = false;
-                            if (id != 1000 && id != 1001 && id != 1002) {
-                                foreach (BusyField i in CustomWorld.busyFields) {
-                                    if (i.ID == (ulong)id) { isOnBusyList = true; }
-                                }
-                            } else if (id == 1000) {
-                                foreach (short i in TownNPCs) {
-                                    if (NPCs.CustomNPC.isMale[i]) {
-                                        foreach (BusyField j in CustomWorld.busyFields) {
-                                            if (j.ID == (ulong)i) { isOnBusyList = true; goto Break; }
-                                        }
-                                    }
-                                }
-                            } else if (id == 1001) {
-                                foreach (short i in TownNPCs) {
-                                    if (!NPCs.CustomNPC.isMale[i]) {
-                                        foreach (BusyField j in CustomWorld.busyFields) {
-                                            if (j.ID == (ulong)i) { isOnBusyList = true; goto Break; }
-                                        }
-                                    }
-                                }
-                            } else if (id == 1000) {
-                                foreach (short i in TownNPCs) {
-                                    foreach (BusyField j in CustomWorld.busyFields) {
-                                        if (j.ID == (ulong)i) { isOnBusyList = true; goto Break; }
-                                    }
-                                }
-                            }
-
-                            Break:
-                            if (!isOnBusyList) {
+                            if (!CustomWorld.IsRenamePanelBusy(id)) {
                                 NPCs.CustomNPC.RandomizeName(id);
                                 // world sync is called from the RandomizeName method
                                 switch (id) {
@@ -357,10 +311,7 @@ namespace CustomNPCNames
                             string name = reader.ReadString();
                             ulong nameID = reader.ReadUInt64();
                             // Only edit if either the entry is not being edited by anyone, or if the request to edit it came from the player editing the entry
-                            byte editingPlayer = 255;
-                            foreach (BusyField j in CustomWorld.busyFields) {
-                                if (j.ID == nameID) { editingPlayer = j.player; break; }
-                            }
+                            byte editingPlayer = CustomWorld.GetBusyField(nameID).player;
                             if (editingPlayer == 255 || whoAmI == editingPlayer) {
                                 foreach (StringWrapper i in CustomWorld.CustomNames[id]) {
                                     if (i.ID == nameID) {
@@ -396,10 +347,7 @@ namespace CustomNPCNames
                             for (int i = 0; i < CustomWorld.CustomNames[id].Count; i++) {
                                 if (CustomWorld.CustomNames[id][i].ID == nameID) {
                                     // Only remove if either the entry is not being edited by anyone, or if the request to remove it came from the player editing the entry
-                                    byte editingPlayer = 255;
-                                    foreach (BusyField j in CustomWorld.busyFields) {
-                                        if (j.ID == nameID) { editingPlayer = j.player; break; }
-                                    }
+                                    byte editingPlayer = CustomWorld.GetBusyField(nameID).player;
                                     if (editingPlayer == 255 || whoAmI == editingPlayer) {
                                         switch (id) {
                                             case 1000:
@@ -437,12 +385,9 @@ namespace CustomNPCNames
                             ulong id = reader.ReadUInt64();
                             bool isBusy = reader.ReadBoolean();
                             BusyField busyField = new BusyField(id, (byte)whoAmI);
-                            BusyField onList = new BusyField(0, 0); // ID = 0 represents an empty BusyField object, because it's impossible to achieve under normal circumstances
-                            foreach (BusyField i in CustomWorld.busyFields) {
-                                if (i.ID == id) { onList = i; break; }
-                            }
+                            BusyField onList = CustomWorld.GetBusyField(id);
                             if (isBusy) {
-                                if (onList.ID == 0) {
+                                if (onList.Equals(BusyField.Empty)) {
                                     CustomWorld.busyFields.Add(busyField);
                                     ModSync.SyncWorldData(SyncType.BUSY_FIELDS);
                                 }
@@ -454,15 +399,7 @@ namespace CustomNPCNames
                         break;
                     case PacketType.RESET_EVERYTHING: {
                             // Only do it if no custom name entries are being edited
-                            bool anyBusyCustomNames = false;
-                            foreach (BusyField i in CustomWorld.busyFields) {
-                                foreach (short j in TownNPCs) {
-                                    if (i.ID == (ulong)j) { anyBusyCustomNames = true; goto Break; }
-                                }
-                            }
-
-                            Break:
-                            if (!anyBusyCustomNames) {
+                            if (!CustomWorld.AnyNameFieldBusy()) {
                                 CustomWorld.mode = 0;
                                 CustomWorld.tryUnique = true;
                                 CustomWorld.ResetCustomNames();

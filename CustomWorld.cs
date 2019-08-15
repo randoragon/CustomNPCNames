@@ -381,6 +381,111 @@ namespace CustomNPCNames
                     break;
             }
         }
+
+
+        /// <summary>
+        /// Computes if any UINameFields in the SelectedNPC tab are being edited (including myPlayer).
+        /// </summary>
+        /// <returns></returns>
+        public static bool AnyNameFieldBusyInCurrentTab()
+        {
+            if (UI.RenameUI.IsNPCSelected) {
+                // Reduce time complexity by caching CustomWorld.CustomNames data
+                var CustomNamesIDs = new HashSet<ulong>();
+                foreach (StringWrapper i in CustomNames[UI.RenameUI.SelectedNPC]) {
+                    CustomNamesIDs.Add(i.ID);
+                }
+
+                foreach (BusyField i in busyFields) {
+                    if (CustomNamesIDs.Contains(i.ID)) { return true; }
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Computes if any UINameFields in any tab are being edited (including myPlayer).
+        /// </summary>
+        /// <returns></returns>
+        public static bool AnyNameFieldBusy()
+        {
+            // Reduce time complexity by caching CustomWorld.CustomNames data
+            var CustomNamesIDs = new HashSet<ulong>();
+            foreach (KeyValuePair<short, List<StringWrapper>> i in CustomNames) {
+                foreach (StringWrapper j in i.Value) {
+                    CustomNamesIDs.Add(j.ID);
+                }
+            }
+
+            foreach (BusyField i in busyFields) {
+                if (CustomNamesIDs.Contains(i.ID)) { return true; }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Computes if the given NPC is having its name edited by anyone (including myPlayer).
+        /// </summary>
+        /// <param name="id">The NPCID of the town NPC in question.</param>
+        /// <returns></returns>
+        public static bool IsRenamePanelBusy(short id)
+        {
+            if (id != 1000 && id != 1001 && id != 1002) {
+                foreach (BusyField i in busyFields) {
+                    if (i.ID == (ulong)id) { return true; }
+                }
+            } else if (id == 1000) {
+                foreach (short i in CustomNPCNames.TownNPCs) {
+                    if (NPCs.CustomNPC.isMale[i]) {
+                        foreach (BusyField j in busyFields) {
+                            if (j.ID == (ulong)i) { return true; }
+                        }
+                    }
+                }
+            } else if (id == 1001) {
+                foreach (short i in CustomNPCNames.TownNPCs) {
+                    if (!NPCs.CustomNPC.isMale[i]) {
+                        foreach (BusyField j in busyFields) {
+                            if (j.ID == (ulong)i) { return true; }
+                        }
+                    }
+                }
+            } else if (id == 1000) {
+                foreach (short i in CustomNPCNames.TownNPCs) {
+                    foreach (BusyField j in busyFields) {
+                        if (j.ID == (ulong)i) { return true; }
+                    }
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Searches for a BusyField matching a player indice, i.e. the BusyField being edited by that player. Returns a BusyField(0, 0) if not found.
+        /// </summary>
+        /// <param name="player">The player indice.</param>
+        /// <returns></returns>
+        public static BusyField GetBusyField(byte player)
+        {
+            foreach (BusyField i in busyFields) {
+                if (i.player == player) { return i; }
+            }
+            return new BusyField(0, 0);
+        }
+
+        /// <summary>
+        /// Searches for a BusyField matching an ID of either a StringWrapper or an town NPCID. Returns a BusyField(0, 0) if not found.
+        /// </summary>
+        /// <param name="player">StringWrapper.ID or town NPCID.</param>
+        /// <returns></returns>
+        public static BusyField GetBusyField(ulong id)
+        {
+            foreach (BusyField i in busyFields) {
+                if (i.ID == id) { return i; }
+            }
+            return new BusyField(0, 0);
+        }
     }
 
     /// <summary>
@@ -390,11 +495,25 @@ namespace CustomNPCNames
     {
         public readonly ulong ID;      // StringWrapper.ID for UINameFields, values from 1-24 for UIRenamePanel
         public readonly byte player;   // 255 for no one, 0-254 for player indices
+        public static readonly BusyField Empty = new BusyField(); // initialized with 0s
 
         public BusyField(ulong ID, byte player)
         {
             this.ID = ID;
             this.player = player;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj != null && GetType() == obj.GetType()) {
+                return ((BusyField)obj).ID == ID;
+            }
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return ID.GetHashCode();
         }
     }
 }

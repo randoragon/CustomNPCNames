@@ -709,32 +709,10 @@ namespace CustomNPCNames.UI
                 randomizeButtonInactive.HoverText = "No NPC Selected";
             }
 
-            bool anyBusyCustomNames = false;
-            bool anyBusyEntriesInCurrentTab = false;
-            if (IsNPCSelected) {
-                foreach (BusyField i in CustomWorld.busyFields) {
-                    if (!anyBusyEntriesInCurrentTab) {
-                        foreach (UINameField j in panelList._items) {
-                            if (j.NameWrapper.ID == i.ID && i.player != Main.myPlayer) { anyBusyEntriesInCurrentTab = true; break; }
-                        }
-                    }
-                    if (!anyBusyCustomNames) {
-                        foreach (short j in CustomNPCNames.TownNPCs) {
-                            if (i.ID == (ulong)j && i.player != Main.myPlayer) { anyBusyCustomNames = true; break; }
-                        }
-                    }
-                    if (anyBusyEntriesInCurrentTab && anyBusyCustomNames) { break; }
-                }
-            } else {
-                foreach (BusyField i in CustomWorld.busyFields) {
-                    foreach (short j in CustomNPCNames.TownNPCs) {
-                        if (i.ID == (ulong)j && i.player != Main.myPlayer) { anyBusyCustomNames = true; goto Break; }
-                    }
-                }
-            }
+            bool anyBusyNameFields = CustomWorld.AnyNameFieldBusy();
+            bool anyBusyNameFieldsInCurrentTab = CustomWorld.AnyNameFieldBusyInCurrentTab();
 
-            Break:
-            if (anyBusyCustomNames) {
+            if (anyBusyNameFields) {
                 if (menuPanel.HasChild(pasteButton)) {
                     menuPanel.RemoveChild(pasteButton);
                     menuPanel.Append(pasteButtonInactive);
@@ -742,7 +720,7 @@ namespace CustomNPCNames.UI
                 }
 
                 
-                if (anyBusyEntriesInCurrentTab) {
+                if (anyBusyNameFieldsInCurrentTab) {
                     if (namesPanel.HasChild(clearButton)) {
                         namesPanel.RemoveChild(clearButton);
                         namesPanel.Append(clearButtonInactive);
@@ -759,7 +737,7 @@ namespace CustomNPCNames.UI
                 menuPanel.Append(copyButton);
                 copyButton.SetImage(ModContent.GetTexture("CustomNPCNames/UI/copy_button"));
                 copyButton.HoverText = "Copy Everything\n(Hold Alt to Cut)";
-            } else if (anyBusyCustomNames) {
+            } else if (anyBusyNameFields) {
                 menuPanel.RemoveChild(copyButton);
                 menuPanel.Append(cutButtonInactive);
             } else {
