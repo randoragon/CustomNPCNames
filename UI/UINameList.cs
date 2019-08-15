@@ -57,7 +57,7 @@ namespace CustomNPCNames.UI
                 bool upPressed   = Main.keyState.IsKeyDown(Keys.Up)   && !Main.oldKeyState.IsKeyDown(Keys.Up);
                 bool downPressed = Main.keyState.IsKeyDown(Keys.Down) && !Main.oldKeyState.IsKeyDown(Keys.Down);
                 
-                if ((downPressed || lastKey == false && keyClock == 30) && SelectedIndex < Count - 1) {
+                if ((downPressed || lastKey == false && keyClock == 30) && SelectedIndex < Count - 1 && CustomWorld.GetBusyField((_items[SelectedIndex + 1] as UINameField).NameWrapper.ID).Equals(BusyField.Empty)) {
                     (_items[SelectedIndex] as UINameField).Deselect();
                     (_items[SelectedIndex] as UINameField).FinishEdit();
                     (_items[++SelectedIndex] as UINameField).Select();
@@ -65,7 +65,7 @@ namespace CustomNPCNames.UI
                     _scrollbar.ViewPosition = System.Math.Max(_scrollbar.ViewPosition, ((SelectedIndex + 1) * 36f) - Height.Pixels);
                     keyClock = (keyClock == 30 && lastKey == false ? 28 : 0);
                     lastKey = false;
-                } else if ((upPressed || lastKey == true && keyClock == 30) && SelectedIndex > 0) {
+                } else if ((upPressed || lastKey == true && keyClock == 30) && SelectedIndex > 0 && CustomWorld.GetBusyField((_items[SelectedIndex - 1] as UINameField).NameWrapper.ID).Equals(BusyField.Empty)) {
                     (_items[SelectedIndex] as UINameField).Deselect();
                     (_items[SelectedIndex] as UINameField).FinishEdit();
                     (_items[--SelectedIndex] as UINameField).Select();
