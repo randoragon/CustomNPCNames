@@ -524,7 +524,7 @@ namespace CustomNPCNames.UI
             if (IsNPCSelected) {
                 short id = SelectedNPC;
                 bool noNames = (CustomWorld.mode == 1 && id != 1000 && id != 1001 && id != 1002 && CustomWorld.CustomNames[id].Count == 0)
-                            || (CustomWorld.mode == 2 && (id != 1002 ? CustomWorld.CustomNames[(short)(id == 1000 || id == 1001 ? id : (NPCs.CustomNPC.isMale[id] ? 1000 : 1001))].Count == 0 : CustomWorld.CustomNames[1000].Count == 0 && CustomWorld.CustomNames[1001].Count == 0))
+                            || (CustomWorld.mode == 2 && (id != 1002 ? CustomWorld.CustomNames[(short)(id == 1000 || id == 1001 ? id : (NPCs.CustomNPC.isMale[id] ? 1000 : 1001))].Count == 0 : (CustomWorld.CustomNames[1000].Count == 0 && CustomWorld.CustomNames[1001].Count == 0)))
                             || (CustomWorld.mode == 3 && CustomWorld.CustomNames[1002].Count == 0);
 
                 namesPanel.RemoveChild(addButtonInactive);
@@ -545,27 +545,35 @@ namespace CustomNPCNames.UI
                     namesPanel.RemoveChild(npcPreview);
                     namesPanel.RemoveChild(switchGenderButton);
                     namesPanel.Append(switchGenderButtonInactive);
+                    var npcAlive = new Dictionary<short, bool>(); // cache for future reference
+                    foreach (short i in CustomNPCNames.TownNPCs) {
+                        npcAlive.Add(i, NPC.AnyNPCs(i));
+                    }
+
                     if (id == 1000) {
                         bool noMaleNPCs = true;
-                        foreach (short i in CustomNPCNames.TownNPCs) {
-                            if (NPCs.CustomNPC.isMale[i] && NPC.AnyNPCs(i)) { noMaleNPCs = false; break; }
-                        }
-
                         if (CustomWorld.mode == 1) {
                             noNames = true;
                             foreach (short i in CustomNPCNames.TownNPCs) {
-                                if (NPCs.CustomNPC.isMale[i] && CustomWorld.CustomNames[i].Count != 0) { noNames = false; break; }
+                                if (NPCs.CustomNPC.isMale[i] && npcAlive[i]) {
+                                    noMaleNPCs = false;
+                                    if (CustomWorld.CustomNames[i].Count != 0) { noNames = false; break; }
+                                }
+                            }
+                        } else {
+                            foreach (short i in CustomNPCNames.TownNPCs) {
+                                if (NPCs.CustomNPC.isMale[i] && npcAlive[i]) { noMaleNPCs = false; break; }
                             }
                         }
 
                         bool someBusyNames = false;
-                        foreach (BusyField i in CustomWorld.busyFields) {
-                            foreach (short j in CustomNPCNames.TownNPCs) {
-                                if (NPCs.CustomNPC.isMale[j] && i.ID == (ulong)j && i.player != Main.myPlayer) { someBusyNames = true; goto Break1; }
+                        foreach (short i in CustomNPCNames.TownNPCs) {
+                            if (npcAlive[i] && NPCs.CustomNPC.isMale[i] && !CustomWorld.GetBusyField((ulong)i).Equals(BusyField.Empty)) {
+                                someBusyNames = true;
+                                break;
                             }
                         }
 
-                        Break1:
                         if (noMaleNPCs) {
                             namesPanel.RemoveChild(randomizeButton);
                             namesPanel.Append(randomizeButtonInactive);
@@ -573,7 +581,7 @@ namespace CustomNPCNames.UI
                         } else if (noNames) {
                             namesPanel.RemoveChild(randomizeButton);
                             namesPanel.Append(randomizeButtonInactive);
-                            randomizeButtonInactive.HoverText = "There are no names\non the list to choose from!";
+                            randomizeButtonInactive.HoverText = "There are no names\non the list(s) to choose from!";
                         } else if (someBusyNames) {
                             namesPanel.RemoveChild(randomizeButton);
                             namesPanel.Append(randomizeButtonInactive);
@@ -585,25 +593,28 @@ namespace CustomNPCNames.UI
                         }
                     } else if (id == 1001) {
                         bool noFemaleNPCs = true;
-                        foreach (short i in CustomNPCNames.TownNPCs) {
-                            if (!NPCs.CustomNPC.isMale[i] && NPC.AnyNPCs(i)) { noFemaleNPCs = false; break; }
-                        }
-
                         if (CustomWorld.mode == 1) {
                             noNames = true;
                             foreach (short i in CustomNPCNames.TownNPCs) {
-                                if (!NPCs.CustomNPC.isMale[i] && CustomWorld.CustomNames[i].Count != 0) { noNames = false; break; }
+                                if (!NPCs.CustomNPC.isMale[i] && npcAlive[i]) {
+                                    noFemaleNPCs = false;
+                                    if (CustomWorld.CustomNames[i].Count != 0) { noNames = false; break; }
+                                }
+                            }
+                        } else {
+                            foreach (short i in CustomNPCNames.TownNPCs) {
+                                if (!NPCs.CustomNPC.isMale[i] && npcAlive[i]) { noFemaleNPCs = false; break; }
                             }
                         }
 
                         bool someBusyNames = false;
-                        foreach (BusyField i in CustomWorld.busyFields) {
-                            foreach (short j in CustomNPCNames.TownNPCs) {
-                                if (!NPCs.CustomNPC.isMale[j] && i.ID == (ulong)j && i.player != Main.myPlayer) { someBusyNames = true; goto Break2; }
+                        foreach (short i in CustomNPCNames.TownNPCs) {
+                            if (npcAlive[i] && !NPCs.CustomNPC.isMale[i] && !CustomWorld.GetBusyField((ulong)i).Equals(BusyField.Empty)) {
+                                someBusyNames = true;
+                                break;
                             }
                         }
 
-                        Break2:
                         if (noFemaleNPCs) {
                             namesPanel.RemoveChild(randomizeButton);
                             namesPanel.Append(randomizeButtonInactive);
@@ -611,7 +622,7 @@ namespace CustomNPCNames.UI
                         } else if (noNames) {
                             namesPanel.RemoveChild(randomizeButton);
                             namesPanel.Append(randomizeButtonInactive);
-                            randomizeButtonInactive.HoverText = "There are no names\non the list to choose from!";
+                            randomizeButtonInactive.HoverText = "There are no names\non the list(s) to choose from!";
                         } else if (someBusyNames) {
                             namesPanel.RemoveChild(randomizeButton);
                             namesPanel.Append(randomizeButtonInactive);
@@ -622,26 +633,23 @@ namespace CustomNPCNames.UI
                             randomizeButton.HoverText = "Randomize Female Names";
                         }
                     } else if (id == 1002) {
-                        bool noNPCs = true;
-                        foreach (short i in CustomNPCNames.TownNPCs) {
-                            if (NPC.AnyNPCs(i)) { noNPCs = false; break; }
-                        }
+                        bool noNPCs = npcAlive.ContainsValue(true);
 
                         if (CustomWorld.mode == 1) {
                             noNames = true;
                             foreach (short i in CustomNPCNames.TownNPCs) {
-                                if (CustomWorld.CustomNames[i].Count != 0) { noNames = false; break; }
+                                if (npcAlive[i] && CustomWorld.CustomNames[i].Count != 0) { noNames = false; break; }
                             }
                         }
 
                         bool someBusyNames = false;
-                        foreach (BusyField i in CustomWorld.busyFields) {
-                            foreach (short j in CustomNPCNames.TownNPCs) {
-                                if (i.ID == (ulong)j && i.player != Main.myPlayer) { someBusyNames = true; goto Break3; }
+                        foreach (short i in CustomNPCNames.TownNPCs) {
+                            if (npcAlive[i] && !CustomWorld.GetBusyField((ulong)i).Equals(BusyField.Empty)) {
+                                someBusyNames = true;
+                                break;
                             }
                         }
 
-                        Break3:
                         if (noNPCs) {
                             namesPanel.RemoveChild(randomizeButton);
                             namesPanel.Append(randomizeButtonInactive);
@@ -649,7 +657,7 @@ namespace CustomNPCNames.UI
                         } else if (noNames) {
                             namesPanel.RemoveChild(randomizeButton);
                             namesPanel.Append(randomizeButtonInactive);
-                            randomizeButtonInactive.HoverText = "There are no names\non the list to choose from!";
+                            randomizeButtonInactive.HoverText = "There are no names\non the list(s) to choose from!";
                         } else if (someBusyNames) {
                             namesPanel.RemoveChild(randomizeButton);
                             namesPanel.Append(randomizeButtonInactive);
