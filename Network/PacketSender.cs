@@ -133,7 +133,7 @@ namespace CustomNPCNames.Network
                     packet.Send();
                     break;
             }
-            Main.NewText(string.Format("Sending Packets({0})! ", type) + Main.time);
+            //Main.NewText(string.Format("Sending Packets({0})! ", type) + Main.time); DEBUG
         }
     }
     

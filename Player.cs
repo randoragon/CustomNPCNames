@@ -33,25 +33,25 @@ namespace CustomNPCNames
                 }
 
                 // FOR DEBUGGING
-                if (Main.keyState.IsKeyDown(Keys.P) && !Main.oldKeyState.IsKeyDown(Keys.P)) {
-                    Network.ModSync.SyncWorldData(Network.SyncType.EVERYTHING);
-                }
+                //if (Main.keyState.IsKeyDown(Keys.P) && !Main.oldKeyState.IsKeyDown(Keys.P)) {
+                //    Network.ModSync.SyncWorldData(Network.SyncType.EVERYTHING);
+                //}
 
-                if (Main.keyState.IsKeyDown(Keys.I) && !Main.oldKeyState.IsKeyDown(Keys.I)) {
-                    Main.NewText(mod.GetConfig<ServerConfig>().VerboseServerMessages);
-                }
+                //if (Main.keyState.IsKeyDown(Keys.I) && !Main.oldKeyState.IsKeyDown(Keys.I)) {
+                //    Main.NewText(mod.GetConfig<ServerConfig>().VerboseServerMessages);
+                //}
 
-                if (Main.keyState.IsKeyDown(Keys.U) && !Main.oldKeyState.IsKeyDown(Keys.U)) {
-                    Network.PacketSender.SendPacketToServer(Network.PacketType.SEND_BUSY_FIELD, 255, 22); //39950537469429693
-                }
+                //if (Main.keyState.IsKeyDown(Keys.U) && !Main.oldKeyState.IsKeyDown(Keys.U)) {
+                //    Network.PacketSender.SendPacketToServer(Network.PacketType.SEND_BUSY_FIELD, 255, 22); //39950537469429693
+                //}
 
-                if (Main.keyState.IsKeyDown(Keys.L) && !Main.oldKeyState.IsKeyDown(Keys.L)) {
-                    Network.PacketSender.SendPacketToServer(Network.PacketType.RANDOMIZE, RenameUI.SelectedNPC);
-                }
+                //if (Main.keyState.IsKeyDown(Keys.L) && !Main.oldKeyState.IsKeyDown(Keys.L)) {
+                //    Network.PacketSender.SendPacketToServer(Network.PacketType.RANDOMIZE, RenameUI.SelectedNPC);
+                //}
 
-                if (Main.keyState.IsKeyDown(Keys.O) && !Main.oldKeyState.IsKeyDown(Keys.O)) {
-                    PrintBusyFields();
-                }
+                //if (Main.keyState.IsKeyDown(Keys.O) && !Main.oldKeyState.IsKeyDown(Keys.O)) {
+                //    PrintBusyFields();
+                //}
             }
 
             void PrintBusyFields()

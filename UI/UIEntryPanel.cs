@@ -50,12 +50,10 @@ namespace CustomNPCNames.UI
             set
             {
                 if (_busy == 255 && value != 255) {
-                    Main.NewText("Assigning \"" + idleVariant.Text + "\"", Color.Red);
                     busyPrevText = idleVariant.Text;
                     CaptionMaxLength = -1;
                     idleVariant.Caption.TextColor = new Color(255, 200, 150);
                 } else if (_busy != 255 && value == 255) {
-                    Main.NewText("Resetting to \"" + busyPrevText + "\"", Color.IndianRed);
                     if (busyPrevText != null) { SetText(busyPrevText); }
                     busyPrevText = null;
                     CaptionMaxLength = 25;

@@ -261,7 +261,7 @@ namespace CustomNPCNames
         public override void NetReceive(BinaryReader reader)
         {
             byte syncType = reader.ReadByte();
-            Main.NewText("Receiving (" + syncType + ")! " + Main.time);
+            // Main.NewText("Receiving (" + syncType + ")! " + Main.time); DEBUG
             switch (syncType) {
                 case SyncType.MODE: {
                         var readMode = reader.ReadByte();
@@ -451,7 +451,7 @@ namespace CustomNPCNames
                         }
                     }
                 }
-            } else if (id == 1000) {
+            } else if (id == 1002) {
                 foreach (short i in CustomNPCNames.TownNPCs) {
                     foreach (BusyField j in busyFields) {
                         if (j.ID == (ulong)i) { return true; }
