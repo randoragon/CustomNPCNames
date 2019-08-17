@@ -43,7 +43,6 @@ namespace CustomNPCNames.UI
         public static bool removeMode = false;
         public static bool panelListReady = false; // UIList for 1 tick has all UIElements in one place after printing it. It needs to be locked when that happens to avoid multiple removals/selections etc.
         public static UIImage trashIcon;
-        public static bool carry = true;
         public static ListData copyData;
         public static bool Visible = false;
         public static bool IsNPCSelected { get { return UINPCButton.Selection != null; } }
@@ -461,8 +460,7 @@ namespace CustomNPCNames.UI
 
         private void CarryButtonClicked(UIMouseEvent evt, UIElement listeningElement)
         {
-            carry = !carry;
-            Config.SetValue("Carry", carry);
+            ClientConfig.Carry = !ClientConfig.Carry;
         }
 
         public override void Update(GameTime gameTime)
@@ -745,7 +743,7 @@ namespace CustomNPCNames.UI
                 copyButton.HoverText = "Cut Everything";
             }
 
-            carryButton.SetImage(ModContent.GetTexture("CustomNPCNames/UI/carry_button_" + (carry ? "on" : "off")));
+            carryButton.SetImage(ModContent.GetTexture("CustomNPCNames/UI/carry_button_" + (ClientConfig.Carry ? "on" : "off")));
         }
 
         public static Texture2D GetNPCHeadTexture(short id)

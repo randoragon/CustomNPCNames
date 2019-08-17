@@ -58,13 +58,13 @@ namespace CustomNPCNames.Network
 
         public static void SendGlobalMessage(MessageType type, string message)
         {
-            if (SendNone || (!SendVerbose && isVerbose[type])) { return; }
+            if (CustomNPCNames.instance.GetConfig<ServerConfig>().DisableServerMessages || (!CustomNPCNames.instance.GetConfig<ServerConfig>().VerboseServerMessages && isVerbose[type])) { return; }
             NetMessage.BroadcastChatMessage(NetworkText.FromLiteral("[c/FF0066:<Custom NPC Names>] " + message), new Color(255, 255, 100));
         }
 
         public static void SendGlobalMessage(MessageType type, string message, Color color)
         {
-            if (SendNone || (!SendVerbose && isVerbose[type])) { return; }
+            if (CustomNPCNames.instance.GetConfig<ServerConfig>().DisableServerMessages || (!CustomNPCNames.instance.GetConfig<ServerConfig>().VerboseServerMessages && isVerbose[type])) { return; }
             NetMessage.BroadcastChatMessage(NetworkText.FromLiteral("[c/FF0066:<Custom NPC Names>] " + message), color);
         }
     }

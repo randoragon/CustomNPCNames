@@ -69,7 +69,6 @@ namespace CustomNPCNames
         public override void Load()
         {
             instance = this;
-            Config.Load();
             // this makes sure that the UI doesn't get opened on the server console
             if (!Main.dedServ) {
                 RenameMenuHotkey = RegisterHotKey("Toggle Menu", "K");
@@ -508,7 +507,7 @@ namespace CustomNPCNames
                 RenameUI.panelList.Clear();
                 RenameUI.removeMode = false;
                 CustomWorld.busyFields.Clear();
-                if (!RenameUI.carry) {
+                if (!ClientConfig.Carry) {
                     CustomWorld.ResetCustomNames();
                     NPCs.CustomNPC.ResetCurrentGender();
                     RenameUI.modeCycleButton.State = 0;

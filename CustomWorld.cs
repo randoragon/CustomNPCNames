@@ -128,7 +128,7 @@ namespace CustomNPCNames
                 UI.RenameUI.removeMode = false;
                 busyFields.Clear();
 
-                if (!UI.RenameUI.carry) {
+                if (!ClientConfig.Carry) {
                     ResetCustomNames();
                     NPCs.CustomNPC.ResetCurrentGender();
                     UI.RenameUI.modeCycleButton.State = 0;
