@@ -47,7 +47,7 @@ namespace CustomNPCNames.UI
         public static bool Visible = false;
         public static bool IsNPCSelected { get { return UINPCButton.Selection != null; } }
         public static short SelectedNPC { get { return UINPCButton.Selection.npcId; } }    // always check IsNPCSelected before calling this
-        public static short savedSelectedNPC = -1;  // this variable gets assigned a value when loading a world file
+        public static short savedSelectedNPC = -1;  // this variable gets assigned a value when loading a world file. it is used for keeping the same NPC tab open in the menu when switching worlds
 
         public override void OnInitialize()
         {
@@ -487,7 +487,6 @@ namespace CustomNPCNames.UI
                 removeMode = false;
                 modeCycleButton.State = CustomWorld.mode;
                 uniqueNameButton.State = CustomWorld.tryUnique;
-                DeselectAllEntries();
                 savedSelectedNPC = -1;
             }
 

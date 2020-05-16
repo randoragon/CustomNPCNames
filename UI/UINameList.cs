@@ -185,7 +185,7 @@ namespace CustomNPCNames.UI
         {
             foreach (object i in _items)
             {
-                (i as UINameField).Deselect();
+                (i as UINameField).Deselect(save);
             }
         }
     }
