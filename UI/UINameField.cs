@@ -121,13 +121,17 @@ namespace CustomNPCNames.UI
         public override void Select()
         {
             base.Select();
-            Network.PacketSender.SendPacketToServer(Network.PacketType.SEND_BUSY_FIELD, 1, NameWrapper.ID);
+            if (Main.netMode == NetmodeID.MultiplayerClient) {
+                Network.PacketSender.SendPacketToServer(Network.PacketType.SEND_BUSY_FIELD, 1, NameWrapper.ID);
+            }
         }
 
         public override void Deselect(bool save = true)
         {
             base.Deselect(save);
-            Network.PacketSender.SendPacketToServer(Network.PacketType.SEND_BUSY_FIELD, 0, NameWrapper.ID);
+            if (Main.netMode == NetmodeID.MultiplayerClient) {
+                Network.PacketSender.SendPacketToServer(Network.PacketType.SEND_BUSY_FIELD, 0, NameWrapper.ID);
+            }
         }
 
         public override void Update(GameTime gameTime)

@@ -14,6 +14,12 @@ namespace CustomNPCNames.Network
         /// <param name="name">Optional parameter for name list operations.</param>
         public static void SendPacketToServer(byte type, short id = NPCID.None, ulong id1 = 0, string name = "")
         {
+            // Abort if in singleplayer (this should not be allowed to happen, but in case it does, it silently fails)
+            if (Main.netMode == NetmodeID.SinglePlayer) {
+                CustomNPCNames.instance.Logger.Warn(string.Format("Tried sending packet type {0} in a singleplayer world", type));
+                return;
+            }
+
             // In order to send full string dictionaries with packets, you need to pay attention to the packet size.
             // For speed reasons it's better to send more small packets then one big packet, so i'll stick to the max size of 256 bytes.
             // Each name string has a maximum length of 25 characters, each of which is 8 bits, so 1 byte long.

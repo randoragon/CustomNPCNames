@@ -137,7 +137,9 @@ namespace CustomNPCNames.UI
         public override void Select()
         {
             base.Select();
-            Network.PacketSender.SendPacketToServer(Network.PacketType.SEND_BUSY_FIELD, 1, (ulong)RenameUI.SelectedNPC);
+            if (Main.netMode == Terraria.ID.NetmodeID.MultiplayerClient) {
+                Network.PacketSender.SendPacketToServer(Network.PacketType.SEND_BUSY_FIELD, 1, (ulong)RenameUI.SelectedNPC);
+            }
         }
 
         public override void Deselect(bool save = true)
@@ -153,7 +155,9 @@ namespace CustomNPCNames.UI
             }
             RemoveChild(focusVariant);
             Append(idleVariant);
-            Network.PacketSender.SendPacketToServer(Network.PacketType.SEND_BUSY_FIELD, 0, (ulong)RenameUI.SelectedNPC);
+            if (Main.netMode == Terraria.ID.NetmodeID.MultiplayerClient) {
+                Network.PacketSender.SendPacketToServer(Network.PacketType.SEND_BUSY_FIELD, 0, (ulong)RenameUI.SelectedNPC);
+            }
         }
 
         public void UpdateState()
