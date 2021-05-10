@@ -1,7 +1,11 @@
 # Custom NPC Names Mod
 
 **DISCLAIMER**  
-This mod is under active development and is not published. Not all features have yet been implemented.
+The development of this mod is currently on hold. Much of the features were implemented and ready
+to go for Terraria 1.3.x, but since then new NPCs were added in the 1.4 update and (as of writing
+this) tModLoader still has not updated to 1.4, which stalls further work. If tModLoader 1.4 is
+already out and this disclaimer is still here, then I'm probably procrastinating or I'm preoccupied
+with other work.
 
 ## Info
 
@@ -17,5 +21,4 @@ Only the vanilla NPCs are and probably will ever be supported.
  
 ---------------
 
-Dedicated to tvgBadger  
-\#BadgerClan
+Dedicated to tvgBadger
